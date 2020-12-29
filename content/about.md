@@ -9,4 +9,4 @@ description: Sean D McAtee
 title: About Me
 ---
 
-I am a Biostatistics MS student at the NYU Department of Global and Public Health.
+I am a Biostatistics MS student at the NYU School of Global Public Health.

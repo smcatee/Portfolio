@@ -9,16 +9,21 @@
   
   <url>
     <loc>https://seandmcatee.netlify.app/</loc>
-    <lastmod>2019-07-26T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://seandmcatee.netlify.app/post/2020-12-26-cleaning-data/</loc>
-    <lastmod>2019-07-26T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-20T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://seandmcatee.netlify.app/post/</loc>
+    <lastmod>2019-08-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://seandmcatee.netlify.app/post/2020-12-28-time-series-analysis/</loc>
+    <lastmod>2019-08-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://seandmcatee.netlify.app/post/2020-12-26-cleaning-data/</loc>
     <lastmod>2019-07-26T00:00:00+00:00</lastmod>
   </url>
   

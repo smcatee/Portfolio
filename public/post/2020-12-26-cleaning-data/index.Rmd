@@ -5,7 +5,7 @@ date: '2019-07-26'
 slug: []
 categories: []
 tags: []
-Description: ''
+Description: 'Cleaning messy data with many missing values'
 Tags: []
 Categories: []
 DisableComments: yes
@@ -403,4 +403,4 @@ write_csv(ibutton_BB, "/Users/smcatee/Desktop/TF/IBUTTON/IBUTTON_BB.csv")
 
 </br>
 
-Next, check out my example of time series analysis
+Next, check out my example of time series analysis!

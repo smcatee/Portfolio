@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1609224863271.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "CF106E32",
+    "lastKnownWriteTime" : 1609228273,
+    "last_content_update" : 1609228273675,
+    "path" : "~/Desktop/Class Notes and Textbooks/Grad_Work/R_ExampleWork/correlation_QCDataSet.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "329,17",
+        "scrollLine" : "324"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

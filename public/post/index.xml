@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Website of Sean McAtee</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 26 Jul 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://seandmcatee.netlify.app/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 20 Aug 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://seandmcatee.netlify.app/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Time Series Analysis</title>
+      <link>https://seandmcatee.netlify.app/post/2020-12-28-time-series-analysis/</link>
+      <pubDate>Tue, 20 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://seandmcatee.netlify.app/post/2020-12-28-time-series-analysis/</guid>
+      <description>This document shows a brief temperature time series analysis using three NOAA quality control datasets.</description>
+    </item>
+    
     <item>
       <title>Cleaning Data</title>
       <link>https://seandmcatee.netlify.app/post/2020-12-26-cleaning-data/</link>

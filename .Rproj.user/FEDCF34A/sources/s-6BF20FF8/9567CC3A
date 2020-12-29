@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1609225175843.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2961850359",
+    "id" : "9567CC3A",
+    "lastKnownWriteTime" : 1609228198,
+    "last_content_update" : 1609228198986,
+    "path" : "~/Desktop/CS/WebDevel/Portfolio/content/post/2020-12-28-time-series-analysis/index.Rmd",
+    "project_path" : "content/post/2020-12-28-time-series-analysis/index.Rmd",
+    "properties" : {
+        "cursorPosition" : "414,4",
+        "scrollLine" : "411"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
