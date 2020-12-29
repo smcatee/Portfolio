@@ -3,45 +3,45 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://example.com/</loc>
-    <lastmod>2020-12-26T00:00:00+00:00</lastmod>
+    <loc>https://seandmcatee.netlify.app/about/</loc>
+    <lastmod>2020-12-27T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://example.com/post/2020-12-26-cleaning-data/</loc>
-    <lastmod>2020-12-26T00:00:00+00:00</lastmod>
+    <loc>https://seandmcatee.netlify.app/</loc>
+    <lastmod>2019-07-26T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://example.com/post/</loc>
-    <lastmod>2020-12-26T00:00:00+00:00</lastmod>
+    <loc>https://seandmcatee.netlify.app/post/2020-12-26-cleaning-data/</loc>
+    <lastmod>2019-07-26T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://example.com/archives/</loc>
+    <loc>https://seandmcatee.netlify.app/post/</loc>
+    <lastmod>2019-07-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://seandmcatee.netlify.app/archives/</loc>
     <lastmod>2019-05-28T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://example.com/contact/</loc>
+    <loc>https://seandmcatee.netlify.app/contact/</loc>
     <lastmod>2019-03-08T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://example.com/about/</loc>
-    <lastmod>2019-02-28T00:00:00+00:00</lastmod>
+    <loc>https://seandmcatee.netlify.app/categories/</loc>
   </url>
   
   <url>
-    <loc>https://example.com/categories/</loc>
+    <loc>https://seandmcatee.netlify.app/tags/index/</loc>
   </url>
   
   <url>
-    <loc>https://example.com/tags/index/</loc>
-  </url>
-  
-  <url>
-    <loc>https://example.com/tags/</loc>
+    <loc>https://seandmcatee.netlify.app/tags/</loc>
   </url>
   
 </urlset>
