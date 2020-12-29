@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1609017772997.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3154539914",
+    "id" : "7F62ABD5",
+    "lastKnownWriteTime" : 1609126985,
+    "last_content_update" : 1609126985722,
+    "path" : "~/Desktop/CS/WebDevel/Portfolio/config.toml",
+    "project_path" : "config.toml",
+    "properties" : {
+        "cursorPosition" : "78,18",
+        "scrollLine" : "69"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "toml"
+}

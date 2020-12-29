@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1609127069343.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "E59AC937",
+    "lastKnownWriteTime" : 1609131613,
+    "last_content_update" : 1609131613883,
+    "path" : "~/Desktop/CS/WebDevel/Portfolio/content/about.md",
+    "project_path" : "content/about.md",
+    "properties" : {
+        "cursorPosition" : "7,26",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "markdown"
+}

@@ -1,0 +1,18 @@
+---
+title: Cleaning Data
+author: John Doe
+date: '2020-12-26'
+slug: []
+categories: []
+tags: []
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+# Clean Clean Clean
+
+```{r}
+#chunk 1
+```

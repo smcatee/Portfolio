@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1609015350647.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4089764265",
+    "id" : "2C5F5BC8",
+    "lastKnownWriteTime" : 1609207375,
+    "last_content_update" : 1609207375777,
+    "path" : "~/Desktop/CS/WebDevel/Portfolio/content/post/2020-12-26-cleaning-data/index.Rmd",
+    "project_path" : "content/post/2020-12-26-cleaning-data/index.Rmd",
+    "properties" : {
+        "cursorPosition" : "405,50",
+        "last_setup_crc32" : "6BF20FF8bb338d19",
+        "scrollLine" : "390"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

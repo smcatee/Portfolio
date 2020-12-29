@@ -1,0 +1,325 @@
+---
+title: Cleaning Data
+author: Sean D McAtee
+date: '2019-07-26'
+slug: []
+categories: []
+tags: []
+Description: ''
+Tags: []
+Categories: []
+DisableComments: yes
+output:
+  blogdown::html_page:
+    toc: false #table of contents
+    toc_float: false
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p></br></p>
+<p>For my CSUCI lab group I cleaned messy data with many missing values, I also programmatically added a day/night column using a REST API.</p>
+<p>The raw data was loaded from temperature probes ‘IBUTTONs’ fixed in inter tidal regions on Santa Rosa Island, CA. There are two locations on the island where probes are installed, Beachers Bay ‘BB’ and Skunk Point ‘SP’. At each of these two locations IBUTTONs are situated at 4 different tidal zones: Low ‘L’, Mid ‘M’, High ‘H’, and Splash ‘S’. For each of these tidal levels there are 5 IBUTTONs. BB-L1, BB-L2, BB-L3, etc.</p>
+<p>When this data was originally cleaned and mutated the previous researcher added information to indicate if the IBUTTON was out of water ‘OOW’ by using tide height. The researcher also added a column to indicate day or night, which appears to be inaccurate</p>
+<p></br><br />
+</br></p>
+<hr />
+<div id="packages-used" class="section level2">
+<h2>Packages Used</h2>
+<pre class="r"><code>library(readr); library(readxl); library(stringr)
+library(chron); library(ggplot2); library(tibble);
+library(dplyr); library(tidyr); library(visdat);
+library(httr); library(jsonlite); library(magrittr)</code></pre>
+<p></br><br />
+</br></p>
+<hr />
+</div>
+<div id="parsing-excel-data" class="section level2">
+<h2>Parsing Excel Data</h2>
+<p>The Excel file ‘IBUTTON_MASTER_DATA.xlsx’ contains two sheets ‘BB’ and ‘SP’</p>
+<pre class="r"><code>pathToXLSX &lt;- &quot;/Users/smcatee/Desktop/TF/IBUTTON/IBUTTON_MASTER_DATA.xlsx&quot;
+readxl::excel_sheets(path = pathToXLSX)</code></pre>
+<pre><code>## [1] &quot;SP&quot; &quot;BB&quot;</code></pre>
+<p></br></p>
+<pre class="r"><code># Load each sheet
+masterData_SP &lt;- readxl::read_xlsx(path = pathToXLSX, sheet = &quot;SP&quot;, na = c(&quot;&quot;, &quot;NA&quot;, &quot;NaN&quot;))
+masterData_BB &lt;- readxl::read_xlsx(path = pathToXLSX, sheet = &quot;BB&quot;, na = c(&quot;&quot;, &quot;NA&quot;, &quot;NaN&quot;))</code></pre>
+<p></br></p>
+<p>Both BB and SP tables have similar sizes.</p>
+<pre class="r"><code>dim(masterData_SP)
+dim(masterData_BB)</code></pre>
+<pre><code>## [1] 25388   224
+## [1] 25392   225</code></pre>
+<p></br></p>
+<p>The column names are also similar for both tables.</p>
+<pre class="r"><code>tibble::tibble(
+  &quot;BB_ColNames&quot; = masterData_BB %&gt;% colnames() %&gt;% head(10),
+  &quot;SP_ColNames&quot; = masterData_SP %&gt;% colnames() %&gt;% head(10)
+  )</code></pre>
+<pre><code>## # A tibble: 10 x 2
+##    BB_ColNames             SP_ColNames            
+##    &lt;chr&gt;                   &lt;chr&gt;                  
+##  1 DATE TIME               date                   
+##  2 date                    time                   
+##  3 time                    tide offset            
+##  4 tide offset             tide height transformed
+##  5 tide height transformed L1                     
+##  6 L1 Temp                 L1 Height              
+##  7 L1 Height               l1 height tranformed   
+##  8 l1 height tranformed    L1-TideHeight          
+##  9 L1-TideHeight           L1 OOW? [TRUE/FALSE]   
+## 10 L1 OOW? [TRUE/FALSE]    SunRise...10</code></pre>
+<p></br></p>
+<p>Not all of the these columns need to be kept since some were intermediate steps made by the previous researcher.</p>
+<p>The only important columns are the date/time, temperature, and OOW (Out Of Water). There are columns <code>date</code>, <code>time</code>, and <code>DATE TIME</code>. This is a bit confusing so lets explore their values…</p>
+<pre class="r"><code>tibble::tibble(
+  &quot;DATE_TIME&quot; = masterData_BB$`DATE TIME` %&gt;% head(),
+  &quot;date&quot; = masterData_BB$date %&gt;% head(),
+  &quot;time&quot; = masterData_BB$time %&gt;% head()
+)</code></pre>
+<pre><code>## # A tibble: 6 x 3
+##   DATE_TIME date                time  
+##       &lt;dbl&gt; &lt;dttm&gt;              &lt;time&gt;
+## 1       NaN 2016-03-31 00:00:00 23:33 
+## 2       NaN 2016-04-01 00:00:00 00:33 
+## 3       NaN 2016-04-01 00:00:00 01:33 
+## 4       NaN 2016-04-01 00:00:00 02:33 
+## 5       NaN 2016-04-01 00:00:00 03:33 
+## 6       NaN 2016-04-01 00:00:00 04:33</code></pre>
+<p>It looks like <code>DATE TIME</code> might have been an Excel formula that was corrupted. The <code>date</code> column and the <code>time</code> column appear to be real dates and times from the IBUTTON readings.</p>
+<p></br></p>
+<p>For a quick sanity check, a plot can be made to show the temperature fluctuating through a 24 hour period.</p>
+<pre class="r"><code>masterData_BB %&gt;%
+  select(3, 6) %&gt;%
+  transmute(timeOfDay = hours(as.times(time)), Temp = as.numeric(`L1 Temp`)) %&gt;% 
+  ggplot(aes(timeOfDay, Temp)) +
+    geom_point() +
+    labs(title = &quot;Temp for each day&quot;, x = &quot;TimeOfDay&quot;, y = &quot;Temp&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>In general the temperature peak appears to be at 13:00 and the trough appears to be at 03:00. Looks good, lets move on..</p>
+<p></br><br />
+</br></p>
+<hr />
+</div>
+<div id="data-selection" class="section level2">
+<h2>Data Selection</h2>
+<p>Now we have a distinct list of columns to keep:<br />
+- Date = <code>date</code><br />
+- Time = <code>time</code><br />
+- Temperature = <code>L1 Temp</code>, <code>L1</code>, <code>L2 Temp</code>, <code>L2</code>, …<br />
+- OOW = <code>L1 OOW?</code>, <code>L2 OOW?</code>, …</p>
+<p></br></p>
+<p>It would be easy enough to select columns by hand, but here is some automation for practice</p>
+<pre class="r"><code>regexPattern &lt;- &quot;(^date$)|(^time$)|(^[LMHS][1-5]( [Tt]emp)?$)|(OOW\\?)&quot;
+ibutton_SP &lt;- masterData_SP %&gt;%
+  dplyr::select(matches(match = regexPattern, ignore.case = FALSE))
+ibutton_BB &lt;- masterData_BB %&gt;%
+  dplyr::select(matches(match = regexPattern, ignore.case = FALSE))</code></pre>
+<pre class="r"><code># Sanity check
+ibutton_SP %&gt;% colnames() %&gt;% head()
+ibutton_BB %&gt;% colnames() %&gt;% head()</code></pre>
+<pre><code>## [1] &quot;date&quot;                 &quot;time&quot;                 &quot;L1&quot;                  
+## [4] &quot;L1 OOW? [TRUE/FALSE]&quot; &quot;L2&quot;                   &quot;L2 OOW? [TRUE/FALSE]&quot;
+## [1] &quot;date&quot;                 &quot;time&quot;                 &quot;L1 Temp&quot;             
+## [4] &quot;L1 OOW? [TRUE/FALSE]&quot; &quot;L2 Temp&quot;              &quot;L2 OOW? [TRUE/FALSE]&quot;</code></pre>
+<p></br></p>
+<p>The column names are odd, so here are better names</p>
+<pre class="r"><code>newColNames &lt;- colnames(ibutton_SP)
+newColNames[1] &lt;- &quot;Date&quot;
+newColNames[2] &lt;- &quot;Time&quot;
+newColNames %&lt;&gt;% str_replace(fixed(&quot; Temp&quot;), &quot;_Temperature&quot;)
+newColNames %&lt;&gt;% sapply(
+                  function(colName){
+                    if_else(
+                      str_detect(colName, &quot;^..$&quot;),
+                      paste0(colName, &quot;_Temperature&quot;),
+                      colName)
+                    },
+                  USE.NAMES = FALSE
+                  )
+
+newColNames %&lt;&gt;% str_replace(&quot; OOW.*&quot;, &quot;_isSubmerged&quot;)
+colnames(ibutton_SP) &lt;- newColNames
+colnames(ibutton_BB) &lt;- newColNames</code></pre>
+<pre class="r"><code># Sanity check
+colnames(ibutton_SP) %&gt;% head()</code></pre>
+<pre><code>## [1] &quot;Date&quot;           &quot;Time&quot;           &quot;L1_Temperature&quot; &quot;L1_isSubmerged&quot;
+## [5] &quot;L2_Temperature&quot; &quot;L2_isSubmerged&quot;</code></pre>
+<pre class="r"><code>colnames(ibutton_BB) %&gt;% head()</code></pre>
+<pre><code>## [1] &quot;Date&quot;           &quot;Time&quot;           &quot;L1_Temperature&quot; &quot;L1_isSubmerged&quot;
+## [5] &quot;L2_Temperature&quot; &quot;L2_isSubmerged&quot;</code></pre>
+<p></br><br />
+</br></p>
+<hr />
+</div>
+<div id="visualize-value-types" class="section level2">
+<h2>Visualize value types</h2>
+<p>The handy package <code>visdat</code> can be used to plot value types for whole tables.</p>
+<pre class="r"><code>visdat::vis_dat(ibutton_SP, sort_type = FALSE, warn_large_data = FALSE)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>The whole bottom half of ibutton_SP is missing! This is handled easily below.</p>
+<p></br>
+Lets check ibutton_BB.</p>
+<pre class="r"><code>visdat::vis_dat(ibutton_BB, sort_type = FALSE, warn_large_data = FALSE)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p></br></p>
+<p>Intermittent data is missing in ibutton_BB. This missing data can be handled in a few more steps. The consequences of the missing data for both tables will have to be considered during the data analysis stage.</p>
+<p></br></p>
+<p>Here, ibutton_SP missing values can be removed by only selecing rows with non-NA values in any column, except for <code>S5_Temperature</code></p>
+<pre class="r"><code>ibutton_SP &lt;- ibutton_SP[!is.na(ibutton_SP$L1_Temperature),]</code></pre>
+<p></br></p>
+<p>Here, ibutton_BB missing values can not be removed by taking out whole rows since some rows are full of NA values while other rows still have some non-NA values. The first step will be selecting the indexes for Temperature columns, the second step will be selecting temperature rows that have some non-NA values, then the third step will be selecting <code>Date</code> and <code>Time</code> rows that have non-NA values.</p>
+<pre class="r"><code>temperatureColIndexes &lt;- ibutton_BB %&gt;% colnames() %&gt;% str_detect(&quot;_Temperature&quot;) %&gt;% which()
+
+temp_nonNA_rows &lt;- ibutton_BB[temperatureColIndexes] %&gt;% is.na() %&gt;%
+  rowSums() != length(temperatureColIndexes)
+
+dateTime_nonNA_rows &lt;- ibutton_BB[c(1,2)] %&gt;% is.na() %&gt;% rowSums() != 2
+
+ibutton_BB &lt;- ibutton_BB[temp_nonNA_rows &amp; dateTime_nonNA_rows,]</code></pre>
+<p></br></p>
+<p>Now both tables will have rows with non-NA <code>Date</code> and <code>Time</code> and at least one non-NA temperature value.</p>
+<pre class="r"><code>visdat::vis_dat(ibutton_SP, sort_type = FALSE, warn_large_data = FALSE)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<pre class="r"><code>visdat::vis_dat(ibutton_BB, sort_type = FALSE, warn_large_data = FALSE)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-2.png" width="672" /></p>
+<p></br><br />
+</br></p>
+<hr />
+</div>
+<div id="creating-isday-column" class="section level2">
+<h2>Creating <code>isDay</code> column</h2>
+<p>Now that the tables are cleaned the final step is to create an <code>isDay</code> column that will use sunrise/sunset data that can be called from ‘api.sunrise-sunset.org’</p>
+<pre class="r"><code>for (step in c(1,2)) {
+  if(step == 1) {curTable &lt;- ibutton_SP}
+  if(step == 2) {curTable &lt;- ibutton_BB}
+
+  # Assemble a vector that will become the isDay column
+  isDayCol &lt;- c()
+  nDays &lt;- 0
+  rowIndex &lt;- 1
+  while( rowIndex &lt;= nrow(curTable) ) {
+    
+    # GET sunrise and sunset times for chunks of rows with the same date
+    # using sunrise-sunset.org REST API
+    curDate &lt;- as.Date(curTable$Date[rowIndex])
+    call &lt;- paste0(&quot;https://api.sunrise-sunset.org/json?lat=36.7201600&amp;lng=-4.4203400  &amp;date=&quot;, curDate)
+    callContent &lt;- httr::content(GET(call), &quot;text&quot;)
+    callContentJSON &lt;- jsonlite::fromJSON(callContent, flatten=TRUE)
+    sunrise &lt;- chron::as.times(stringr::str_remove(callContentJSON$results$sunrise, &quot; AM&quot;))
+    sunset &lt;- chron::as.times(stringr::str_remove(callContentJSON$results$sunset, &quot; PM&quot;)) + as.times(&quot;12:00:00&quot;)
+  
+    # For chunks of rows with the same date compare sunrise/sunset to time
+    while (curDate == as.Date(curTable$Date[rowIndex])) {
+  
+      isDay &lt;- FALSE
+      curTime &lt;- curTable$Time[rowIndex] %&gt;% as.character()
+      isDay &lt;- ifelse(curTime &lt; sunrise | curTime &gt; sunset, FALSE, TRUE)
+      isDayCol &lt;- c(isDayCol, isDay)
+  
+      rowIndex = rowIndex + 1
+      if( rowIndex &gt; nrow(curTable) ) { break }
+    }
+  }
+  curTable &lt;- tibble::add_column(curTable, isDay=isDayCol, .after = &quot;Time&quot;)
+  curTable %&gt;% colnames()
+  curTable$isDay %&gt;% table()
+  
+  if(step == 1) {ibutton_SP &lt;- curTable}
+  if(step == 2) {ibutton_BB &lt;- curTable}
+}</code></pre>
+<p></br></p>
+<p>Checking that the isDay column produced only TRUE and FALSE values:</p>
+<pre class="r"><code>ibutton_SP$isDay %&gt;% table()</code></pre>
+<pre><code>## .
+## FALSE  TRUE 
+##  4751  5072</code></pre>
+<pre class="r"><code>ibutton_BB$isDay %&gt;% table()</code></pre>
+<pre><code>## .
+## FALSE  TRUE 
+##  6868  6866</code></pre>
+<p></br><br />
+</br></p>
+<hr />
+</div>
+<div id="tidy-up" class="section level2">
+<h2>Tidy up</h2>
+<p>The data is clean, but is not necessarily ‘tidy’. Following the <a href="https://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> principles this table is too ‘wide’ and must be converted to a ‘long’ format. The site names (e.g. L1, M2…) should be values in a column named ‘Site’. The resulting table will have only 6 columns: <code>Date</code> <code>Time</code> <code>isDay</code> <code>Site</code> <code>Temperature</code> <code>isSubmerged</code></p>
+<p></br></p>
+<p>The Temperature and isSubmerged column names both contain the same Site values (e.g. L1, S4, …). It will be easier to lengthen Temperature and isSubmerged columns independently, creating new <code>Site</code> columns for each. Then columns from both lengthened tables can be joined as a new tibble.</p>
+<pre class="r"><code># select out isSubmerged columns into separate df
+ibutton_SP_subm &lt;- ibutton_SP %&gt;% dplyr::select(ends_with(&quot;isSubmerged&quot;))
+
+# pivot_longer temperature table
+ibutton_SP_temp &lt;- ibutton_SP %&gt;%
+  tidyr::pivot_longer(
+    cols = ends_with(&quot;Temperature&quot;),
+    names_to = c(&quot;Site&quot;,&quot;eraseMe&quot;),
+    values_to = &quot;Temperature&quot;,
+    values_drop_na = FALSE,
+    names_sep = &quot;_&quot;
+    ) %&gt;%
+  dplyr::select(Date, Time, isDay, Site, Temperature)
+
+# pivot_longer isSubmerged table
+ibutton_SP_subm &lt;- ibutton_SP_subm %&gt;%
+  tidyr::pivot_longer(
+    cols = ends_with(&quot;isSubmerged&quot;),
+    names_to = c(&quot;Site&quot;, &quot;eraseMe&quot;),
+    values_to = &quot;isSubmerged&quot;,
+    values_drop_na = FALSE,
+    names_sep = &quot;_&quot;
+  ) %&gt;% dplyr::select(-eraseMe)
+
+# recombine
+ibutton_SP &lt;- tibble::add_column(ibutton_SP_temp, isSubmerged = ibutton_SP_subm$isSubmerged, .after = &quot;Temperature&quot;)</code></pre>
+<p>This chunk is then mirrored for <code>ibutton_BB</code></p>
+<p></br><br />
+</br></p>
+<hr />
+</div>
+<div id="visualizing-the-tidy-data" class="section level2">
+<h2>Visualizing the tidy data</h2>
+<p>Now that the tables are long they are visually less appealing, but they are
+far easier to analyze in R.</p>
+<pre class="r"><code>visdat::vis_dat(ibutton_SP, sort_type = FALSE, warn_large_data = FALSE)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<pre class="r"><code>visdat::vis_dat(ibutton_BB, sort_type = FALSE, warn_large_data = FALSE)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-22-2.png" width="672" /></p>
+<p></br></p>
+<pre class="r"><code>ibutton_SP %&gt;% head(10)</code></pre>
+<pre><code>## # A tibble: 10 x 6
+##    Date                Time   isDay Site  Temperature isSubmerged
+##    &lt;dttm&gt;              &lt;time&gt; &lt;lgl&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;lgl&gt;      
+##  1 2016-03-31 00:00:00 23:33  FALSE L1           15.3 TRUE       
+##  2 2016-03-31 00:00:00 23:33  FALSE L2            0   FALSE      
+##  3 2016-03-31 00:00:00 23:33  FALSE L3           14.5 FALSE      
+##  4 2016-03-31 00:00:00 23:33  FALSE L4            0   FALSE      
+##  5 2016-03-31 00:00:00 23:33  FALSE L5           15   FALSE      
+##  6 2016-03-31 00:00:00 23:33  FALSE M1           16.3 TRUE       
+##  7 2016-03-31 00:00:00 23:33  FALSE M2            0   TRUE       
+##  8 2016-03-31 00:00:00 23:33  FALSE M3           16.3 TRUE       
+##  9 2016-03-31 00:00:00 23:33  FALSE M4            0   TRUE       
+## 10 2016-03-31 00:00:00 23:33  FALSE M5           15.7 FALSE</code></pre>
+<pre class="r"><code>ibutton_BB %&gt;% head(10)</code></pre>
+<pre><code>## # A tibble: 10 x 6
+##    Date                Time   isDay Site  Temperature isSubmerged
+##    &lt;dttm&gt;              &lt;time&gt; &lt;lgl&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;lgl&gt;      
+##  1 2016-03-31 00:00:00 23:33  FALSE L1           14.5 FALSE      
+##  2 2016-03-31 00:00:00 23:33  FALSE L2          NaN   FALSE      
+##  3 2016-03-31 00:00:00 23:33  FALSE L3           14.5 FALSE      
+##  4 2016-03-31 00:00:00 23:33  FALSE L4            0   FALSE      
+##  5 2016-03-31 00:00:00 23:33  FALSE L5           14.5 FALSE      
+##  6 2016-03-31 00:00:00 23:33  FALSE M1           14.5 TRUE       
+##  7 2016-03-31 00:00:00 23:33  FALSE M2            0   TRUE       
+##  8 2016-03-31 00:00:00 23:33  FALSE M3           14   TRUE       
+##  9 2016-03-31 00:00:00 23:33  FALSE M4            0   TRUE       
+## 10 2016-03-31 00:00:00 23:33  FALSE M5           14.5 TRUE</code></pre>
+<p></br></p>
+<p>Save the output!</p>
+<pre class="r"><code>write_csv(ibutton_SP, &quot;/Users/smcatee/Desktop/TF/IBUTTON/IBUTTON_SP.csv&quot;)
+write_csv(ibutton_BB, &quot;/Users/smcatee/Desktop/TF/IBUTTON/IBUTTON_BB.csv&quot;)</code></pre>
+<p></br></p>
+<p>Next, check out my example of time series analysis</p>
+</div>
