@@ -97,7 +97,7 @@ Is this an exaggeration of the Latin argument? I prefer to leave no hair unsplit
 <h2>TF-IDF</h2>
 <p>But what do individual words really mean? Out of the context of a sentence, do they tell use anything?
 Term Frequency (TF) and Inverse Document Frequency (IDF) are simple statistics that help illuminate which words are most specific to certain documents. TF is straight forward, the total number of times a term appears divided by the number of unique terms. IDF is the total number of documents divided by the number of documents in which each term appears, usually this proportion is log scaled. For example, if we are looking at 5 essays and we want to find the IDF of “potato”, and we know that the term “potato” appears in 3 of the 5 essays:
-<span class="math inline">\(IDF(potato) = \log(\frac{numberOfDocs}{numberOfDocsWithPotato}) = \log(\frac{5}{3})\)</span></p>
+IDF(potato) = log( numberOfDocs / numberOfDocsWithPotato ) = log( 5 / 3 )</p>
 <p>Once each terms’ TF and IDF are calculated, they are multiplied together to make a score of how specific each term is, compared to the rest of the terms. A term like “potato” is rather specific, so it should have a higher TF-IDF than the term “and”.</p>
 <p>Rather than grouping IDF by ‘document’ I grouped the words in participants’ meal description by the <code>quality</code> of the meal assigned by a dietitian.</p>
 <pre class="r"><code># TF-IDF
@@ -144,7 +144,7 @@ tfidf_hist &lt;- function(df, x, fill, binwidth, color1, color2){
 <p><img src="index_files/figure-html/tf_idfQuantile_Food_Per_Cohort-1.png" width="672" /></p>
 <p></br></p>
 <p>This histogram shows IDF overlayed by TF upper and lower quantiles. There are three IDF spikes since each term can only appear in one, two, or three <code>quality</code> groups.</p>
-<p><span class="math inline">\(\log(\frac{3}{3})=0\)</span> or <span class="math inline">\(\log(\frac{3}{2})=0.176\)</span> or <span class="math inline">\(\log(\frac{3}{1})=0.477\)</span></p>
+<p>log(3/3) = 0 or log(3/2) = 0.176 or log(3/1) = 0.477</p>
 <p>Most terms appear in only one document, with a majority of these terms in the lower TF quantile.</p>
 <pre class="r"><code>tfidf_hist(tfidf_quality, `idf`, `tfQuantile`, 0.08, colorPalette[4], colorPalette[2])</code></pre>
 <p><img src="index_files/figure-html/idf_tfQuantile_Food_Per_Cohort-1.png" width="672" /></p>
