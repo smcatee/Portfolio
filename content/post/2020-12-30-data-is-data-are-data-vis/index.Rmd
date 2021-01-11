@@ -282,11 +282,11 @@ tfidf_hist(tfidf_quality, `tf`, `idfQuantile`, 0.005, colorPalette[1], colorPale
 
 This histogram shows IDF overlayed by TF upper and lower quantiles. There are three IDF spikes since each term can only appear in one, two, or three `quality` groups.
 
-ln(3/3) = 0
+ln(3/1) = 1.099
 
 ln(3/2) = 0.405
 
-ln(3/1) = 1.099  
+ln(3/3) = 0  
 
 Most terms appear in only one document, with a majority of these terms in the lower TF quantile.
 ```{r idf_tfQuantile_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}

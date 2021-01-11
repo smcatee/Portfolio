@@ -147,9 +147,9 @@ tfidf_hist &lt;- function(df, x, fill, binwidth, color1, color2){
 <p><img src="index_files/figure-html/tf_idfQuantile_Food_Per_Cohort-1.png" width="672" /></p>
 <p></br></p>
 <p>This histogram shows IDF overlayed by TF upper and lower quantiles. There are three IDF spikes since each term can only appear in one, two, or three <code>quality</code> groups.</p>
-<p>ln(3/3) = 0</p>
-<p>ln(3/2) = 0.405</p>
 <p>ln(3/1) = 1.099</p>
+<p>ln(3/2) = 0.405</p>
+<p>ln(3/3) = 0</p>
 <p>Most terms appear in only one document, with a majority of these terms in the lower TF quantile.</p>
 <pre class="r"><code>tfidf_hist(tfidf_quality, `idf`, `tfQuantile`, 0.08, colorPalette[4], colorPalette[2])</code></pre>
 <p><img src="index_files/figure-html/idf_tfQuantile_Food_Per_Cohort-1.png" width="672" /></p>
