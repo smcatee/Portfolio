@@ -234,9 +234,9 @@ The Latin argument was a fun way to reminisce back to my high school Latin class
 ## TF-IDF
 
 But what do individual words really mean? Out of the context of a sentence, do they tell use anything?
-Term Frequency (TF) and Inverse Document Frequency (IDF) are simple statistics that help illuminate which words are most specific to certain documents. TF is straight forward, the total number of times a term appears divided by the number of unique terms. IDF is the total number of documents divided by the number of documents in which each term appears, usually this proportion is log scaled. For example, if we are looking at 5 essays and we want to find the IDF of "potato", and we know that the term "potato" appears in 3 of the 5 essays:
+Term Frequency (TF) and Inverse Document Frequency (IDF) are simple statistics that help illuminate which words are most specific to certain documents. TF is straight forward, the total number of times a term appears divided by the number of unique terms. IDF is the total number of documents divided by the number of documents in which each term appears, usually this proportion is ln scaled. For example, if we are looking at 5 essays and we want to find the IDF of "potato", and we know that the term "potato" appears in 3 of the 5 essays:
 
-IDF(potato) = log( numberOfDocs / numberOfDocsWithPotato ) = log( 5 / 3 )
+IDF(potato) = ln( numberOfDocs / numberOfDocsWithPotato ) = ln( 5 / 3 )
 
 Once each terms' TF and IDF are calculated, they are multiplied together to make a score of how specific each term is, compared to the rest of the terms. A term like "potato" is rather specific, so it should have a higher TF-IDF than the term "and".
 
@@ -282,11 +282,11 @@ tfidf_hist(tfidf_quality, `tf`, `idfQuantile`, 0.005, colorPalette[1], colorPale
 
 This histogram shows IDF overlayed by TF upper and lower quantiles. There are three IDF spikes since each term can only appear in one, two, or three `quality` groups.
 
-log(3/3) = 0
+ln(3/3) = 0
 
-log(3/2) = 0.176
+ln(3/2) = 0.405
 
-log(3/1) = 0.477  
+ln(3/1) = 1.099  
 
 Most terms appear in only one document, with a majority of these terms in the lower TF quantile.
 ```{r idf_tfQuantile_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
