@@ -22,122 +22,45 @@ output:
 <script src="index_files/wordcloud2-binding/wordcloud2.js"></script>
 
 
-<p>This is not be my take on the ‘Data is plural’ vs ‘Data is singular-ish’ debate, instead this is a lighthearted visual exploration of both sides of the argument. This is also my excuse to fill a post with pretty graphs.</p>
-<p>The data set used for the following examples is from <a href="https://www.sciencedirect.com/science/article/pii/S2352914818301059?via%3Dihub#fig4">the open D1NAMO dataset: A multi-modal dataset for research on non-invasive type 1 diabetes management</a> by Fabien Dubosson et al. Data from the study is indexed in this <a href="https://github.com/irinagain/Awesome-CGM/wiki/Dubosson-(2018)">GitHub repo</a>. Dubosson’s study followed 29 individuals, 9 of which with type-1 diabetes. Continuous glucose monitoring was done with IPro2 Professional CGM Sensor for the 9 individuals with type-1 diabetes. The 20 non-diabetic group used the Bayer Contour TX glucose meter. All 29 individuals also wore a Zephyr BioHarness 3 which tracked ECG rhythm from lead I (measuring electrical vectors from right to left across the heart), they also wore an accelerometer and a pressure sensor to measure respiration rate.</p>
+<p>This is my take on the ‘Data is’ vs ‘Data are’ debate, and an excuse to try out different graphs.</p>
+<p>The data set used for the following examples is from <a href="https://www.sciencedirect.com/science/article/pii/S2352914818301059?via%3Dihub">the open D1NAMO dataset: A multi-modal dataset for research on non-invasive type 1 diabetes management</a> by Fabien Dubosson et al. Data from the study is indexed in this <a href="https://github.com/irinagain/Awesome-CGM/wiki/Dubosson-(2018)">GitHub repo</a>. Dubosson’s study followed 29 individuals, 9 of which with type-1 diabetes, for 4 days. Continuous glucose monitoring was done with IPro2 Professional CGM Sensor for the 9 individuals with type-1 diabetes. All 29 individuals wore a Zephyr BioHarness 3 which tracked ECG rhythm from lead I (measuring electrical vectors across the heart), they also wore a pressure sensor to measure respiration rate. During the study participants submitted photos of their meals to dietitians who annotated the foods present and determined the health quality of the meals.</p>
 <p></br><br />
 </br></p>
 <hr />
 <div id="packages-used" class="section level2">
 <h2>Packages Used</h2>
-<pre class="r"><code>library(tidyverse); library(ggplot2); library(magrittr);</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
-<pre><code>## v ggplot2 3.3.3     v purrr   0.3.4
-## v tibble  3.0.4     v dplyr   1.0.2
-## v tidyr   1.1.2     v stringr 1.4.0
-## v readr   1.4.0     v forcats 0.5.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre><code>## 
-## Attaching package: &#39;magrittr&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:purrr&#39;:
-## 
-##     set_names</code></pre>
-<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
-## 
-##     extract</code></pre>
-<pre class="r"><code>library(stringi); library(hms); library(tidytext)</code></pre>
-</div>
-<div id="loading-data" class="section level2">
-<h2>Loading Data</h2>
-<pre class="r"><code>workingDir &lt;- &quot;C:/Users/seand/OneDrive/Documents/D1NAMO/&quot;
-cohorts &lt;- dir(workingDir)  # diabetes_subset, healthy_subset
-
-glucose_df &lt;- tibble()
-insulin_df &lt;- tibble()
-food_nondiabetic_df &lt;- tibble()
-food_diabetic_df &lt;- tibble()
-sensor_df &lt;- tibble()
-for (cohort in cohorts) {
-  participants &lt;- dir(paste0(workingDir,cohort))
-  tmp_cohort_glucose_df &lt;- tibble()
-  if(stri_cmp_eq(cohort, &quot;diabetes_subset&quot;)){ tmp_cohort_insulin_df &lt;- tibble() }
-  if(stri_cmp_eq(cohort, &quot;diabetes_subset&quot;)){ tmp_cohort_food_diabetic_df &lt;- tibble()
-  } else { tmp_cohort_food_nondiabetic_df &lt;- tibble() }
-  
-  tmp_cohort_sensor_df &lt;- tibble()
-  for (participant in participants) {
-    participant_path &lt;- paste0(workingDir,cohort,&quot;/&quot;,participant)
-    # Gather glucose data
-    glucose_path &lt;- paste0(participant_path,&quot;/glucose.csv&quot;)
-    tmp_participant_glucose_df &lt;- read_csv(glucose_path) %&gt;%
-      cbind(participantID = participant, cohortGroup = cohort)
-    tmp_cohort_glucose_df %&lt;&gt;% rbind(tmp_participant_glucose_df)
-    # Gather insulin data
-    if(stri_cmp_eq(cohort, &quot;diabetes_subset&quot;)){
-      insulin_path &lt;- paste0(participant_path,&quot;/insulin.csv&quot;)
-      tmp_participant_insulin_df &lt;- read_csv(insulin_path) %&gt;%
-        cbind(participantID = participant, cohortGroup = cohort)
-      tmp_cohort_insulin_df %&lt;&gt;% rbind(tmp_participant_insulin_df)
-    }
-    # Gather food data
-    food_path &lt;- paste0(participant_path,&quot;/food.csv&quot;)
-    tmp_participant_food_df &lt;- read_csv(food_path) %&gt;%
-      cbind(participantID = participant, cohortGroup = cohort)
-    if(stri_cmp_eq(cohort, &quot;diabetes_subset&quot;)){
-      tmp_cohort_food_diabetic_df %&lt;&gt;% rbind(tmp_participant_food_df)
-    } else { tmp_cohort_food_nondiabetic_df %&lt;&gt;% rbind(tmp_participant_food_df) }
-    # Gather sensor summary data
-    times_sensor_data &lt;- dir(paste0(participant_path,&quot;/sensor_data&quot;))
-    sensor_summary_paths &lt;- c()
-    for (time in times_sensor_data) {
-      sensor_data &lt;- dir(paste0(participant_path,&quot;/sensor_data/&quot;,time))
-      sensor_summary &lt;- sensor_data[which(stri_detect(sensor_data, fixed = &quot;Summary&quot;))]
-      sensor_summary_paths &lt;- c(sensor_summary_paths, 
-                                paste0(participant_path,&quot;/sensor_data/&quot;,
-                                       time,&quot;/&quot;,sensor_summary))
-    }
-    tmp_participant_sensor_df &lt;- tibble()
-    for (path in sensor_summary_paths) { tmp_participant_sensor_df %&lt;&gt;%
-        rbind(read_csv(path)) }
-    tmp_participant_sensor_df %&lt;&gt;% cbind(participantID = participant, cohortGroup = cohort)
-    tmp_cohort_sensor_df %&lt;&gt;% rbind(tmp_participant_sensor_df)
-  }
-  glucose_df %&lt;&gt;% rbind(tmp_cohort_glucose_df)
-  if(stri_cmp_eq(cohort, &quot;diabetes_subset&quot;)){ insulin_df %&lt;&gt;% rbind(tmp_cohort_insulin_df) }
-  if(stri_cmp_eq(cohort, &quot;diabetes_subset&quot;)){
-    food_diabetic_df %&lt;&gt;% rbind(tmp_cohort_food_diabetic_df)
-  } else { food_nondiabetic_df %&lt;&gt;% rbind(tmp_cohort_food_nondiabetic_df) }
-  sensor_df %&lt;&gt;% rbind(tmp_cohort_sensor_df)
-}
-# make date and time col for sensor_df
-sensor_df %&lt;&gt;% mutate(date=as.Date(stri_extract(Time,regex=&quot;^(\\d{2}/\\d{2}/\\d{4})&quot;),
-                                     format = &quot;%d/%m/%y&quot;),
-                     time=parse_hms(stri_extract(Time,regex=&quot;(\\d{2}:\\d{2}:\\d{2})&quot;))) %&gt;%
-  select(-Time)
-# food_nondiabetic_df$calories has values that should be in $description
-index_cal_desc_swap &lt;- !(stri_detect(food_nondiabetic_df$calories,regex=&quot;^\\d+$&quot;) |
-                          is.na(food_nondiabetic_df$calories))
-food_nondiabetic_df$description[index_cal_desc_swap] &lt;- food_nondiabetic_df$calories[index_cal_desc_swap]
-food_nondiabetic_df$calories[index_cal_desc_swap] &lt;- NA
-rm(tmp_cohort_glucose_df,tmp_participant_glucose_df,tmp_cohort_insulin_df,
-   tmp_participant_insulin_df,tmp_cohort_food_diabetic_df,tmp_participant_food_df,
-   tmp_cohort_food_nondiabetic_df,tmp_cohort_sensor_df,tmp_participant_sensor_df)</code></pre>
+<pre class="r"><code>library(tidyverse); library(ggplot2); library(magrittr);
+library(stringi); library(hms); library(tidytext)</code></pre>
 <pre class="r"><code>colorPalette &lt;- c(&#39;#d9a5b3&#39;, &#39;#c6d7eb&#39;, &#39;#1868ae&#39;, &#39;#9ec1b6&#39;, &#39;#9d0f40&#39;, &#39;#e0dab7&#39;)</code></pre>
-<p>This is the <code>insulin_df</code> data table visualized.</p>
+<p></br>
+</br></p>
+<hr />
+</div>
+<div id="all-data-one-dataum" class="section level2">
+<h2>All data, one dat[(a)(um)]</h2>
+<p>The <code>visdat</code> package is a handy way to visualize all data in a table as a bar graph of sorts. Here is the whole <code>insulin_df</code> data table visualized.</p>
 <pre class="r"><code>library(visdat)
 visdat::vis_dat(insulin_df)</code></pre>
 <p><img src="index_files/figure-html/Visdat-1.png" width="672" /></p>
-<p>While this is a single datum from <code>insulin_df</code>…</p>
+<p></br></p>
+<p>Now, here is a single datum from <code>insulin_df</code>…</p>
 <pre class="r"><code>visdat::vis_dat(insulin_df[14,3])</code></pre>
-<p><img src="index_files/figure-html/Visdatum-1.png" width="672" />
-This single, numeric ‘datum’ on its own has no useful qualities. It may be paired with the time of measurement (<code>insulin_df[14,2]</code>) or the participant which it measured (<code>insulin_df[14,6]</code>) or even compared to some other similar datum from a different observation:</p>
-<pre class="r"><code>insulin_df[24,3]</code></pre>
-<pre><code>## # A tibble: 1 x 1
+<p><img src="index_files/figure-html/Visdatum-1.png" width="672" /></p>
+<p></br></p>
+<p>This single, numeric ‘datum’ on its own has no useful qualities. It may be paired with the time of measurement (22:35:00) or the participant ID (001) or even compared to some other similar datum from a different observation:</p>
+<pre class="r"><code>insulin_df[c(14,24),3]</code></pre>
+<pre><code>## # A tibble: 2 x 1
 ##   fast_insulin
 ##          &lt;dbl&gt;
-## 1            4</code></pre>
-<p>To what extent is this datum unit useful on its own?</p>
+## 1            2
+## 2            4</code></pre>
+<p></br>
+</br></p>
+<hr />
+</div>
+<div id="words" class="section level2">
+<h2>Words</h2>
+<p>To what extent is this datum unit useful on its own? How often is the term ‘datum’ used in the wild? Is ‘datum’ important enough to take up space that the word ‘data’ could fulfill?</p>
 <p>This is a word cloud of most frequent words appearing in participants’ meal descriptions. They are grouped by cohort: diabetic and non-diabetic.</p>
 <pre class="r"><code>library(wordcloud2)
 # https://cran.r-project.org/web/packages/wordcloud2/vignettes/wordcloud.html
@@ -157,15 +80,25 @@ topFoods(food_diabetic_df, colorPalette[3], colorPalette[6])</code></pre>
 <pre class="r"><code>topFoods(food_nondiabetic_df, colorPalette[5], colorPalette[4])</code></pre>
 <div id="htmlwidget-2" style="width:672px;height:480px;" class="wordcloud2 html-widget"></div>
 <script type="application/json" data-for="htmlwidget-2">{"x":{"word":["bread","chocolate","coffee","milk","cheese","cake","salad","tomatoes","carrots","juice","cereal","rice","butter","chicken","lettuce","pasta","orange","banana","ham","cookie","green","yogurt","beans","potatoes","tomato","cream","pizza","sauce","soup","apple","sugar","sandwich","bar","cookies","fried","meat","red","salmon","tea","jam","oil","brocoli","grapes","lasagna","mandarin","pepper","toast","crackers","dried","eggs","nuts","strawberry","cous","cucumber","dressing","goat","madeleine","maria","nutella","olive","peas","peppers","proteins","sausage","shaker","vanilla","white","avocado","carbonara","carrot","hamburguer","olives","onions","pork","salami","spinach","abricot","bacon","champignon","chinese","chorizo","coca","corn","cottage","courgette","croissant","egg","endives","frites","glass","hard","panallet","pear","pesto","protein","ricotta","rye","semi","shake","smoke","apricots","beef","cabbage","cola","cornflakes","cup","cupcake","de","delices","energy","fennel","fromage","fruit","fruits","grapefruit","hummus","ice","jambon","ketchup","kiwi","marrons","mini","mozarella","mozzarella","oat","parmesan","plum","smash","spatzli","tomate","tortellinis","wheat","yogourt","almonds","asiago","baked","balisto","ball","beer","beet","blueberries","bolognes","breast","camembert","candies","chalet","chantilly","chou","coffe","coliflower","comercial","courgettes","crougette","croutons","drink","finger","fish","flan","fondue","fret","gnocchis","gnocci","grain","greek","kägi","kat","kinder","kit","kitkat","mandarins","mango","mousse","omelett","pain","pepperswith","philadelphia","pie","pingui","plant","potaotes","rã","radish","roulade","spaguetti","square","squares","steamed","sti","strawberries","surimi","tuna","vinegar","waffle","watercress","à","apéro","artichoke","artichokes","asigao","balls","barre","bean","beers","berliner","beurre","biscuits","black","boiled","bounty","branche","breakfast","brie","cana","céréales","cereall","chestnuts","chickpeas","chili","chips","choucroute","coconut","coverage","cramble","cranberries","creme","crème","crepe","crêpes","curry","dark","delice","dessert","donner","duchess","duchesspotatoes","eclair","filet","financercake","flat","forest","fuet","gratin","gruyer","gruyere","herbs","honey","icecream","information","kagi","kaki","kebab","la","le","letter","limoncello","loaf","loempia","lomo","lorraine","luganiga","machego","madeleines","mais","manchego","mandarine","mashed","matcha","mayonaise","meatballs","mermelade","miel","miso","mix","mixed","natural","noodles","nougat","nuggets","oreo","pancakes","parfait","pâtes","peach","piece","pizzas","pommes","porc","post","potatoe","purée","quiche","quinoa","raspberry","raviolis","raw","roesti","rouge","salty","sausages","seaweed","slice","slide","snack","snacks","soda","spaetzle","strudel","sweet","tartlet","tasting","tiramisu","tortelliniswith","tortillas","vegetarian","vermicelles","waffel","wakame","wellington","whey","workout","yellow"],"freq":[53,43,43,39,34,24,22,22,21,21,19,19,18,18,18,18,17,16,16,15,15,15,14,14,14,13,13,13,13,12,12,11,10,10,10,10,10,10,10,9,9,8,8,8,8,8,8,7,7,7,7,7,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5,5,5,5,5,5,5,5,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"fontFamily":"Segoe UI","fontWeight":"bold","color":["#9d0f40","#9d0f40","#9d0f40","#9d0f40","#9d0f40","#9d0f40","#9d0f40","#9d0f40","#9d0f40","#9d0f40","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6","#9ec1b6"],"minSize":0,"weightFactor":3.39622641509434,"backgroundColor":"white","gridSize":0,"minRotation":-0.785398163397448,"maxRotation":0.785398163397448,"shuffle":true,"rotateRatio":0.4,"shape":"circle","ellipticity":0.65,"figBase64":null,"hover":null},"evals":[],"jsHooks":[]}</script>
+<p></br>
+&lt;/br?</p>
+<hr />
 </div>
 <div id="lingva-latina" class="section level2">
 <h2>LINGVA LATINA</h2>
-<p>Speaking of words, one may argue to use data/datum over data/data by citing Latin grammar rules for second-declension neuter nouns. Using data/datum in the <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/nominative-case">nominative</a> or <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/accusative-case">accusative</a> case would make <a href="https://www.poetryintranslation.com/PITBR/Latin/HoraceSatiresBkISatX.php#anchor_Toc98155847">Horace proud</a> (or <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/latin-case">vocative</a>, assuming you talk to your data). But what of the <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/genitive-case">genative</a> or the <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/ablative-case-latin">ablative</a> cases? Is this rule the same for all of my datī or just one of my datōrum? Does one also gather information from datō or a single datīs? Is this an exaggeration? I prefer to leave no hair unsplit, if it is my vocation to split them.</p>
+<p>Speaking of words, one may argue to use data/datum over data/data by citing Latin grammar rules for second-declension neuter nouns. Using data/datum correctly in the <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/nominative-case">nominative</a> or <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/accusative-case">accusative</a> case would make <a href="https://www.poetryintranslation.com/PITBR/Latin/HoraceSatiresBkISatX.php#anchor_Toc98155847">Horace proud</a> (or <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/latin-case">vocative</a>, assuming you talk to your data). But what of the <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/genitive-case">genative</a> or the <a href="https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/ablative-case-latin">ablative</a> cases? Is this rule the same for all of my datī or just one of my datōrum? Does one also gather information from datō or a single datīs?<br />
+Is this an exaggeration of the Latin argument? I prefer to leave no hair unsplit, if it is my vocation to split them.</p>
 <p>The Latin argument was a fun way to reminisce back to my high school Latin classes, however I think the most damning argument lies in the English language. Specifically ‘Academic English’, the Dr. Frankenstein of ghastly words. Consider <a href="https://www.maa.org/press/periodicals/convergence/math-origins-eigenvectors-and-eigenvalues">eigenvalue</a>, <a href="https://en.wiktionary.org/wiki/neurotransmitter">neurotransmitter</a>, <a href="https://www.thefreedictionary.com/words-containing-ology">Sociology</a>, <a href="https://www.merriam-webster.com/words-at-play/the-many-plurals-of-octopus-octopi-octopuses-octopodes">octopus</a> and <a href="https://en.wikipedia.org/wiki/Hybrid_word">many more</a>. As a word, data has been claimed by English. As English speakers, it is up to us to use data/datum however we please until a consensus is reached.</p>
+<p></br>
+</br></p>
+<hr />
+</div>
+<div id="tf-idf" class="section level2">
+<h2>TF-IDF</h2>
 <p>But what do individual words really mean? Out of the context of a sentence, do they tell use anything?
-Term Frequency (TF) and Inverse Document Frequency (IDF) are simple statistics that help illuminate which words are most specific to certain documents. TF is straight forward, the total number of times a term appears divided by the number of unique terms. IDF is the number of documents divided by the number of documents in which each term appears, usually this proportion is log or ln scaled. For example, if we are looking at 5 essays and we want to find the IDF of “potato”, and we know that the term “potato” appears in 3 of the 5 essays:
-<span class="math display">\[IDF(&quot;potato&quot;) = ln(numberOfDocs / numberOfDocsWithPotato) = ln(5/3)\]</span></p>
-<p>Once each terms’ TF and IDF are calculated, they are multiplied together to make a weight or score of how specific each term is, compared to the rest of the terms. A term like “potato” is rather specific, so it should have a higher TF-IDF than the term “and”.</p>
+Term Frequency (TF) and Inverse Document Frequency (IDF) are simple statistics that help illuminate which words are most specific to certain documents. TF is straight forward, the total number of times a term appears divided by the number of unique terms. IDF is the total number of documents divided by the number of documents in which each term appears, usually this proportion is log scaled. For example, if we are looking at 5 essays and we want to find the IDF of “potato”, and we know that the term “potato” appears in 3 of the 5 essays:
+<span class="math inline">\(IDF(potato) = \log(\frac{numberOfDocs}{numberOfDocsWithPotato}) = \log(\frac{5}{3})\)</span></p>
+<p>Once each terms’ TF and IDF are calculated, they are multiplied together to make a score of how specific each term is, compared to the rest of the terms. A term like “potato” is rather specific, so it should have a higher TF-IDF than the term “and”.</p>
 <p>Rather than grouping IDF by ‘document’ I grouped the words in participants’ meal description by the <code>quality</code> of the meal assigned by a dietitian.</p>
 <pre class="r"><code># TF-IDF
 tfidf &lt;- function(df, group){
@@ -205,20 +138,26 @@ tfidf_hist &lt;- function(df, x, fill, binwidth, color1, color2){
     geom_histogram(binwidth = binwidth, color = &#39;white&#39;) +
     scale_fill_manual(values = c(color1, color2))
 }</code></pre>
-<p>This shows term frequency overylayed by the IDF upper and lower quantiles. The majority of TF is towards 0.00 becasue most terms appear infrequently. IDF upper and lower quantiles are spread through the distribution of TF.</p>
+<p></br></p>
+<p>This histogram shows term frequency overylayed by the IDF upper and lower quantiles. The majority of TF is around 0.00 because most terms appear infrequently. IDF upper and lower quantiles are spread through the distribution of TF.</p>
 <pre class="r"><code>tfidf_hist(tfidf_quality, `tf`, `idfQuantile`, 0.005, colorPalette[1], colorPalette[6])</code></pre>
 <p><img src="index_files/figure-html/tf_idfQuantile_Food_Per_Cohort-1.png" width="672" /></p>
-<p>This shows IDF overlayed by TF upper and lower quantiles. There are three IDF spikes since each term can only appear in one, two, or three <code>quality</code> groups.
-<span class="math inline">\(ln(3/3)\)</span> or <span class="math inline">\(ln(3/2)\)</span> or <span class="math inline">\(ln(3/1)\)</span>
-Most terms appear in only one document, with a majority of these terms in the lower TF quantile.</p>
+<p></br></p>
+<p>This histogram shows IDF overlayed by TF upper and lower quantiles. There are three IDF spikes since each term can only appear in one, two, or three <code>quality</code> groups.</p>
+<p><span class="math inline">\(\log(\frac{3}{3})=0\)</span> or <span class="math inline">\(\log(\frac{3}{2})=0.176\)</span> or <span class="math inline">\(\log(\frac{3}{1})=0.477\)</span></p>
+<p>Most terms appear in only one document, with a majority of these terms in the lower TF quantile.</p>
 <pre class="r"><code>tfidf_hist(tfidf_quality, `idf`, `tfQuantile`, 0.08, colorPalette[4], colorPalette[2])</code></pre>
 <p><img src="index_files/figure-html/idf_tfQuantile_Food_Per_Cohort-1.png" width="672" /></p>
-<p>This shows TF-IDF overlayed by TF upper and lower quantiles. Few terms have TF-IDF above 0.02 and none of the lower quantile TF terms have TF-IDF scores above 0.01</p>
+<p></br></p>
+<p>This shows TF-IDF overlaid by TF upper and lower quantiles. Few terms have TF-IDF above 0.02 and none of the lower quantile TF terms have TF-IDF scores above 0.01</p>
 <pre class="r"><code>tfidf_hist(tfidf_quality, `tf_idf`, `tfQuantile`, 0.002, colorPalette[4], colorPalette[2])</code></pre>
 <p><img src="index_files/figure-html/tfidf_tfQuantile_Food_Per_Cohort-1.png" width="672" /></p>
+<p></br></p>
 <p>This shows TF-IDF overlayed by IDF upper and lower quantiles. Upper quantile IDF terms are shifted above an TF-IDF score of 0.005. There are still some lower quantile IDF terms with the highest TF-IDF scores above 0.2, showing that IDF alone would lose some terms that TF-IDF selects.</p>
 <pre class="r"><code>tfidf_hist(tfidf_quality, `tf_idf`, `idfQuantile`, 0.002, colorPalette[1], colorPalette[6])</code></pre>
 <p><img src="index_files/figure-html/tfidf_idfQuantile_Food_Per_Cohort-1.png" width="672" /></p>
+<p></br>
+</br></p>
 <p>Here is a treemap showing the top TF-IDF terms that are explored above. They are grouped by diabetic and non-diabetic cohorts.</p>
 <pre class="r"><code>library(treemap)
 # tree map or mosaic map
@@ -234,14 +173,16 @@ mosaic &lt;- function(df, group, plotTitle){
 }
 food_diabetic_tfidf&lt;- tfidf(food_diabetic_df, &quot;quality&quot;)
 food_nondiabetic_tfidf&lt;- tfidf(food_nondiabetic_df, &quot;quality&quot;)</code></pre>
+<p></br></p>
 <p>Diabetic Cohort</p>
 <pre class="r"><code>mosaic(food_diabetic_tfidf, &quot;quality&quot;, &quot;TF-IDF&quot;)</code></pre>
 <p><img src="index_files/figure-html/Treemap_Diabetic_Food_Per_Cohort-1.png" width="672" /></p>
+<p></br></p>
 <p>Non Diabetic Cohort</p>
 <pre class="r"><code>mosaic(food_nondiabetic_tfidf, &quot;quality&quot;, &quot;TF-IDF&quot;)</code></pre>
 <p><img src="index_files/figure-html/Treemap_NonDiabetic_Food_Per_Cohort-1.png" width="672" /></p>
-<p>There were only 9 diabetic participants and 20 non-diabetic participants. Most of the grouped terms make sense, cookies - low quality, strawberry - medium quality, chapeignon - good quality? I guess it is important to note that this study took place in the Swiss town Vevey.</p>
-<p>This shows the percent of meals that are high, medium, or low quality grouped by cohort. The diabetic participants have type-1 diabetes, which likely influences the amount of low quality food they eat.</p>
+<p>There were only 9 diabetic participants and 20 non-diabetic participants. Most of the grouped terms make sense: cookies - low quality, strawberry - medium quality, chapeignon - good quality? It might be important to note that this study took place in the Swiss town Vevey.</p>
+<p>This shows the percent of meals that are high, medium, or low quality grouped by cohort.</p>
 <pre class="r"><code># amount of meals for each quality, per cohort
 foodQualityMatrix &lt;- matrix(c(count(food_nondiabetic_df, quality)$n,
                               count(food_diabetic_df, quality)$n), ncol = 2)
@@ -265,9 +206,10 @@ apply(foodQualityMatrix, 2, function(x){x*100/sum(x)}) %&gt;%
 </div>
 <div id="data-is-like-water" class="section level2">
 <h2>Data is like water</h2>
-<p>Returning to data/datum/datīs.
-When I think of data, I think of distributions. Much of the data that I am interested in is big, large, or massive. When data is the size of a lake, I am not that interested in one particular datum molecule. The sensor data from this study has 212627708 mols of data, or data points, or datum. Included in the sensor data are 5595466 heart rate and breathing rate measurements. The continuous glucose monitor (CGM) data is 8691 rows long. Only the diabetic cohort had CGM monitors.</p>
-<p>This shows the distributions of Continuous Glucose Monitor (CGM) Measurements for all 9 diabetic participants.</p>
+<p>Returning to data/datum/datīs.</p>
+<p>When I think of data, I think of flow, volume, and distribution. Much of the data that I am interested in is big, large, or massive. When data is the size of a lake, I am not that interested in one particular datum molecule. The sensor data from this study has 212627708 mols of data, or data points, or datum. Like water, I think that the unit of measurement for data is arbitrary. One unit of water can be one molecule, or one cc, or one gallon. In the same way I think that one unit of data is an arbitrary measurement. It could be one triplet, one observation (row), or one set.</p>
+<p>Included in the sensor data are 5595466 heart rate (HR) measurements, and the same amount of respiration rate (BR) measurements. The continuous glucose monitor (CGM) data is 8691 rows long. Only the diabetic cohort had CGM monitors.</p>
+<p>This shows the distributions of CGM Measurements for all 9 diabetic participants:</p>
 <pre class="r"><code>glucose_df %&gt;% filter(type == &quot;cgm&quot;) %&gt;% ggplot(aes(x=participantID, y=glucose)) +
   geom_violin(trim = FALSE, fill=colorPalette[2], color=colorPalette[3]) +
   geom_boxplot(width=0.06, fill=colorPalette[1]) +
@@ -278,9 +220,12 @@ When I think of data, I think of distributions. Much of the data that I am inter
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))</code></pre>
 <p><img src="index_files/figure-html/Violen_Glucose_Cohort-1.png" width="672" /></p>
-<p>This shows the distribution of participant 006 CGM, heart rate, and breathing rate on 2014-10-02.</p>
+<p></br></p>
+<p>Distributions are great, lets try some more. The next three figures show the distributions of CGM, heart rate, and breathing rate on 2014-10-02 for participant 006.</p>
 <pre class="r"><code>library(ggridges)
 # https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html
+
+# CGM
 glucose_df %&gt;%
   filter(type == &quot;cgm&quot;, participantID == &quot;006&quot;, date == unique(date)[2]) %&gt;%
   mutate(time=stri_extract(as.character(time),regex=&quot;^(\\d{2})&quot;)) %&gt;% 
@@ -291,8 +236,7 @@ glucose_df %&gt;%
   ggtitle(&#39;Participant 006\nHourly CGM Distribution\n2014-10-02&#39;) +
   geom_vline(xintercept=11.1, linetype=&#39;dashed&#39;, color=colorPalette[5], size=0.6) +
   annotate(&quot;text&quot;, x=11.1, y=&quot;06&quot;, label=&quot;High&quot;, color=colorPalette[5], hjust=-0.4) +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))</code></pre>
+  theme_minimal()</code></pre>
 <p><img src="index_files/figure-html/Ridgeline_CGM-1.png" width="672" /></p>
 <pre class="r"><code># Heart Rate
 sensor_df %&gt;%
@@ -320,7 +264,9 @@ sensor_df %&gt;%
   ggtitle(&quot;Participant 006\nHourly Breathing Rate Distribution\n2014-10-02&quot;) +
   theme_minimal()</code></pre>
 <p><img src="index_files/figure-html/Ridgeline_CGM-3.png" width="672" /></p>
-<p>While exploring time series, here is an uncommon type of graph: the radar graph. Radar graphs, aka spider graphs, are used in some areas of Psychology and Medicine with categorical data. Some individuals seem to like them since they can display multiple correlated categories in a small space. I personally think that there are better options to display categorical data, however radar graphs could become useful with continuous cyclical or seasonal data. Here is an example of the CGM of the same participant (006) on 2014-10-02.</p>
+<p></br>
+</br></p>
+<p>While exploring time series, here is an uncommon type of graph: the radar graph. Radar graphs, aka spider graphs, are used in some areas of Psychology and Medicine with categorical data. Some individuals like them since they can display multiple correlated categories in a small space. I personally think that there are better options to display related categorical data, however radar graphs could become useful with continuous cyclical or seasonal data. Here is an example of the CGM of the same participant (006) on 2014-10-02.</p>
 <pre class="r"><code>library(fmsb)
 # https://cran.r-project.org/web/packages/fmsb/fmsb.pdf
 # radar cgm for one individual
@@ -339,13 +285,13 @@ rbind(
                  axislabcol=colorPalette[5], caxislabels=seq(4,16,4), vlcex=0.8,
                  title = &quot;Participant 006\nHourly Mean Glucose\n2014-10-02&quot;
                  )</code></pre>
-<p><img src="index_files/figure-html/Radar_Single_Participant_CGM-1.png" width="672" />
-Few R packages exist for generating spider graphs, unfortunately I could not find a package that allows overlapping lines. With overlapping lines these graphs could become useful to compare each cycle or season of timeseries data.</p>
+<p><img src="index_files/figure-html/Radar_Single_Participant_CGM-1.png" width="672" /></p>
+<p>Few R packages exist for generating spider graphs, unfortunately I could not find a package that allows overlapping lines. With overlapping lines these graphs could be a great way to compare each cycle or season of time series data more intuitively than a line graph.</p>
 <p></br><br />
 </br></p>
 <hr />
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>If you were not convinced by my hair splitting Latin argument, or by my Frankenstein argument, or by my ‘data is like water’ argument, then I hope that you at least enjoyed my data vis.</p>
+<p>If you were not convinced by the hair splitting (migraine inducing) Latin argument, or by the Frankenstein argument, or by the ‘data is like water’ argument, then I hope that you at least enjoyed this data vis.</p>
 </div>
