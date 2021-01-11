@@ -17,7 +17,7 @@ output:
 
 This is not be my take on the 'Data is plural' vs 'Data is singular-ish' debate, instead this is a lighthearted visual exploration of both sides of the argument. This is also my excuse to fill a post with pretty graphs.
 
-The data set used for the following examples is from [The open D1NAMO dataset: A multi-modal dataset for research on non-invasive type 1 diabetes management](https://www.sciencedirect.com/science/article/pii/S2352914818301059?via%3Dihub#fig4) by Fabien Dubosson et al. Data from the study is indexed in this [GitHub repo](https://github.com/irinagain/Awesome-CGM/wiki/Dubosson-(2018)). This study followed 29 individuals, 9 of which with type-1 diabetes. Continuous glucose monitoring was done with IPro2 Professional CGM Sensor for the 9 individuals with type-1 diabetes. The 20 non-diabetic group used the Bayer Contour TX glucose meter. All 29 individuals also wore a Zephyr BioHarness 3 which tracked ECG rhythm from lead I (measuring electrical vectors from right to left across the heart), they also wore an accelerometer and a pressure sensor to measure respiration rate.
+The data set used for the following examples is from [the open D1NAMO dataset: A multi-modal dataset for research on non-invasive type 1 diabetes management](https://www.sciencedirect.com/science/article/pii/S2352914818301059?via%3Dihub#fig4) by Fabien Dubosson et al. Data from the study is indexed in this [GitHub repo](https://github.com/irinagain/Awesome-CGM/wiki/Dubosson-(2018)). Dubosson's study followed 29 individuals, 9 of which with type-1 diabetes. Continuous glucose monitoring was done with IPro2 Professional CGM Sensor for the 9 individuals with type-1 diabetes. The 20 non-diabetic group used the Bayer Contour TX glucose meter. All 29 individuals also wore a Zephyr BioHarness 3 which tracked ECG rhythm from lead I (measuring electrical vectors from right to left across the heart), they also wore an accelerometer and a pressure sensor to measure respiration rate.
 
 
 </br>  
@@ -110,7 +110,6 @@ rm(tmp_cohort_glucose_df,tmp_participant_glucose_df,tmp_cohort_insulin_df,
    tmp_cohort_food_nondiabetic_df,tmp_cohort_sensor_df,tmp_participant_sensor_df)
 ```
 
-
 ```{r include=FALSE, eval=FALSE}
 write_csv(glucose_df,
           "C:/Users/seand/OneDrive/Documents/D1NAMO_combined/glucose_df.csv")
@@ -154,12 +153,21 @@ colorPalette <- c('#d9a5b3', '#c6d7eb', '#1868ae', '#9ec1b6', '#9d0f40', '#e0dab
 ```
 
 
-This is the `insulin_df` table visualized.
+This is the `insulin_df` data table visualized.
 ```{r Visdat, message=FALSE, warning=FALSE, eval=TRUE}
 library(visdat)
 visdat::vis_dat(insulin_df)
 ```
 
+While this is a single datum from `insulin_df`...
+```{r Visdatum, message=FALSE, warning=FALSE, eval=TRUE}
+visdat::vis_dat(insulin_df[14,3])
+```
+This single, numeric 'datum' on its own has no useful qualities. It may be paired with the time of measurement (`insulin_df[14,2]`) or the participant which it measured (`insulin_df[14,6]`) or even compared to some other similar datum from a different observation:
+```{r}
+insulin_df[24,3]
+```
+To what extent is this datum unit useful on its own?
 
 This is a word cloud of most frequent words appearing in participants' meal descriptions. They are grouped by cohort: diabetic and non-diabetic.
 ```{r Food_Wordcloud, message=FALSE, warning=FALSE, eval=TRUE}
@@ -179,8 +187,18 @@ topFoods(food_diabetic_df, colorPalette[3], colorPalette[6])
 topFoods(food_nondiabetic_df, colorPalette[5], colorPalette[4])
 ```
 
+## LINGVA LATINA
+Speaking of words, one may argue to use data/datum over data/data by citing Latin grammar rules for second-declension neuter nouns. Using data/datum in the [nominative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/nominative-case) or [accusative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/accusative-case) case would make [Horace proud](https://www.poetryintranslation.com/PITBR/Latin/HoraceSatiresBkISatX.php#anchor_Toc98155847) (or [vocative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/latin-case), assuming you talk to your data). But what of the [genative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/genitive-case) or the [ablative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/ablative-case-latin) cases? Is this rule the same for all of my datī or just one of my datōrum? Does one also gather information from datō or a single datīs? Is this an exaggeration? I prefer to leave no hair unsplit, if it is my vocation to split them.
 
-This is the TF-IDF table of the meal description words. Rather than grouping IDF by 'document' this data is grouped by `quality`.
+The Latin argument was a fun way to reminisce back to my high school Latin classes, however I think the most damning argument lies in the English language. Specifically 'Academic English', the Dr. Frankenstein of ghastly words. Consider [eigenvalue](https://www.maa.org/press/periodicals/convergence/math-origins-eigenvectors-and-eigenvalues), [neurotransmitter](https://en.wiktionary.org/wiki/neurotransmitter), [Sociology](https://www.thefreedictionary.com/words-containing-ology), [octopus](https://www.merriam-webster.com/words-at-play/the-many-plurals-of-octopus-octopi-octopuses-octopodes) and [many more](https://en.wikipedia.org/wiki/Hybrid_word). As a word, data has been claimed by English. As English speakers, it is up to us to use data/datum however we please until a consensus is reached.
+
+But what do individual words really mean? Out of the context of a sentence, do they tell use anything?
+Term Frequency (TF) and Inverse Document Frequency (IDF) are simple statistics that help illuminate which words are most specific to certain documents. TF is straight forward, the total number of times a term appears divided by the number of unique terms. IDF is the number of documents divided by the number of documents in which each term appears, usually this proportion is log or ln scaled. For example, if we are looking at 5 essays and we want to find the IDF of "potato", and we know that the term "potato" appears in 3 of the 5 essays:
+$$IDF("potato") = ln(numberOfDocs / numberOfDocsWithPotato) = ln(5/3)$$
+
+Once each terms' TF and IDF are calculated, they are multiplied together to make a weight or score of how specific each term is, compared to the rest of the terms. A term like "potato" is rather specific, so it should have a higher TF-IDF than the term "and".
+
+Rather than grouping IDF by 'document' I grouped the words in participants' meal description by the `quality` of the meal assigned by a dietitian.
 ```{r tfidf_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 # TF-IDF
 tfidf <- function(df, group){
@@ -193,8 +211,8 @@ tfidf <- function(df, group){
 tfidf(food_diabetic_df, "quality")
 ```
 
+The four histograms below show relationships between TF, IDF, and TF-IDF. Each histogram is colored by the upper and lower 50% quantiles of TF (green, blue) and IDF (pink, yellow).
 
-This is a series of histograms that show how word count is related to IF-IDF
 ```{r Hist_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 # hist comparison of n, tf, idf, tf-idf
 tfidf_quality <- tfidf(food_diabetic_df, "quality")
@@ -212,28 +230,30 @@ tfidf_hist <- function(df, x, fill, binwidth, color1, color2){
 }
 ```
 
-This shows term frequency overylayed by the IDF upper and lower quantiles.
+This shows term frequency overylayed by the IDF upper and lower quantiles. The majority of TF is towards 0.00 becasue most terms appear infrequently. IDF upper and lower quantiles are spread through the distribution of TF.
 ```{r tf_idfQuantile_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 tfidf_hist(tfidf_quality, `tf`, `idfQuantile`, 0.005, colorPalette[1], colorPalette[6])
 ```
 
-This shows IDF overlayed by TF upper and lower quantiles.
+This shows IDF overlayed by TF upper and lower quantiles. There are three IDF spikes since each term can only appear in one, two, or three `quality` groups.
+$ln(3/3)$ or $ln(3/2)$ or $ln(3/1)$
+Most terms appear in only one document, with a majority of these terms in the lower TF quantile.
 ```{r idf_tfQuantile_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 tfidf_hist(tfidf_quality, `idf`, `tfQuantile`, 0.08, colorPalette[4], colorPalette[2])
 ```
 
-This shows TF-IDF overlayed by TF upper and lower quantiles.
+This shows TF-IDF overlayed by TF upper and lower quantiles. Few terms have TF-IDF above 0.02 and none of the lower quantile TF terms have TF-IDF scores above 0.01
 ```{r tfidf_tfQuantile_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 tfidf_hist(tfidf_quality, `tf_idf`, `tfQuantile`, 0.002, colorPalette[4], colorPalette[2])
 ```
 
-This shows TF-IDF overlayed by IDF upper and lower quantiles.
+This shows TF-IDF overlayed by IDF upper and lower quantiles. Upper quantile IDF terms are shifted above an TF-IDF score of 0.005. There are still some lower quantile IDF terms with the highest TF-IDF scores above 0.2, showing that IDF alone would lose some terms that TF-IDF selects.
 ```{r tfidf_idfQuantile_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 tfidf_hist(tfidf_quality, `tf_idf`, `idfQuantile`, 0.002, colorPalette[1], colorPalette[6])
 ```
 
 
-This is a treemap of the top TF-IDF terms grouped by cohort.
+Here is a treemap showing the top TF-IDF terms that are explored above. They are grouped by diabetic and non-diabetic cohorts.
 ```{r Treemap_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 library(treemap)
 # tree map or mosaic map
@@ -261,7 +281,9 @@ Non Diabetic Cohort
 mosaic(food_nondiabetic_tfidf, "quality", "TF-IDF")
 ```
 
-This shows the percent of meals that are high, medium, or low quality grouped by cohort.
+There were only 9 diabetic participants and 20 non-diabetic participants. Most of the grouped terms make sense, cookies - low quality, strawberry - medium quality, chapeignon - good quality? I guess it is important to note that this study took place in the Swiss town Vevey.
+
+This shows the percent of meals that are high, medium, or low quality grouped by cohort. The diabetic participants have type-1 diabetes, which likely influences the amount of low quality food they eat.
 ```{r Stacked_Bar_Food_Quality_Cohort, fig.asp=.4, message=FALSE, warning=FALSE, eval=TRUE}
 # amount of meals for each quality, per cohort
 foodQualityMatrix <- matrix(c(count(food_nondiabetic_df, quality)$n,
@@ -281,6 +303,16 @@ apply(foodQualityMatrix, 2, function(x){x*100/sum(x)}) %>%
           )
 ```
 
+</br>  
+</br>
+
+***
+
+## Data is like water
+
+Returning to data/datum/datīs.
+When I think of data, I think of distributions. Much of the data that I am interested in is big, large, or massive. When data is the size of a lake, I am not that interested in one particular datum molecule. The sensor data from this study has `r nrow(sensor_df)*ncol(sensor_df)` mols of data, or data points, or datum. Included in the sensor data are `r sum(!is.na(sensor_df$HR))` heart rate and breathing rate measurements. The continuous glucose monitor (CGM) data is `r nrow(glucose_df)` rows long. Only the diabetic cohort had CGM monitors.
+
 This shows the distributions of Continuous Glucose Monitor (CGM) Measurements for all 9 diabetic participants.
 ```{r Violen_Glucose_Cohort, fig.asp=0.35, message=FALSE, warning=FALSE, eval=TRUE}
 glucose_df %>% filter(type == "cgm") %>% ggplot(aes(x=participantID, y=glucose)) +
@@ -294,7 +326,7 @@ glucose_df %>% filter(type == "cgm") %>% ggplot(aes(x=participantID, y=glucose))
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-This shows the distribution of diabetic participant 006 CGM, heart rate, and breathing rate on 2014-10-02.
+This shows the distribution of participant 006 CGM, heart rate, and breathing rate on 2014-10-02.
 ```{r Ridgeline_CGM, fig.asp=0.5, results='hold', message=FALSE, warning=FALSE, eval=TRUE}
 library(ggridges)
 # https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html
@@ -338,7 +370,7 @@ sensor_df %>%
   theme_minimal()
 ```
 
-This shows a radar graph (aka spider graph) of diabetic participant 006 CGM on 2014-10-02.
+While exploring time series, here is an uncommon type of graph: the radar graph. Radar graphs, aka spider graphs, are used in some areas of Psychology and Medicine with categorical data. Some individuals seem to like them since they can display multiple correlated categories in a small space. I personally think that there are better options to display categorical data, however radar graphs could become useful with continuous cyclical or seasonal data. Here is an example of the CGM of the same participant (006) on 2014-10-02.
 ```{r Radar_Single_Participant_CGM, message=FALSE, warning=FALSE, eval=TRUE}
 library(fmsb)
 # https://cran.r-project.org/web/packages/fmsb/fmsb.pdf
@@ -359,3 +391,14 @@ rbind(
                  title = "Participant 006\nHourly Mean Glucose\n2014-10-02"
                  )
 ```
+Few R packages exist for generating spider graphs, unfortunately I could not find a package that allows overlapping lines. With overlapping lines these graphs could become useful to compare each cycle or season of timeseries data.
+
+
+</br>  
+</br>
+
+***
+
+## Conclusion
+
+If you were not convinced by my hair splitting Latin argument, or by my Frankenstein argument, or by my 'data is like water' argument, then I hope that you at least enjoyed my data vis.
