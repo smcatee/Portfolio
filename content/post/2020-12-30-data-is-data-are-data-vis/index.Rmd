@@ -225,10 +225,10 @@ Each of these food words was tokenized from a sentence, then aggregated to find 
 ***
 
 ## LINGVA LATINA
-Speaking of words, one may argue to use data/datum over data/data by citing Latin grammar rules for second-declension neuter nouns. Using data/datum correctly in the [nominative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/nominative-case) or [accusative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/accusative-case) case would make [Horace proud](https://www.poetryintranslation.com/PITBR/Latin/HoraceSatiresBkISatX.php#anchor_Toc98155847) (or [vocative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/latin-case), assuming you talk to your data). But what of the [genative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/genitive-case) or the [ablative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/ablative-case-latin) cases? Is this rule the same for all of my datī or just one of my datōrum? Does one also gather information from datō or a single datīs?  
+Speaking of words, one may argue to use data/datum over data/data by citing Latin grammar rules for second-declension neuter nouns. Using data/datum correctly in the [nominative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/nominative-case) or [accusative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/accusative-case) cases would make [Horace proud](https://www.poetryintranslation.com/PITBR/Latin/HoraceSatiresBkISatX.php#anchor_Toc98155847) (or [vocative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/latin-case), assuming you talk to your data). But what of the [genative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/genitive-case) or the [ablative](https://classics.osu.edu/Undergraduate-Studies/Latin-Program/Grammar/Cases/ablative-case-latin) cases? Is this rule the same for all of my datī or just one of my datōrum? Does one also gather information from datō or a single datīs?  
 This might be an exaggeration of the Latin argument, but I prefer to leave no hair unsplit.
 
-The Latin argument was a fun way to reminisce back to my high school Latin classes, however I think the most damning argument lies in the English language. Specifically 'Academic English', the Dr. Frankenstein of ghastly words. Consider [eigenvalue](https://www.maa.org/press/periodicals/convergence/math-origins-eigenvectors-and-eigenvalues), [neurotransmitter](https://en.wiktionary.org/wiki/neurotransmitter), [Sociology](https://www.thefreedictionary.com/words-containing-ology), [octopus](https://www.merriam-webster.com/words-at-play/the-many-plurals-of-octopus-octopi-octopuses-octopodes) and [many more](https://en.wikipedia.org/wiki/Hybrid_word). As a word, data has been claimed by English. As English speakers, it is up to us to use data/datum however we please until a consensus is reached.
+The Latin argument is a fun way to reminisce back to my high school Latin classes, however I think the most damning argument lies in the English language. Specifically 'Academic English', the Dr. Frankenstein of ghastly words. Consider [eigenvalue](https://www.maa.org/press/periodicals/convergence/math-origins-eigenvectors-and-eigenvalues), [neurotransmitter](https://en.wiktionary.org/wiki/neurotransmitter), [Sociology](https://www.thefreedictionary.com/words-containing-ology), [octopus](https://www.merriam-webster.com/words-at-play/the-many-plurals-of-octopus-octopi-octopuses-octopodes) and [many more](https://en.wikipedia.org/wiki/Hybrid_word). As a word, data has been claimed by English. As English speakers, it is up to us to use data/datum however we please until a consensus is reached.
 
 </br>
 </br>
@@ -294,7 +294,7 @@ ln(3/2) = 0.405
 
 ln(3/3) = 0  
 
-Most terms appear in only one document, with a majority of these terms in the lower TF quantile.
+Most terms appear in only one `quality` group, with a majority of these terms in the lower TF quantile (higher term frequency).
 ```{r idf_tfQuantile_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 tfidf_hist(tfidf_quality, `idf`, `tfQuantile`, 0.08, colorPalette[4], colorPalette[2])
 ```
@@ -308,7 +308,7 @@ tfidf_hist(tfidf_quality, `tf_idf`, `tfQuantile`, 0.002, colorPalette[4], colorP
 
 </br>
 
-This shows TF-IDF overlayed by IDF upper and lower quantiles. Upper quantile IDF terms (terms appearing in only one `quality`) are shifted above an TF-IDF score of 0.005. Terms that appear in 2 or 3 `quality` groups have lower TF-IDF scores.
+This shows TF-IDF overlayed by IDF upper and lower quantiles. Upper quantile IDF terms (terms appearing in only one `quality` group) are shifted above an TF-IDF score of 0.005. Terms that appear in 2 or 3 `quality` groups have lower TF-IDF scores.
 ```{r tfidf_idfQuantile_Food_Per_Cohort, message=FALSE, warning=FALSE, eval=TRUE}
 tfidf_hist(tfidf_quality, `tf_idf`, `idfQuantile`, 0.002, colorPalette[1], colorPalette[6])
 ```
@@ -348,7 +348,9 @@ Non Diabetic Cohort
 mosaic(food_nondiabetic_tfidf, "quality", "TF-IDF")
 ```
 
-There were only 9 diabetic participants and 20 non-diabetic participants. Most of the grouped terms make sense: cookies - low quality, strawberry - medium quality, chapeignon - good quality? It might be important to note that this study took place in the Swiss town Vevey.
+There were only 9 diabetic participants and 20 non-diabetic participants.
+
+Most of the grouped terms make sense: cookies - low quality, strawberry - medium quality, chapeignon - good quality? It might be important to note that this study took place in the Swiss town Vevey.
 
 </br>
 
@@ -381,7 +383,7 @@ apply(foodQualityMatrix, 2, function(x){x*100/sum(x)}) %>%
 
 Returning to data/datum/datīs.
 
-When I think of data, I think of flow, volume, and distribution. Much of the data that I am interested in is big, large, or massive. When data is the size of a lake, I am not that interested in one particular datum molecule. The sensor data from this study has `r nrow(sensor_df)*ncol(sensor_df)` mols of data, or data points, or datum. Like water, I think that the unit of measurement for data is arbitrary. One unit of water can be one molecule, or one cc, or one gallon. In the same way I think that one unit of data is an arbitrary measurement. It could be one triplet, one observation (row), or one set.
+When I think of data, I think of flow, volume, and distribution. Much of the data that I am interested in is big, large, or massive. When data is the size of a lake, I am not that interested in one particular datum molecule. The sensor data from this study has `r nrow(sensor_df)*ncol(sensor_df)` mols of data, or data points, or points of datum. Like water, I think that the unit of measurement for data is arbitrary. One unit of water can be one molecule, or one cc, or one gallon. In the same way I think that one unit of data is an arbitrary measurement. It could be one triplet, one observation (row), or one set.
 
 Included in the sensor data are `r sum(!is.na(sensor_df$HR))` heart rate (HR) measurements, and the same amount of respiration rate (BR) measurements. The continuous glucose monitor (CGM) data is `r nrow(glucose_df)` rows long. Only the diabetic cohort had CGM monitors.
 
@@ -470,7 +472,7 @@ rbind(
                  )
 ```
 
-Few R packages exist for generating spider graphs, unfortunately I could not find a package that allows overlapping lines. With overlapping lines these graphs could be a great way to compare each cycle or season of time series data more intuitively than a line graph.
+Few R packages exist for generating spider graphs, unfortunately I could not find a package that allows overlapping lines. With overlapping lines these graphs could be a great way to compare multiple cycles or seasons of time series data in a more intuitive way than a line graph.
 
 
 </br>  
@@ -480,4 +482,4 @@ Few R packages exist for generating spider graphs, unfortunately I could not fin
 
 ## Conclusion
 
-If you were not convinced by the hair splitting (migraine inducing) Latin argument, or by the Frankenstein argument, or by the 'data is like water' argument, then I hope that you at least enjoyed this data vis.
+If you were not convinced by the hair splitting (migraine inducing) Latin argument, or by the Frankenstein argument, or by the 'data is like water' argument, then I hope that you at least enjoyed this data vis!
