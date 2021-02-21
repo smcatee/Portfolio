@@ -11,27 +11,29 @@ Categories: []
 DisableComments: no
 ---
 
-# Libraries
+## Libraries
 ```{r}
 library(blogdown); library(magrittr)
 ```
 
 Open Project if not already open.
 
-# Set Options (optional)
+## Set Options (optional)
 ```{r eval=FALSE}
 options(blogdown.ext = ".Rmd", blogdown.author = "Sean D McAtee")
 ```
 
 
-# To make a new webpage
+## To make a new webpage
 ```{r eval=FALSE}
 blogdown::new_post(title = "How to make this webpage.")
 ```
 
+</br> </br>
 
-# Save == Render
+## Save == Render
 
+</br> </br>
 
 # Rendering the webpage and serving site
 ```{r eval=FALSE}
@@ -63,17 +65,17 @@ These languages are available for [syntax highlighting and execution](https://bo
 
 </br> </br> </br>
 
-The spacing above was made with "</br> </br> </br>" passed directly in the .Rmd document.
+The spacing above was made with `</br> </br> </br>` passed directly in the .Rmd document.
 
 ## JS
 
-```{js, eval=FALSE, echo=FALSE}
+```{js, eval=FALSE, echo=TRUE}
 $('.title').css('color', 'red')
 ```
 
 ## CSS
 
-```{css, eval=FALSE, echo=FALSE}
+```{css, eval=FALSE, echo=TRUE}
 body {
   color: red;
 }

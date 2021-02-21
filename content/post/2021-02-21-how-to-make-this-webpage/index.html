@@ -13,21 +13,23 @@ DisableComments: no
 
 
 
-<div id="libraries" class="section level1">
-<h1>Libraries</h1>
+<div id="libraries" class="section level2">
+<h2>Libraries</h2>
 <pre class="r"><code>library(blogdown); library(magrittr)</code></pre>
 <p>Open Project if not already open.</p>
 </div>
-<div id="set-options-optional" class="section level1">
-<h1>Set Options (optional)</h1>
+<div id="set-options-optional" class="section level2">
+<h2>Set Options (optional)</h2>
 <pre class="r"><code>options(blogdown.ext = &quot;.Rmd&quot;, blogdown.author = &quot;Sean D McAtee&quot;)</code></pre>
 </div>
-<div id="to-make-a-new-webpage" class="section level1">
-<h1>To make a new webpage</h1>
+<div id="to-make-a-new-webpage" class="section level2">
+<h2>To make a new webpage</h2>
 <pre class="r"><code>blogdown::new_post(title = &quot;How to make this webpage.&quot;)</code></pre>
+<p></br> </br></p>
 </div>
-<div id="save-render" class="section level1">
-<h1>Save == Render</h1>
+<div id="save-render" class="section level2">
+<h2>Save == Render</h2>
+<p></br> </br></p>
 </div>
 <div id="rendering-the-webpage-and-serving-site" class="section level1">
 <h1>Rendering the webpage and serving site</h1>
@@ -57,13 +59,17 @@ DisableComments: no
 <div id="html" class="section level2">
 <h2>HTML</h2>
 <p></br> </br> </br></p>
-<p>The spacing above was made with “</br> </br> </br>” passed directly in the .Rmd document.</p>
+<p>The spacing above was made with <code>&lt;/br&gt; &lt;/br&gt; &lt;/br&gt;</code> passed directly in the .Rmd document.</p>
 </div>
 <div id="js" class="section level2">
 <h2>JS</h2>
+<pre class="js"><code>$(&#39;.title&#39;).css(&#39;color&#39;, &#39;red&#39;)</code></pre>
 </div>
 <div id="css" class="section level2">
 <h2>CSS</h2>
+<pre class="css"><code>body {
+  color: red;
+}</code></pre>
 </div>
 </div>
 <div id="making-it-real" class="section level1">
