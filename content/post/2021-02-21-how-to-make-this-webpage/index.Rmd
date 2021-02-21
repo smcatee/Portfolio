@@ -1,0 +1,94 @@
+---
+title: How to make this webpage.
+author: Sean D McAtee
+date: '2021-02-21'
+slug: []
+categories: []
+tags: []
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+# Libraries
+```{r}
+library(blogdown); library(magrittr)
+```
+
+Open Project if not already open.
+
+# Set Options (optional)
+```{r eval=FALSE}
+options(blogdown.ext = ".Rmd", blogdown.author = "Sean D McAtee")
+```
+
+
+# To make a new webpage
+```{r eval=FALSE}
+blogdown::new_post(title = "How to make this webpage.")
+```
+
+
+# Save == Render
+
+
+# Rendering the webpage and serving site
+```{r eval=FALSE}
+blogdown::serve_site()
+```
+
+</br>
+
+# Content
+
+
+## Code chunks
+
+#```{r}
+#R Chunk
+#```
+
+#```{python}
+#Python Chunk
+#```
+
+```{r}
+knitr::knit_engines$get() %>% names()
+```
+
+These languages are available for [syntax highlighting and execution](https://bookdown.org/yihui/rmarkdown/language-engines.html).
+
+## HTML
+
+</br> </br> </br>
+
+The spacing above was made with "</br> </br> </br>" passed directly in the .Rmd document.
+
+## JS
+
+```{js, eval=FALSE, echo=FALSE}
+$('.title').css('color', 'red')
+```
+
+## CSS
+
+```{css, eval=FALSE, echo=FALSE}
+body {
+  color: red;
+}
+```
+
+
+# Making it real
+```{r eval=FALSE}
+blogdown::serve_site()
+```
+
+# Commit and push to GitHub
+
+```{bash eval=FALSE, echo=TRUE}
+git add .
+git status
+git commit -m "updated baseurl"
+git push -u origin main

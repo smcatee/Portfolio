@@ -91,3 +91,6 @@ url = "mailto:sean.d.mcatee@gmail.com"
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+
+[permalinks]
+    post = "/:year/:month/:day/:slug/"
