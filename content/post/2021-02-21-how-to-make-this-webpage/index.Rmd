@@ -35,7 +35,7 @@ blogdown::new_post(title = "How to make this webpage.")
 
 </br> </br>
 
-# Rendering the webpage and serving site
+## Rendering the webpage and serving site
 ```{r eval=FALSE}
 blogdown::serve_site()
 ```
@@ -46,12 +46,17 @@ blogdown::serve_site()
 ## Code chunks
 
 \```{r}  
-R Chunk  
+#R Chunk  
 \```  
 
-#```{python}
+\```{python}
 #Python Chunk
-#```
+\```
+
+\```{julia}
+#Julia Chunk
+\```
+
 
 ```{r}
 knitr::knit_engines$get() %>% names()

@@ -31,16 +31,22 @@ DisableComments: no
 <p></br> </br></p>
 </div>
 </div>
-<div id="rendering-the-webpage-and-serving-site" class="section level1">
-<h1>Rendering the webpage and serving site</h1>
+<div id="rendering-the-webpage-and-serving-site" class="section level2">
+<h2>Rendering the webpage and serving site</h2>
 <pre class="r"><code>blogdown::serve_site()</code></pre>
 <p></br></br></p>
+</div>
 <div id="code-chunks" class="section level2">
 <h2>Code chunks</h2>
 <p>```{r}<br />
-R Chunk<br />
+#R Chunk<br />
 ```</p>
-<p>#<code>{python} #Python Chunk #</code></p>
+<p>```{python}
+#Python Chunk
+```</p>
+<p>```{julia}
+#Julia Chunk
+```</p>
 <pre class="r"><code>knitr::knit_engines$get() %&gt;% names()</code></pre>
 <pre><code>##  [1] &quot;awk&quot;         &quot;bash&quot;        &quot;coffee&quot;      &quot;gawk&quot;        &quot;groovy&quot;     
 ##  [6] &quot;haskell&quot;     &quot;lein&quot;        &quot;mysql&quot;       &quot;node&quot;        &quot;octave&quot;     
@@ -80,5 +86,4 @@ R Chunk<br />
 git status
 git commit -m &quot;updated baseurl&quot;
 git push -u origin main</code></pre>
-</div>
 </div>
