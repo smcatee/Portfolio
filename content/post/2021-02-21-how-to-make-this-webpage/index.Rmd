@@ -31,7 +31,7 @@ blogdown::new_post(title = "How to make this webpage.")
 
 </br> </br>
 
-## Save == Render
+### Save == Render
 
 </br> </br>
 
@@ -40,16 +40,14 @@ blogdown::new_post(title = "How to make this webpage.")
 blogdown::serve_site()
 ```
 
-</br>
-
-# Content
+</br></br>
 
 
 ## Code chunks
 
-#```{r}
-#R Chunk
-#```
+\```{r}  
+R Chunk  
+\```  
 
 #```{python}
 #Python Chunk
@@ -82,12 +80,12 @@ body {
 ```
 
 
-# Making it real
+## Making it real
 ```{r eval=FALSE}
 blogdown::serve_site()
 ```
 
-# Commit and push to GitHub
+## Commit and push to GitHub
 
 ```{bash eval=FALSE, echo=TRUE}
 git add .

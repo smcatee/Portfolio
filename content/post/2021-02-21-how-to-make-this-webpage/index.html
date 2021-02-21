@@ -26,21 +26,20 @@ DisableComments: no
 <h2>To make a new webpage</h2>
 <pre class="r"><code>blogdown::new_post(title = &quot;How to make this webpage.&quot;)</code></pre>
 <p></br> </br></p>
-</div>
-<div id="save-render" class="section level2">
-<h2>Save == Render</h2>
+<div id="save-render" class="section level3">
+<h3>Save == Render</h3>
 <p></br> </br></p>
+</div>
 </div>
 <div id="rendering-the-webpage-and-serving-site" class="section level1">
 <h1>Rendering the webpage and serving site</h1>
 <pre class="r"><code>blogdown::serve_site()</code></pre>
-<p></br></p>
-</div>
-<div id="content" class="section level1">
-<h1>Content</h1>
+<p></br></br></p>
 <div id="code-chunks" class="section level2">
 <h2>Code chunks</h2>
-<p>#<code>{r} #R Chunk #</code></p>
+<p>```{r}<br />
+R Chunk<br />
+```</p>
 <p>#<code>{python} #Python Chunk #</code></p>
 <pre class="r"><code>knitr::knit_engines$get() %&gt;% names()</code></pre>
 <pre><code>##  [1] &quot;awk&quot;         &quot;bash&quot;        &quot;coffee&quot;      &quot;gawk&quot;        &quot;groovy&quot;     
@@ -71,15 +70,15 @@ DisableComments: no
   color: red;
 }</code></pre>
 </div>
-</div>
-<div id="making-it-real" class="section level1">
-<h1>Making it real</h1>
+<div id="making-it-real" class="section level2">
+<h2>Making it real</h2>
 <pre class="r"><code>blogdown::serve_site()</code></pre>
 </div>
-<div id="commit-and-push-to-github" class="section level1">
-<h1>Commit and push to GitHub</h1>
+<div id="commit-and-push-to-github" class="section level2">
+<h2>Commit and push to GitHub</h2>
 <pre class="bash"><code>git add .
 git status
 git commit -m &quot;updated baseurl&quot;
 git push -u origin main</code></pre>
+</div>
 </div>
