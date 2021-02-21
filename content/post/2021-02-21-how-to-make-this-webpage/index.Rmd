@@ -49,13 +49,13 @@ blogdown::serve_site()
 #R Chunk  
 \```  
 
-\```{python}
-#Python Chunk
-\```
+\```{python}  
+#Python Chunk  
+\```  
 
-\```{julia}
-#Julia Chunk
-\```
+\```{julia}  
+#Julia Chunk  
+\```  
 
 
 ```{r}
