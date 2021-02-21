@@ -13,6 +13,11 @@ DisableComments: no
 
 
 
+<div id="libraries" class="section level1">
+<h1>Libraries</h1>
+<pre class="r"><code>library(blogdown); library(magrittr)</code></pre>
+<p>Open Project if not already open.</p>
+</div>
 <div id="set-options-optional" class="section level1">
 <h1>Set Options (optional)</h1>
 <pre class="r"><code>options(blogdown.ext = &quot;.Rmd&quot;, blogdown.author = &quot;Sean D McAtee&quot;)</code></pre>
@@ -21,9 +26,54 @@ DisableComments: no
 <h1>To make a new webpage</h1>
 <pre class="r"><code>blogdown::new_post(title = &quot;How to make this webpage.&quot;)</code></pre>
 </div>
-<div id="rendering-the-webpage" class="section level1">
-<h1>Rendering the webpage</h1>
+<div id="save-render" class="section level1">
+<h1>Save == Render</h1>
 </div>
-<div id="content-content-content" class="section level1">
-<h1>CONTENT CONTENT CONTENT</h1>
+<div id="rendering-the-webpage-and-serving-site" class="section level1">
+<h1>Rendering the webpage and serving site</h1>
+<pre class="r"><code>blogdown::serve_site()</code></pre>
+<p></br></p>
+</div>
+<div id="content" class="section level1">
+<h1>Content</h1>
+<div id="code-chunks" class="section level2">
+<h2>Code chunks</h2>
+<p>#<code>{r} #R Chunk #</code></p>
+<p>#<code>{python} #Python Chunk #</code></p>
+<pre class="r"><code>knitr::knit_engines$get() %&gt;% names()</code></pre>
+<pre><code>##  [1] &quot;awk&quot;         &quot;bash&quot;        &quot;coffee&quot;      &quot;gawk&quot;        &quot;groovy&quot;     
+##  [6] &quot;haskell&quot;     &quot;lein&quot;        &quot;mysql&quot;       &quot;node&quot;        &quot;octave&quot;     
+## [11] &quot;perl&quot;        &quot;psql&quot;        &quot;Rscript&quot;     &quot;ruby&quot;        &quot;sas&quot;        
+## [16] &quot;scala&quot;       &quot;sed&quot;         &quot;sh&quot;          &quot;stata&quot;       &quot;zsh&quot;        
+## [21] &quot;highlight&quot;   &quot;Rcpp&quot;        &quot;tikz&quot;        &quot;dot&quot;         &quot;c&quot;          
+## [26] &quot;cc&quot;          &quot;fortran&quot;     &quot;fortran95&quot;   &quot;asy&quot;         &quot;cat&quot;        
+## [31] &quot;asis&quot;        &quot;stan&quot;        &quot;block&quot;       &quot;block2&quot;      &quot;js&quot;         
+## [36] &quot;css&quot;         &quot;sql&quot;         &quot;go&quot;          &quot;python&quot;      &quot;julia&quot;      
+## [41] &quot;sass&quot;        &quot;scss&quot;        &quot;theorem&quot;     &quot;lemma&quot;       &quot;corollary&quot;  
+## [46] &quot;proposition&quot; &quot;conjecture&quot;  &quot;definition&quot;  &quot;example&quot;     &quot;exercise&quot;   
+## [51] &quot;proof&quot;       &quot;remark&quot;      &quot;solution&quot;</code></pre>
+<p>These languages are available for <a href="https://bookdown.org/yihui/rmarkdown/language-engines.html">syntax highlighting and execution</a>.</p>
+</div>
+<div id="html" class="section level2">
+<h2>HTML</h2>
+<p></br> </br> </br></p>
+<p>The spacing above was made with “</br> </br> </br>” passed directly in the .Rmd document.</p>
+</div>
+<div id="js" class="section level2">
+<h2>JS</h2>
+</div>
+<div id="css" class="section level2">
+<h2>CSS</h2>
+</div>
+</div>
+<div id="making-it-real" class="section level1">
+<h1>Making it real</h1>
+<pre class="r"><code>blogdown::serve_site()</code></pre>
+</div>
+<div id="commit-and-push-to-github" class="section level1">
+<h1>Commit and push to GitHub</h1>
+<pre class="bash"><code>git add .
+git status
+git commit -m &quot;updated baseurl&quot;
+git push -u origin main</code></pre>
 </div>
