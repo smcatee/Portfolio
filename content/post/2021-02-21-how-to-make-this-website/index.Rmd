@@ -173,4 +173,4 @@ git commit -m "updated baseurl"
 git push -u origin main
 ```
 
-Now wait a few seconds, check your Netlify website, fix bugs, edit CSS, make [new posts](/2021/02/21/how-to-make-this-webpage/)
+Now wait a few seconds, check your Netlify website, fix bugs, edit CSS, make [new posts](/2021/02/21/how-to-make-this-webpage./)
