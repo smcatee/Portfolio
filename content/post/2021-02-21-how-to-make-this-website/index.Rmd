@@ -26,20 +26,31 @@ The primary characteristics that make Rmd. convenient:
 </br></br>
 
 ### Other Similar Options & Variations
+
 https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/
+
 https://pages.github.com/
+
 https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/
+
 https://hexo.io/
 
 </br>
 
 ### Sources & Resources:
+
 https://bookdown.org/yihui/blogdown/
+
 https://gohugo.io/
+
 https://cran.r-project.org/web/packages/rmarkdown/rmarkdown.pdf
+
 https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1
+
 https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1
+
 https://bookdown.org/yihui/blogdown/workflow.html
+
 https://yihui.org/
 
 
@@ -155,7 +166,7 @@ doNotLoadAnimations = false
 
 ## Math settings
 [params.math]
-enable = false  # options: true, false. Enable math support globally, default: false. You can always enable math on per page.
+enable = false  # Enable math support globally, Can always enable math per page.
 use = "katex"  # options: "katex", "mathjax". default is "katex".
 
 ## Social links
