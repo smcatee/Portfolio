@@ -11,51 +11,57 @@ Categories: []
 DisableComments: no
 ---
 
-## Libraries
+### Libraries
 ```{r}
 library(blogdown); library(magrittr)
-```
-
-Open Project if not already open.
-
-## Set Options (optional)
-```{r eval=FALSE}
-options(blogdown.ext = ".Rmd", blogdown.author = "Sean D McAtee")
-```
-
-
-## To make a new webpage
-```{r eval=FALSE}
-blogdown::new_post(title = "How to make this webpage.")
-```
-
-</br> </br>
-
-### Save == Render
-
-</br> </br>
-
-## Rendering the webpage and serving site
-```{r eval=FALSE}
-blogdown::serve_site()
 ```
 
 </br></br>
 
 
-## Code chunks
+### To make a new webpage
+```{r eval=FALSE}
+blogdown::new_post(title = "How to make this webpage.")
+```
 
+
+</br> </br>
+
+### Rendering the webpage and serving site
+```{r eval=FALSE}
+blogdown::serve_site()
+```
+
+
+
+</br></br>
+
+
+### Code chunks
+
+The HTML and CSS documents are generated from the Rmd. template by the `blogdown` package which depends upon the `knitr` package. `knitr` can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by `knitr`, as well as other languages. ([incl. Python, Ruby, ...](https://yihui.org/knitr/demo/engines/))
+
+
+Blocks of code can be displayed in highlighted syntax or shaded blocks depending upon the Hugo theme.
+
+
+```
 \```{r}  
 #R Chunk  
 \```  
+```
 
+```
 \```{python}  
 #Python Chunk  
 \```  
+```
 
+```
 \```{julia}  
 #Julia Chunk  
 \```  
+```
 
 
 ```{r}
@@ -64,19 +70,31 @@ knitr::knit_engines$get() %>% names()
 
 These languages are available for [syntax highlighting and execution](https://bookdown.org/yihui/rmarkdown/language-engines.html).
 
-## HTML
+For chunk execution there are language specific dependencies that work with `knitr`.
+
+### HTML, CSS, and JS
+
+The file that `blogdown` outputs is a single `index.html` file in the directory in the name of the webpage. There will also be modifications to some of the files in the site-wide directories.
+
+</br>
+
+It is possible to preserve HTML elements through Rmd. documents.
 
 </br> </br> </br>
 
-The spacing above was made with `</br> </br> </br>` passed directly in the .Rmd document.
+The spacing above was made with `</br> </br> </br>` written directly in the text of this .Rmd document.
 
-## JS
+### JS
 
-```{js, eval=FALSE, echo=TRUE}
+JavaScript can be executed in a code chunk.
+
+```{js, eval=TRUE, echo=TRUE}
 $('.title').css('color', 'red')
 ```
 
-## CSS
+### CSS
+
+CSS can also be included in code chunks.
 
 ```{css, eval=FALSE, echo=TRUE}
 body {
@@ -85,15 +103,25 @@ body {
 ```
 
 
-## Making it real
+### Making it real
+
+`blogdown` must now generate menu items and connect other dots. The command `serve_site` will prepare the website and serve it locally. This command does the minimal amount of updating to generate the website, unlike `build_site` which will generate the whole site from scratch.
+
 ```{r eval=FALSE}
 blogdown::serve_site()
 ```
 
-## Commit and push to GitHub
+If the page looks good then we can put it online.
+
+
+### Commit and push to GitHub
+
+The website will be hosted on GitHub in a repository. We can now initiate a new git repository in this R project directory.
 
 ```{bash eval=FALSE, echo=TRUE}
 git add .
 git status
 git commit -m "updated baseurl"
 git push -u origin main
+```
+
