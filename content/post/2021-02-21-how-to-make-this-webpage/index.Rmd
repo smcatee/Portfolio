@@ -23,6 +23,7 @@ The primary characteristics that make static websites convenient.
 </br></br>
 
 ### Resources
+
 https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1
 
 </br>

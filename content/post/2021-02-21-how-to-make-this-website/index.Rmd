@@ -14,12 +14,14 @@ DisableComments: no
 </br>
 
 ### Motivation for Rmd.
+
 https://rmarkdown.rstudio.com/gallery.html
 
 
 The primary characteristics that make Rmd. convenient:
 
-* Simple Syntax
+* Simplicity
+
 * Code Chunks
 
 
@@ -51,7 +53,9 @@ https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1
 
 https://bookdown.org/yihui/blogdown/workflow.html
 
-https://yihui.org/
+https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control#ch01-getting-started
+
+https://yihui.org/  `# The primary blogdown & knitr author`
 
 
 </br></br>
@@ -61,11 +65,9 @@ https://yihui.org/
 
 _Static website:_ All HTML files are served without any dynamic changes. This can make hosting & serving simple websites cheaper and faster.
 
-</br>
 
 _Hugo:_ A static website generator that makes websites from md. documents.
 
-</br>
 
 _Blogdown:_ An R package that connects Hugo to packages that can render Rmd. documents 
 
@@ -73,6 +75,7 @@ _Blogdown:_ An R package that connects Hugo to packages that can render Rmd. doc
 </br></br>
 
 ### Installation
+
 https://bookdown.org/yihui/blogdown/installation.html
 
 ```{r eval=FALSE}
@@ -84,45 +87,47 @@ blogdown::install_hugo()
 </br></br>
 
 ### Themes
+
 https://bookdown.org/yihui/blogdown/other-themes.html
+
 https://themes.gohugo.io/
 
 Hugo generates sites using 'themes' aka rendering templates. There are many themes available on Hugo, however some of them must be modified to be rendered by `rmarkdown`. There is plenty of documentation if you find a theme that must be modified to work.
 
-After choosing a theme you don't need to install it by hand, it is better if you pass the theme name to `blogdown::new_site()` or by building a new site in an RStudio project context (shown below).
+After choosing a theme you don't need to install it by hand, it is better if you pass the theme name to the argument in `blogdown::new_site( theme = "" )` or by building a new site in an RStudio project context (shown below).
 
 </br></br>
 
 ### New Project
+
 https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects
+
 https://bookdown.org/yihui/blogdown/rstudio-ide.html
 
-You don't have to start a new project in R Studio to build a site, but it keeps everything much more organized if you do.
+You don't have to start a new project in R Studio to build a site, however it keeps everything much more organized if you do.
 
 `File -> New Project -> New Directory` then select "Website using blogdown"
-This is where you can name you new directory and set your Hugo theme.
+This is where you can name your new directory and set your Hugo theme.
 
 
 The blogdown author recommends enabling the option "Preview site after building" and disabling the option "Re-knit current preview when supporting files change". To find those options look on R Studio under `Tools -> Project Options...-> Build Tools`
 
 </br></br>
 
-### config.toml
+### The project directory tree & `config.toml`
+
 https://bookdown.org/yihui/blogdown/configuration.html#toml-syntax
 
 Website-wide configuration can be done by modifying config.toml
 
 </br>
 
-
-
-</br>
-
-If you are doing anything fancy you will end up in config.toml. It is located in the home directory of your project.
+The file `config.toml` is located in the project home directory along with the directories `/static` (where images and figures are stored) and `/public` (what `blogdown` generates)
 
 </br>
 
-config.toml
+Here is an example of my `config.toml` after some personal modifications and changes to use the theme "anatole".
+
 ```
 baseURL = "https://seandmcatee.netlify.app/"
 languageCode = "en"
@@ -223,24 +228,25 @@ url = "mailto:sean.d.mcatee@gmail.com"
     post = "/:year/:month/:day/:slug/"
 ```
 
-</br></br>
+</br></br></br>
 
-### Publishing for the first time
-
-</br>
-
-* Restart R
+### Blogdown to build the site
 
 ```{r eval=FALSE}
-blogdown::hugo_build() # This will build the site as if from scratch, all webpages will be rendered
-```
+# Restart R
+.rs.restartR()
 
-</br>
 
-* After making new pages or any changes
+# Build the site from scratch, all webpages will be rendered
+blogdown::hugo_build() # You only need to do this once, afterwards use serve_site()
 
-```{r eval=FALSE}
-blogdown::serve_site() # This will only render the webpages that have been changed
+
+# Make new pages or edit current pages
+blogdown::new_post()
+
+
+# Renders webpages that have been changed
+blogdown::serve_site()
 ```
 
 </br></br>
@@ -248,12 +254,13 @@ blogdown::serve_site() # This will only render the webpages that have been chang
 ### GitHub to host the site
 
 https://github.com/
+
 https://www.netlify.com/ # can use GitHub account to sign up for Netlify
 
 </br>
 
-On GitHub create a new repository for you site. Make sure that it is Public.
-```{bash eval=FALSE, echo=FALSE}
+On GitHub create a new public repository for you project.
+```{bash eval=FALSE}
 # Some reminders, make sure you know what these git commands do.
 git init
 git add .
@@ -268,16 +275,24 @@ git push -u origin main
 
 ### Netlify to serve the site
 
-Now that your website is hosted on GitHub, go on Netlify `New Site from Git -> Continuous Deployment [GitHub] -> Pick a Repository -> ...`
-The default domain name is <name.netlify.app> but there are options to purchase or set up your a domain name.
-
-</br></br>
-
-### Update config.toml
+Now that your website is hosted on GitHub, Netlify can watch your GitHub repo for new commits.
 
 </br>
 
+Connecting GitHub to Netlify
+
+`New Site from Git -> Continuous Deployment [GitHub] -> Pick a Repository -> ...`
+
+Your default domain name will be <username.netlify.app>. There are options [to purchase a custom domain name from Netlify](https://docs.netlify.com/domains-https/netlify-dns/) or to [use your custom domain name](https://docs.netlify.com/domains-https/custom-domains/).
+
+
+</br></br>
+
+### Update `config.toml`
+
 Update the domain name, title, and other site basics.
+
+</br>
 
 ```
 baseurl = "https://my-website.netlify.app/"
@@ -324,20 +339,27 @@ url = "mailto:sean.d.mcatee@gmail.com"
 ```
 
 
+</br></br>
 
-</br>
+### Check out what you've made!
 
-Don't forget to commit and push your updated website to GitHub!
-```{bash eval=FALSE, echo=TRUE}
+Don't forget to commit & push to GitHub first!
+```{bash eval=FALSE}
 git add .
 git status
 git commit -m "updated baseurl"
 git push -u origin main
 ```
 
+</br>
 
-</br></br>
-
-### Check it out
-
-Now wait a few seconds, check your Netlify website, fix bugs, edit CSS, make [new posts](/2021/02/21/how-to-make-this-webpage./)
+Now wait a few seconds, check your Netlify website, fix bugs, edit CSS, make a [new posts](/2021/02/21/how-to-make-this-webpage/), get
+[i](https://davidventuri.com/portfolio)
+[n](http://hadley.nz/)
+[s](https://restofworld.org/)
+[p](https://www.mkbergman.com/the-blogasbrd/)
+[i](http://varianceexplained.org/)
+[r](https://simplystatistics.org/)
+[e](https://citizenlab.ca/)
+[d](https://thepeacewireproject.com/)
+.
