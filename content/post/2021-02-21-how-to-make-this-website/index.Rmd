@@ -51,6 +51,8 @@ https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1
 
 https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1
 
+https://rmarkdown.rstudio.com/lesson-1.html
+
 https://bookdown.org/yihui/blogdown/workflow.html
 
 https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control#ch01-getting-started

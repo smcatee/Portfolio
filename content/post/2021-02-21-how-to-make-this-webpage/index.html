@@ -18,43 +18,32 @@ DisableComments: no
 <h3>Motivation for Static Websites</h3>
 <p>The primary characteristics that make static websites convenient.</p>
 <ul>
-<li>Simple Structure</li>
+<li>Simplicity</li>
 </ul>
 <p></br></br></p>
 </div>
-<div id="resources" class="section level3">
-<h3>Resources</h3>
-<p><a href="https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1" class="uri">https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1</a></p>
-<p></br></p>
-</div>
-<div id="libraries" class="section level3">
-<h3>Libraries</h3>
+<div id="libraries-used" class="section level3">
+<h3>Libraries Used</h3>
 <pre class="r"><code>library(blogdown); library(magrittr)</code></pre>
 <p></br></br></p>
 </div>
-<div id="to-make-a-new-webpage" class="section level3">
-<h3>To make a new webpage</h3>
-<pre class="r"><code>blogdown::new_post(title = &quot;How to make this webpage.&quot;)</code></pre>
-<p></br> </br></p>
+<div id="open-the-website-project-directory-in-rstudio" class="section level3">
+<h3>Open the website project directory in RStudio</h3>
+<p>From RStudio: <code>File -&gt; Recent Projects</code></p>
+<p>The R project will save environment variables from your last session, so everything will load up and ready to go.</p>
+<p></br></br></p>
 </div>
-<div id="rendering-the-webpage-and-serving-site" class="section level3">
-<h3>Rendering the webpage and serving site</h3>
-<pre class="r"><code>blogdown::serve_site()</code></pre>
+<div id="make-a-new-new-webpage" class="section level3">
+<h3>Make a <em>new</em> new webpage</h3>
+<pre class="r"><code>blogdown::new_post(title = &quot;How to make this webpage&quot;)</code></pre>
+<p></br></p>
+<p>Add content…</p>
+<p><a href="https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1">Rmd cheatsheet</a></p>
 <p></br></br></p>
 </div>
 <div id="code-chunks" class="section level3">
 <h3>Code chunks</h3>
-<p>The HTML and CSS documents are generated from the Rmd. template by the <code>blogdown</code> package which depends upon the <code>knitr</code> package. <code>knitr</code> can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by <code>knitr</code>, as well as other languages. (<a href="https://yihui.org/knitr/demo/engines/">incl. Python, Ruby, …</a>)</p>
-<p>Blocks of code can be displayed in highlighted syntax or shaded blocks depending upon the Hugo theme.</p>
-<pre><code>\```{r}  
-#R Chunk  
-\```  </code></pre>
-<pre><code>\```{python}  
-#Python Chunk  
-\```  </code></pre>
-<pre><code>\```{julia}  
-#Julia Chunk  
-\```  </code></pre>
+<p>The HTML and CSS documents are generated from the Rmd. template by the <code>blogdown</code> package which depends upon the <code>knitr</code> package. <code>knitr</code> can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by <code>knitr</code>, as well as <a href="https://yihui.org/knitr/demo/engines/">other languages</a>).</p>
 <pre class="r"><code>knitr::knit_engines$get() %&gt;% names()</code></pre>
 <pre><code>##  [1] &quot;awk&quot;         &quot;bash&quot;        &quot;coffee&quot;      &quot;gawk&quot;        &quot;groovy&quot;     
 ##  [6] &quot;haskell&quot;     &quot;lein&quot;        &quot;mysql&quot;       &quot;node&quot;        &quot;octave&quot;     
@@ -67,8 +56,55 @@ DisableComments: no
 ## [41] &quot;sass&quot;        &quot;scss&quot;        &quot;theorem&quot;     &quot;lemma&quot;       &quot;corollary&quot;  
 ## [46] &quot;proposition&quot; &quot;conjecture&quot;  &quot;definition&quot;  &quot;example&quot;     &quot;exercise&quot;   
 ## [51] &quot;proof&quot;       &quot;remark&quot;      &quot;solution&quot;</code></pre>
-<p>These languages are available for <a href="https://bookdown.org/yihui/rmarkdown/language-engines.html">syntax highlighting and execution</a>.</p>
+<p></br></p>
+<p>These languages are available for <a href="https://bookdown.org/yihui/rmarkdown/language-engines.html">syntax highlighting and execution in blogdown</a>.</p>
 <p>For chunk execution there are language specific dependencies that work with <code>knitr</code>.</p>
+<p></br></p>
+<p>This is what code chunks will look like in Rmd.</p>
+<pre><code>\```{r}  
+#R Chunk  
+\```  </code></pre>
+<p></br></p>
+<pre><code>\```{python}  
+#Python Chunk  
+\```  </code></pre>
+<p></br></p>
+<pre><code>\```{julia}  
+#Julia Chunk  
+\```  </code></pre>
+<p></br></p>
+<pre><code>\```  
+#Default Chunk  
+\```  </code></pre>
+<p></br></p>
+<p>Inline code will look like this `<code>r</code> <code>&lt;code&gt;</code>` and can be executed by R. If you wish to only highlight without executing then make an inline chunk without ‘r’.</p>
+<p>e.g. `<code>r</code> <code>1 + 2</code>` -&gt;becomes-&gt; 3
+e.g. `<code>python</code> <code>1 + 2</code>` -&gt;becomes-&gt; <code>python 1 + 2</code>
+e.g. ` <code>1 + 2</code> ` -&gt;becomes-&gt; <code>1 + 2</code></p>
+<p></br></br></p>
+</div>
+<div id="code-chunk-options" class="section level3">
+<h3>Code chunk options</h3>
+<p>Document-wide code chunk options are defined at the top of Rmd. documents.</p>
+<p></br></p>
+<p>Here is an example from this Rmd. document:</p>
+<pre><code>---
+title: How to make this webpage
+author: Sean D McAtee
+date: &#39;2021-02-21&#39;
+slug: []
+categories: []
+tags: []
+Description: &#39;&#39;
+Tags: []
+Categories: []
+DisableComments: no
+---</code></pre>
+<p>Note: Normally Rmd. documents will contain an <code>output:</code> option. This is excluded when using <code>blogdown</code>.</p>
+<p></br></p>
+<p>Chunk options can be defined for specific chunks within the braces (<code>{}</code>) at the beginning of the chunk.</p>
+<p>e.g. <code>{r echo=TRUE, eval=FALSE, hold=TRUE, fig.asp=0.3}</code></p>
+<p></br></br></p>
 </div>
 <div id="html-css-and-js" class="section level3">
 <h3>HTML, CSS, and JS</h3>
@@ -81,9 +117,9 @@ DisableComments: no
 <div id="js" class="section level3">
 <h3>JS</h3>
 <p>JavaScript can be executed in a code chunk.</p>
-<pre class="js"><code>$(&#39;.title&#39;).css(&#39;color&#39;, &#39;red&#39;)</code></pre>
+<pre class="js"><code>$(&#39;.body&#39;).css(&#39;color&#39;, &#39;red&#39;)</code></pre>
 <script type="text/javascript">
-$('.title').css('color', 'red')
+$('.body').css('color', 'red')
 </script>
 </div>
 <div id="css" class="section level3">
@@ -92,16 +128,21 @@ $('.title').css('color', 'red')
 <pre class="css"><code>body {
   color: red;
 }</code></pre>
+<p></br></br></p>
 </div>
 <div id="making-it-real" class="section level3">
 <h3>Making it real</h3>
 <p><code>blogdown</code> must now generate menu items and connect other dots. The command <code>serve_site</code> will prepare the website and serve it locally. This command does the minimal amount of updating to generate the website, unlike <code>build_site</code> which will generate the whole site from scratch.</p>
 <pre class="r"><code>blogdown::serve_site()</code></pre>
+<p></br></p>
 <p>If the page looks good then we can put it online.</p>
+<p></br></br></p>
 </div>
 <div id="commit-and-push-to-github" class="section level3">
 <h3>Commit and push to GitHub!</h3>
-<p>The website will be hosted on GitHub in a repository. We can now initiate a new git repository in this R project directory.</p>
+<p></br></p>
+<p>Push your changes to the main repository branch (the one on GitHub) and see your changes.</p>
+<p></br></p>
 <pre class="bash"><code>git add .
 git status
 git commit -m &quot;updated baseurl&quot;

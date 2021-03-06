@@ -17,18 +17,14 @@ DisableComments: no
 
 The primary characteristics that make static websites convenient.
 
-* Simple Structure
+* Simplicity
 
 
 </br></br>
 
-### Resources
 
-https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1
 
-</br>
-
-### Libraries
+### Libraries Used
 ```{r}
 library(blogdown); library(magrittr)
 ```
@@ -36,19 +32,26 @@ library(blogdown); library(magrittr)
 </br></br>
 
 
-### To make a new webpage
+### Open the website project directory in RStudio
+
+From RStudio: `File -> Recent Projects`
+
+The R project will save environment variables from your last session, so everything will load up and ready to go.
+
+
+</br></br>
+
+### Make a _new_ new webpage
+
 ```{r eval=FALSE}
-blogdown::new_post(title = "How to make this webpage.")
+blogdown::new_post(title = "How to make this webpage")
 ```
 
+</br>
 
-</br> </br>
+Add content...
 
-### Rendering the webpage and serving site
-```{r eval=FALSE}
-blogdown::serve_site()
-```
-
+[Rmd cheatsheet](https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1)
 
 
 </br></br>
@@ -56,11 +59,22 @@ blogdown::serve_site()
 
 ### Code chunks
 
-The HTML and CSS documents are generated from the Rmd. template by the `blogdown` package which depends upon the `knitr` package. `knitr` can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by `knitr`, as well as other languages. ([incl. Python, Ruby, ...](https://yihui.org/knitr/demo/engines/))
+The HTML and CSS documents are generated from the Rmd. template by the `blogdown` package which depends upon the `knitr` package. `knitr` can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by `knitr`, as well as [other languages](https://yihui.org/knitr/demo/engines/)). 
+
+```{r}
+knitr::knit_engines$get() %>% names()
+```
+
+</br>
 
 
-Blocks of code can be displayed in highlighted syntax or shaded blocks depending upon the Hugo theme.
+These languages are available for [syntax highlighting and execution in blogdown](https://bookdown.org/yihui/rmarkdown/language-engines.html).
 
+For chunk execution there are language specific dependencies that work with `knitr`.
+
+</br>
+
+This is what code chunks will look like in Rmd.
 
 ```
 \```{r}  
@@ -68,11 +82,15 @@ Blocks of code can be displayed in highlighted syntax or shaded blocks depending
 \```  
 ```
 
+</br>
+
 ```
 \```{python}  
 #Python Chunk  
 \```  
 ```
+
+</br>
 
 ```
 \```{julia}  
@@ -80,14 +98,56 @@ Blocks of code can be displayed in highlighted syntax or shaded blocks depending
 \```  
 ```
 
+</br>
 
-```{r}
-knitr::knit_engines$get() %>% names()
+```
+\```  
+#Default Chunk  
+\```  
 ```
 
-These languages are available for [syntax highlighting and execution](https://bookdown.org/yihui/rmarkdown/language-engines.html).
+</br>
 
-For chunk execution there are language specific dependencies that work with `knitr`.
+Inline code will look like this \``r` `<code>`\` and can be executed by R. If you wish to only highlight without executing then make an inline chunk without 'r'.
+
+e.g. \``r` `1 + 2`\` ->becomes-> `r 1 + 2`
+e.g. \``python` `1 + 2`\` ->becomes-> `python 1 + 2`
+e.g. \` `1 + 2` \` ->becomes-> `1 + 2`
+
+</br></br>
+
+### Code chunk options
+
+Document-wide code chunk options are defined at the top of Rmd. documents.
+
+</br>
+
+Here is an example from this Rmd. document:
+
+```
+---
+title: How to make this webpage
+author: Sean D McAtee
+date: '2021-02-21'
+slug: []
+categories: []
+tags: []
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+```
+
+Note: Normally Rmd. documents will contain an `output:` option. This is excluded when using `blogdown`.
+
+</br>
+
+Chunk options can be defined for specific chunks within the braces (`{}`) at the beginning of the chunk.
+
+e.g. `{r echo=TRUE, eval=FALSE, hold=TRUE, fig.asp=0.3}`
+
+</br></br>
 
 ### HTML, CSS, and JS
 
@@ -107,7 +167,7 @@ The spacing above was made with `</br> </br> </br>` written directly in the text
 JavaScript can be executed in a code chunk.
 
 ```{js, eval=TRUE, echo=TRUE}
-$('.title').css('color', 'red')
+$('.body').css('color', 'red')
 ```
 
 ### CSS
@@ -120,6 +180,7 @@ body {
 }
 ```
 
+</br></br>
 
 ### Making it real
 
@@ -129,12 +190,19 @@ body {
 blogdown::serve_site()
 ```
 
+</br>
+
 If the page looks good then we can put it online.
 
+</br></br>
 
 ### Commit and push to GitHub!
 
-The website will be hosted on GitHub in a repository. We can now initiate a new git repository in this R project directory.
+</br>
+
+Push your changes to the main repository branch (the one on GitHub) and see your changes.
+
+</br>
 
 ```{bash eval=FALSE, echo=TRUE}
 git add .
