@@ -13,30 +13,43 @@ DisableComments: no
 
 
 
-<div id="motivation" class="section level3">
-<h3>Motivation</h3>
+<p></br></p>
+<div id="motivation-for-rmd." class="section level3">
+<h3>Motivation for Rmd.</h3>
+<p><a href="https://rmarkdown.rstudio.com/gallery.html" class="uri">https://rmarkdown.rstudio.com/gallery.html</a></p>
+<p>The primary characteristics that make Rmd. convenient:</p>
+<ul>
+<li>Simple Syntax</li>
+<li>Code Chunks</li>
+</ul>
 <p></br></br></p>
 </div>
 <div id="other-similar-options-variations" class="section level3">
 <h3>Other Similar Options &amp; Variations</h3>
 <p><a href="https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/" class="uri">https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/</a>
 <a href="https://pages.github.com/" class="uri">https://pages.github.com/</a>
-<a href="https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/" class="uri">https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/</a></p>
-<p></br></br></p>
-</div>
-<div id="sources" class="section level3">
-<h3>Sources:</h3>
-<p><a href="https://bookdown.org/yihui/blogdown/" class="uri">https://bookdown.org/yihui/blogdown/</a>
-<a href="https://gohugo.io/" class="uri">https://gohugo.io/</a></p>
-<p></br></br></p>
-</div>
-<div id="overview" class="section level3">
-<h3>Overview</h3>
-<p><a href="https://bookdown.org/yihui/blogdown/workflow.html" class="uri">https://bookdown.org/yihui/blogdown/workflow.html</a> # how to setup a website with more clicking and less typing</p>
-<p><em>Static website:</em> All HTML files are fully rendered locally and served without any additional changes. This can make hosting &amp; serving simple websites much cheaper and faster. Sites include CSS and JS, so they can be</p>
+<a href="https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/" class="uri">https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/</a>
+<a href="https://hexo.io/" class="uri">https://hexo.io/</a></p>
 <p></br></p>
-<p><em>Hugo:</em> A static website generator with no original connection to the R universe. You can use Hugo directly with the command line if you don’t need to include any code chunks.</p>
-<p><em>Blogdown:</em></p>
+</div>
+<div id="sources-resources" class="section level3">
+<h3>Sources &amp; Resources:</h3>
+<p><a href="https://bookdown.org/yihui/blogdown/" class="uri">https://bookdown.org/yihui/blogdown/</a>
+<a href="https://gohugo.io/" class="uri">https://gohugo.io/</a>
+<a href="https://cran.r-project.org/web/packages/rmarkdown/rmarkdown.pdf" class="uri">https://cran.r-project.org/web/packages/rmarkdown/rmarkdown.pdf</a>
+<a href="https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1" class="uri">https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1</a>
+<a href="https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1" class="uri">https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1</a>
+<a href="https://bookdown.org/yihui/blogdown/workflow.html" class="uri">https://bookdown.org/yihui/blogdown/workflow.html</a>
+<a href="https://yihui.org/" class="uri">https://yihui.org/</a></p>
+<p></br></br></p>
+</div>
+<div id="overview-of-components" class="section level3">
+<h3>Overview of Components</h3>
+<p><em>Static website:</em> All HTML files are served without any dynamic changes. This can make hosting &amp; serving simple websites cheaper and faster.</p>
+<p></br></p>
+<p><em>Hugo:</em> A static website generator that makes websites from md. documents.</p>
+<p></br></p>
+<p><em>Blogdown:</em> An R package that connects Hugo to packages that can render Rmd. documents</p>
 <p></br></br></p>
 </div>
 <div id="installation" class="section level3">
@@ -69,8 +82,57 @@ This is where you can name you new directory and set your Hugo theme.</p>
 <h3>config.toml</h3>
 <p><a href="https://bookdown.org/yihui/blogdown/configuration.html#toml-syntax" class="uri">https://bookdown.org/yihui/blogdown/configuration.html#toml-syntax</a></p>
 <p>Website-wide configuration can be done by modifying config.toml</p>
+<p></br></p>
+<p></br></p>
 <p>If you are doing anything fancy you will end up in config.toml. It is located in the home directory of your project.</p>
-<pre><code>## Social links
+<p></br></p>
+<p>config.toml</p>
+<pre><code>baseURL = &quot;https://seandmcatee.netlify.app/&quot;
+languageCode = &quot;en&quot;
+DefaultContentLanguage = &quot;en&quot;
+title = &quot;Website of Sean McAtee&quot;
+theme = &quot;anatole&quot;
+ignoreFiles = [&quot;\\.Rmd$&quot;, &quot;\\.Rmarkdown$&quot;, &quot;_cache$&quot;, &quot;\\.knit\\.md$&quot;, &quot;\\.utf8\\.md$&quot;] # recommended by blogdown
+summarylength = 10
+enableEmoji = true
+enableRobotsTXT = true
+
+# Enable Disqus
+#disqusShortname = &quot;&quot;
+
+# Google Analytics
+#googleAnalytics = &quot;UA-123-45&quot;
+
+# Syntax highlighting
+pygmentsUseClasses = true
+pygmentsCodeFences = true
+pygmentsCodefencesGuessSyntax = true
+
+[params]
+title = &quot;Sean D McAtee&quot;
+author = &quot;Sean D McAtee&quot;
+description = &quot;&quot;
+profilePicture = &quot;images/profile.jpg&quot;
+keywords = &quot;&quot;
+favicon = &quot;favicons/&quot;
+# example [&quot;css/custom.css&quot;]
+customCss = []
+# example [&quot;js/custom.js&quot;]
+customJs = [] 
+mainSections = [&quot;post&quot;]
+images = [&quot;images/site-feature-image.png&quot;]
+doNotLoadAnimations = false
+# Form Spree Contact Form
+#contactFormAction = &quot;https://formspree.io/f/your-form-hash-here&quot;
+# Google Site Verify
+#googleSiteVerify = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&quot;
+
+## Math settings
+[params.math]
+enable = false  # options: true, false. Enable math support globally, default: false. You can always enable math on per page.
+use = &quot;katex&quot;  # options: &quot;katex&quot;, &quot;mathjax&quot;. default is &quot;katex&quot;.
+
+## Social links
 # use &#39;fab&#39; when brand icons, use &#39;fas&#39; when standard solid icons.
 [[params.socialIcons]]
 icon = &quot;fab fa-linkedin&quot;
@@ -113,7 +175,15 @@ url = &quot;mailto:sean.d.mcatee@gmail.com&quot;
   #name = &quot;Contact&quot;
   #weight = 400
   #identifier = &quot;contact&quot;
-  #url = &quot;/contact/&quot;</code></pre>
+  #url = &quot;/contact/&quot;
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[permalinks]
+    post = &quot;/:year/:month/:day/:slug/&quot;</code></pre>
 <p></br></br></p>
 </div>
 <div id="publishing-for-the-first-time" class="section level3">
@@ -144,12 +214,45 @@ url = &quot;mailto:sean.d.mcatee@gmail.com&quot;
 The default domain name is &lt;name.netlify.app&gt; but there are options to purchase or set up your a domain name.</p>
 <p></br></br></p>
 </div>
-<div id="update-config.toml-with-domain-name" class="section level3">
-<h3>Update config.toml with domain name</h3>
-<p>Use the domain name generated by Netlify, or use the custom domain name that you setup in Netlify.</p>
-<p>In config.toml update the parameter at the top <code>baseurl = "https://my-website.netlify.app/"</code></p>
+<div id="update-config.toml" class="section level3">
+<h3>Update config.toml</h3>
 <p></br></p>
-<p>Don’t forget to commit and push your updated website to GitHub.</p>
+<p>Update the domain name, title, and other site basics.</p>
+<pre><code>baseurl = &quot;https://my-website.netlify.app/&quot;</code></pre>
+<p>…</p>
+<pre><code>title = &quot;Website of Sean McAtee&quot;</code></pre>
+<p>…</p>
+<pre><code>ignoreFiles = [&quot;\\.Rmd$&quot;, &quot;\\.Rmarkdown$&quot;, &quot;_cache$&quot;, &quot;\\.knit\\.md$&quot;, &quot;\\.utf8\\.md$&quot;]</code></pre>
+<p>…</p>
+<pre><code>[params]
+title = &quot;Sean D McAtee&quot;
+author = &quot;Sean D McAtee&quot;
+description = &quot;&quot;
+profilePicture = &quot;images/profile.jpg&quot;
+keywords = &quot;&quot;
+favicon = &quot;favicons/&quot;
+# example [&quot;css/custom.css&quot;]
+customCss = []
+# example [&quot;js/custom.js&quot;]
+customJs = [] 
+</code></pre>
+<p>…</p>
+<pre><code>[[params.socialIcons]]
+icon = &quot;fab fa-linkedin&quot;
+title = &quot;Linkedin&quot;
+url = &quot;https://www.linkedin.com/in/sean-david-mcatee/&quot;
+
+[[params.socialIcons]]
+icon = &quot;fab fa-github&quot;
+title = &quot;GitHub&quot;
+url = &quot;https://github.com/smcatee/&quot;
+
+[[params.socialIcons]]
+icon = &quot;fas fa-envelope&quot;
+title = &quot;e-mail&quot;
+url = &quot;mailto:sean.d.mcatee@gmail.com&quot;</code></pre>
+<p></br></p>
+<p>Don’t forget to commit and push your updated website to GitHub!</p>
 <pre class="bash"><code>git add .
 git status
 git commit -m &quot;updated baseurl&quot;

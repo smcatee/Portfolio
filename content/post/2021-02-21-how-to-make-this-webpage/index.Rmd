@@ -1,5 +1,5 @@
 ---
-title: How to make this webpage.
+title: How to make this webpage
 author: Sean D McAtee
 date: '2021-02-21'
 slug: []
@@ -10,6 +10,22 @@ Tags: []
 Categories: []
 DisableComments: no
 ---
+
+</br>
+
+### Motivation for Static Websites
+
+The primary characteristics that make static websites convenient.
+
+* Simple Structure
+
+
+</br></br>
+
+### Resources
+https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1
+
+</br>
 
 ### Libraries
 ```{r}
@@ -84,6 +100,7 @@ It is possible to preserve HTML elements through Rmd. documents.
 
 The spacing above was made with `</br> </br> </br>` written directly in the text of this .Rmd document.
 
+
 ### JS
 
 JavaScript can be executed in a code chunk.
@@ -114,7 +131,7 @@ blogdown::serve_site()
 If the page looks good then we can put it online.
 
 
-### Commit and push to GitHub
+### Commit and push to GitHub!
 
 The website will be hosted on GitHub in a repository. We can now initiate a new git repository in this R project directory.
 
