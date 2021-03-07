@@ -50,7 +50,7 @@ klippy::klippy('r')
 ```
 
 ```{r eval=FALSE, class.source='klippy'}
-blogdown::new_post(title = "How to make this webpage")
+blogdown::new_post(title = "How to make this webpage", author = "Sean", ext = ".Rmd")
 ```
 
 </br>

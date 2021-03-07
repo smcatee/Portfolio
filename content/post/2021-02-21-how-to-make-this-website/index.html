@@ -51,7 +51,7 @@ DisableComments: no
 <h3>Overview of Components</h3>
 <p><em>Static website:</em> All HTML files are served without any dynamic changes. This can make hosting &amp; serving simple websites cheaper and faster.</p>
 <p><em>Hugo:</em> A static website generator that makes websites from md. documents.</p>
-<p><em>Blogdown:</em> An R package that connects Hugo to packages that can render Rmd. documents</p>
+<p><em>Blogdown:</em> An R package that connects Hugo to packages that can render .Rmd documents</p>
 <p></br></br></p>
 </div>
 <div id="installation" class="section level3">
@@ -66,17 +66,17 @@ library(blogdown)
 blogdown::install_hugo()</code></pre>
 <p></br></br></p>
 </div>
-<div id="configuration" class="section level3">
-<h3>Configuration</h3>
-<pre class="r klippy"><code>options(blogdown.ext = &quot;Rmd.&quot;, blogdown.author = &quot;Sean&quot;)</code></pre>
-<p></br></br></p>
-</div>
 <div id="themes" class="section level3">
 <h3>Themes</h3>
 <p><a href="https://bookdown.org/yihui/blogdown/other-themes.html" class="uri">https://bookdown.org/yihui/blogdown/other-themes.html</a></p>
 <p><a href="https://themes.gohugo.io/" class="uri">https://themes.gohugo.io/</a></p>
 <p>Hugo generates sites using ‘themes’ aka rendering templates. There are many themes available on Hugo, however some of them must be modified to be rendered by <code>rmarkdown</code>. There is plenty of documentation if you find a theme that must be modified to work.</p>
 <p>After choosing a theme you don’t need to install it by hand, it is better if you pass the theme name to the argument in <code>blogdown::new_site( theme = "" )</code> or by building a new site in an RStudio project context (shown below).</p>
+<p></br></br></p>
+</div>
+<div id="use-this-theme---kakawaithugo-tranquilpeak-theme" class="section level3">
+<h3>Use this theme -&gt; <code>kakawait/hugo-tranquilpeak-theme</code></h3>
+<p>Some themes require tinkering to make them to work properly with <code>blogdown</code> or Netlify. A common issue is caused by themes using different directory tree structure. The <code>blogdown</code> -&gt; Netlify website-workflow is popular, so there is ample help online. However you may have to dig into the CSS or try out many different changes to <code>config.toml</code>.</p>
 <p></br></br></p>
 </div>
 <div id="new-project" class="section level3">
@@ -95,7 +95,7 @@ This is where you can name your new directory and set your Hugo theme.</p>
 <pre class="r klippy"><code>blogdown::hugo_build() # You only need to do this once, afterwards use serve_site()</code></pre>
 <p></br></p>
 <p>Make new pages or edit current pages</p>
-<pre class="r klippy"><code>blogdown::new_post()</code></pre>
+<pre class="r klippy"><code>blogdown::new_post( title = &quot;Page Title&quot;, author = &quot;Sean&quot;, ext = &quot;.Rmd&quot;)</code></pre>
 <p></br></p>
 <p>Renders webpages that have been changed</p>
 <pre class="r klippy"><code>blogdown::serve_site()</code></pre>
@@ -236,7 +236,7 @@ git push -u origin main</code></pre>
 </div>
 <div id="update-config.toml" class="section level3">
 <h3>Update <code>config.toml</code></h3>
-<p>Update the domain name, title, and other site basics.</p>
+<p>Update the baseurl, title, and other site basics.</p>
 <p></br></p>
 <pre><code>baseurl = &quot;https://my-website.netlify.app/&quot;</code></pre>
 <p>…</p>

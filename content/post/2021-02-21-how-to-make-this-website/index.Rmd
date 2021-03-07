@@ -67,7 +67,7 @@ _Static website:_ All HTML files are served without any dynamic changes. This ca
 _Hugo:_ A static website generator that makes websites from md. documents.
 
 
-_Blogdown:_ An R package that connects Hugo to packages that can render Rmd. documents 
+_Blogdown:_ An R package that connects Hugo to packages that can render .Rmd documents 
 
 
 </br></br>
@@ -89,14 +89,6 @@ blogdown::install_hugo()
 
 </br></br>
 
-### Configuration
-```{r eval=FALSE, class.source='klippy'}
-options(blogdown.ext = "Rmd.", blogdown.author = "Sean")
-```
-
-
-</br></br>
-
 ### Themes
 
 https://bookdown.org/yihui/blogdown/other-themes.html
@@ -106,6 +98,13 @@ https://themes.gohugo.io/
 Hugo generates sites using 'themes' aka rendering templates. There are many themes available on Hugo, however some of them must be modified to be rendered by `rmarkdown`. There is plenty of documentation if you find a theme that must be modified to work.
 
 After choosing a theme you don't need to install it by hand, it is better if you pass the theme name to the argument in `blogdown::new_site( theme = "" )` or by building a new site in an RStudio project context (shown below).
+
+</br></br>
+
+### Use this theme -> `kakawait/hugo-tranquilpeak-theme`
+
+Some themes require tinkering to make them to work properly with `blogdown` or Netlify. A common issue is caused by themes using different directory tree structure. The `blogdown` -> Netlify website-workflow is popular, so there is ample help online. However you may have to dig into the CSS or try out many different changes to `config.toml`.
+
 
 </br></br>
 
@@ -136,7 +135,7 @@ blogdown::hugo_build() # You only need to do this once, afterwards use serve_sit
 
 Make new pages or edit current pages
 ```{r eval=FALSE, class.source='klippy'}
-blogdown::new_post()
+blogdown::new_post( title = "Page Title", author = "Sean", ext = ".Rmd")
 ```
 
 </br>
@@ -305,7 +304,7 @@ Your default domain name will be <randomname.netlify.app>. Netlify provides free
 
 ### Update `config.toml`
 
-Update the domain name, title, and other site basics.
+Update the baseurl, title, and other site basics.
 
 </br>
 
