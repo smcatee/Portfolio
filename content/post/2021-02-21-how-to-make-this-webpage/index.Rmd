@@ -22,7 +22,7 @@ The primary characteristics that make Rmd. convenient:
 
 * Simplicity
 
-* Code Chunks
+* Code Blocks
 
 </br></br>
 
@@ -45,6 +45,10 @@ The R project will save environment variables from your last session, so everyth
 
 ### Make a _new_ new webpage
 
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy('r')
+```
+
 ```{r eval=FALSE, class.source='klippy'}
 blogdown::new_post(title = "How to make this webpage")
 ```
@@ -59,7 +63,7 @@ Add content...
 </br></br>
 
 
-### Code chunks
+### Code blocks
 
 The HTML and CSS documents are generated from the Rmd. template by the `blogdown` package which depends upon the `knitr` package. `knitr` can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by `knitr`, as well as [other languages](https://yihui.org/knitr/demo/engines/)). 
 
@@ -72,15 +76,15 @@ knitr::knit_engines$get() %>% names()
 
 These languages are available for [syntax highlighting and execution in blogdown](https://bookdown.org/yihui/rmarkdown/language-engines.html).
 
-For chunk execution there are language specific dependencies that work with `knitr`.
+For block execution there are language specific dependencies that work with `knitr`.
 
 </br>
 
-This is what code chunks will look like in Rmd.
+This is what code blocks will look like in Rmd.
 
 ```
 \```{r}  
-#R Chunk  
+#R Block  
 \```  
 ```
 
@@ -88,7 +92,7 @@ This is what code chunks will look like in Rmd.
 
 ```
 \```{python}  
-#Python Chunk  
+#Python Block  
 \```  
 ```
 
@@ -96,7 +100,7 @@ This is what code chunks will look like in Rmd.
 
 ```
 \```{julia}  
-#Julia Chunk  
+#Julia Block  
 \```  
 ```
 
@@ -104,13 +108,13 @@ This is what code chunks will look like in Rmd.
 
 ```
 \```  
-#Default Chunk  
+#Default Block  
 \```  
 ```
 
 </br>
 
-Inline code will look like this \``r` `<code>`\` and can be executed by R. If you wish to only highlight without executing then make an inline chunk without 'r'.
+Inline code will look like this \``r` `<code>`\` and can be executed by R. If you wish to only highlight without executing then make an inline block without 'r'.
 
 e.g. \` `1 + 2` \` ->becomes-> `1 + 2`
 
@@ -118,16 +122,16 @@ e.g. \``r` `1 + 2`\` ->becomes-> `r 1 + 2`
 
 e.g. \``r` `c(1,2,3) %>% mean()`\` ->becomes-> `r c(1,2,3) %>% mean()`
 
-e.g. \``r` `colnames(PlantGrowth)`\` ->becomes-> `colnames(PlantGrowth)`
+e.g. \``r` `colnames(PlantGrowth)`\` ->becomes-> `r colnames(PlantGrowth)`
 
 e.g. \``r` `PlantGrowth$weight[PlantGrowth$group == "trt1"] %>% mean()`\` ->becomes-> `r PlantGrowth$weight[PlantGrowth$group == "trt1"] %>% mean()`
 
 
 </br></br>
 
-### Code chunk options
+### Code block options
 
-Document-wide code chunk options are defined at the top of Rmd. documents.
+Document-wide code block options are defined at the top of Rmd. documents.
 
 </br>
 
@@ -152,7 +156,7 @@ Note: Normally Rmd. documents will contain an `output:` option. This is excluded
 
 </br>
 
-Chunk options can be defined for specific chunks within the braces (`{}`) at the beginning of the chunk.
+Block options can be defined for specific blocks within the braces (`{}`) at the beginning of the block.
 
 e.g. `{r echo=TRUE, eval=FALSE, hold=TRUE, fig.asp=0.3}`
 
@@ -173,7 +177,7 @@ The spacing above was made with `</br> </br> </br>` written directly in the text
 
 ### JS
 
-JavaScript can be executed in a code chunk.
+JavaScript can be executed in a code block.
 
 ```{js, eval=TRUE, echo=TRUE}
 $('.body').css('color', 'red')
@@ -181,7 +185,7 @@ $('.body').css('color', 'red')
 
 ### CSS
 
-CSS can also be included in code chunks.
+CSS can also be included in code blocks.
 
 ```{css, eval=FALSE, echo=TRUE}
 body {

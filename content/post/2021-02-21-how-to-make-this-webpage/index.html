@@ -11,6 +11,10 @@ Categories: []
 DisableComments: no
 ---
 
+<script src="index_files/clipboard/clipboard.min.js"></script>
+<link href="index_files/primer-tooltips/build.css" rel="stylesheet" />
+<link href="index_files/klippy/css/klippy.min.css" rel="stylesheet" />
+<script src="index_files/klippy/js/klippy.min.js"></script>
 
 
 <p></br></p>
@@ -20,7 +24,7 @@ DisableComments: no
 <p>The primary characteristics that make Rmd. convenient:</p>
 <ul>
 <li><p>Simplicity</p></li>
-<li><p>Code Chunks</p></li>
+<li><p>Code Blocks</p></li>
 </ul>
 <p></br></br></p>
 </div>
@@ -37,14 +41,18 @@ DisableComments: no
 </div>
 <div id="make-a-new-new-webpage" class="section level3">
 <h3>Make a <em>new</em> new webpage</h3>
+<script>
+  addClassKlippyTo("pre.r");
+  addKlippy('left', 'top', 'auto', '1', 'Copy code', 'Copied!');
+</script>
 <pre class="r klippy"><code>blogdown::new_post(title = &quot;How to make this webpage&quot;)</code></pre>
 <p></br></p>
 <p>Add content…</p>
 <p><a href="https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1">Rmd cheatsheet</a></p>
 <p></br></br></p>
 </div>
-<div id="code-chunks" class="section level3">
-<h3>Code chunks</h3>
+<div id="code-blocks" class="section level3">
+<h3>Code blocks</h3>
 <p>The HTML and CSS documents are generated from the Rmd. template by the <code>blogdown</code> package which depends upon the <code>knitr</code> package. <code>knitr</code> can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by <code>knitr</code>, as well as <a href="https://yihui.org/knitr/demo/engines/">other languages</a>).</p>
 <pre class="r klippy"><code>knitr::knit_engines$get() %&gt;% names()</code></pre>
 <pre><code>##  [1] &quot;awk&quot;         &quot;bash&quot;        &quot;coffee&quot;      &quot;gawk&quot;        &quot;groovy&quot;     
@@ -60,36 +68,36 @@ DisableComments: no
 ## [51] &quot;proof&quot;       &quot;remark&quot;      &quot;solution&quot;</code></pre>
 <p></br></p>
 <p>These languages are available for <a href="https://bookdown.org/yihui/rmarkdown/language-engines.html">syntax highlighting and execution in blogdown</a>.</p>
-<p>For chunk execution there are language specific dependencies that work with <code>knitr</code>.</p>
+<p>For block execution there are language specific dependencies that work with <code>knitr</code>.</p>
 <p></br></p>
-<p>This is what code chunks will look like in Rmd.</p>
+<p>This is what code blocks will look like in Rmd.</p>
 <pre><code>\```{r}  
-#R Chunk  
+#R Block  
 \```  </code></pre>
 <p></br></p>
 <pre><code>\```{python}  
-#Python Chunk  
+#Python Block  
 \```  </code></pre>
 <p></br></p>
 <pre><code>\```{julia}  
-#Julia Chunk  
+#Julia Block  
 \```  </code></pre>
 <p></br></p>
 <pre><code>\```  
-#Default Chunk  
+#Default Block  
 \```  </code></pre>
 <p></br></p>
-<p>Inline code will look like this `<code>r</code> <code>&lt;code&gt;</code>` and can be executed by R. If you wish to only highlight without executing then make an inline chunk without ‘r’.</p>
+<p>Inline code will look like this `<code>r</code> <code>&lt;code&gt;</code>` and can be executed by R. If you wish to only highlight without executing then make an inline block without ‘r’.</p>
 <p>e.g. ` <code>1 + 2</code> ` -&gt;becomes-&gt; <code>1 + 2</code></p>
 <p>e.g. `<code>r</code> <code>1 + 2</code>` -&gt;becomes-&gt; 3</p>
 <p>e.g. `<code>r</code> <code>c(1,2,3) %&gt;% mean()</code>` -&gt;becomes-&gt; 2</p>
-<p>e.g. `<code>r</code> <code>colnames(PlantGrowth)</code>` -&gt;becomes-&gt; <code>colnames(PlantGrowth)</code></p>
+<p>e.g. `<code>r</code> <code>colnames(PlantGrowth)</code>` -&gt;becomes-&gt; weight, group</p>
 <p>e.g. `<code>r</code> <code>PlantGrowth$weight[PlantGrowth$group == "trt1"] %&gt;% mean()</code>` -&gt;becomes-&gt; 4.661</p>
 <p></br></br></p>
 </div>
-<div id="code-chunk-options" class="section level3">
-<h3>Code chunk options</h3>
-<p>Document-wide code chunk options are defined at the top of Rmd. documents.</p>
+<div id="code-block-options" class="section level3">
+<h3>Code block options</h3>
+<p>Document-wide code block options are defined at the top of Rmd. documents.</p>
 <p></br></p>
 <p>Here is an example from this Rmd. document:</p>
 <pre><code>---
@@ -106,7 +114,7 @@ DisableComments: no
 ---</code></pre>
 <p>Note: Normally Rmd. documents will contain an <code>output:</code> option. This is excluded when using <code>blogdown</code>.</p>
 <p></br></p>
-<p>Chunk options can be defined for specific chunks within the braces (<code>{}</code>) at the beginning of the chunk.</p>
+<p>Block options can be defined for specific blocks within the braces (<code>{}</code>) at the beginning of the block.</p>
 <p>e.g. <code>{r echo=TRUE, eval=FALSE, hold=TRUE, fig.asp=0.3}</code></p>
 <p></br></br></p>
 </div>
@@ -120,7 +128,7 @@ DisableComments: no
 </div>
 <div id="js" class="section level3">
 <h3>JS</h3>
-<p>JavaScript can be executed in a code chunk.</p>
+<p>JavaScript can be executed in a code block.</p>
 <pre class="js"><code>$(&#39;.body&#39;).css(&#39;color&#39;, &#39;red&#39;)</code></pre>
 <script type="text/javascript">
 $('.body').css('color', 'red')
@@ -128,7 +136,7 @@ $('.body').css('color', 'red')
 </div>
 <div id="css" class="section level3">
 <h3>CSS</h3>
-<p>CSS can also be included in code chunks.</p>
+<p>CSS can also be included in code blocks.</p>
 <pre class="css"><code>body {
   color: red;
 }</code></pre>

@@ -17,10 +17,6 @@ DisableComments: no
 <script src="index_files/klippy/js/klippy.min.js"></script>
 
 
-<script>
-  addClassKlippyTo("pre.r");
-  addKlippy('left', 'top', 'auto', '1', 'Copy code', 'Copied!');
-</script>
 <p></br></p>
 <div id="motivation-for-static-websites" class="section level3">
 <h3>Motivation for Static Websites</h3>
@@ -61,6 +57,10 @@ DisableComments: no
 <div id="installation" class="section level3">
 <h3>Installation</h3>
 <p><a href="https://bookdown.org/yihui/blogdown/installation.html" class="uri">https://bookdown.org/yihui/blogdown/installation.html</a></p>
+<script>
+  addClassKlippyTo("pre.r");
+  addKlippy('left', 'top', 'auto', '1', 'Copy code', 'Copied!');
+</script>
 <pre class="r klippy"><code>install.packages(&quot;blogdown&quot;)
 library(blogdown)
 blogdown::install_hugo()</code></pre>
@@ -114,7 +114,8 @@ languageCode = &quot;en&quot;
 DefaultContentLanguage = &quot;en&quot;
 title = &quot;Website of Sean McAtee&quot;
 theme = &quot;anatole&quot;
-ignoreFiles = [&quot;\\.Rmd$&quot;, &quot;\\.Rmarkdown$&quot;, &quot;_cache$&quot;, &quot;\\.knit\\.md$&quot;, &quot;\\.utf8\\.md$&quot;] # recommended by blogdown
+# recommended ignoreFiles by blogdown
+ignoreFiles = [&quot;\\.Rmd$&quot;, &quot;\\.Rmarkdown$&quot;, &quot;_cache$&quot;, &quot;\\.knit\\.md$&quot;, &quot;\\.utf8\\.md$&quot;]
 summarylength = 10
 enableEmoji = true
 enableRobotsTXT = true
