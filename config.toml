@@ -95,3 +95,6 @@ url = "mailto:sean.d.mcatee@gmail.com"
 
 [permalinks]
     post = "/:year/:month/:day/:slug/"
+    
+[build.environment]
+	HUGO_VERSION = "0.81.0"  # use blogdown::hugo_version()

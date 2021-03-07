@@ -14,11 +14,13 @@ DisableComments: no
 
 
 <p></br></p>
-<div id="motivation-for-static-websites" class="section level3">
-<h3>Motivation for Static Websites</h3>
-<p>The primary characteristics that make static websites convenient.</p>
+<div id="motivation-for-rmd." class="section level3">
+<h3>Motivation for Rmd.</h3>
+<p><a href="https://rmarkdown.rstudio.com/gallery.html" class="uri">https://rmarkdown.rstudio.com/gallery.html</a></p>
+<p>The primary characteristics that make Rmd. convenient:</p>
 <ul>
-<li>Simplicity</li>
+<li><p>Simplicity</p></li>
+<li><p>Code Chunks</p></li>
 </ul>
 <p></br></br></p>
 </div>
@@ -35,7 +37,7 @@ DisableComments: no
 </div>
 <div id="make-a-new-new-webpage" class="section level3">
 <h3>Make a <em>new</em> new webpage</h3>
-<pre class="r"><code>blogdown::new_post(title = &quot;How to make this webpage&quot;)</code></pre>
+<pre class="r klippy"><code>blogdown::new_post(title = &quot;How to make this webpage&quot;)</code></pre>
 <p></br></p>
 <p>Add content…</p>
 <p><a href="https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1">Rmd cheatsheet</a></p>
@@ -44,7 +46,7 @@ DisableComments: no
 <div id="code-chunks" class="section level3">
 <h3>Code chunks</h3>
 <p>The HTML and CSS documents are generated from the Rmd. template by the <code>blogdown</code> package which depends upon the <code>knitr</code> package. <code>knitr</code> can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by <code>knitr</code>, as well as <a href="https://yihui.org/knitr/demo/engines/">other languages</a>).</p>
-<pre class="r"><code>knitr::knit_engines$get() %&gt;% names()</code></pre>
+<pre class="r klippy"><code>knitr::knit_engines$get() %&gt;% names()</code></pre>
 <pre><code>##  [1] &quot;awk&quot;         &quot;bash&quot;        &quot;coffee&quot;      &quot;gawk&quot;        &quot;groovy&quot;     
 ##  [6] &quot;haskell&quot;     &quot;lein&quot;        &quot;mysql&quot;       &quot;node&quot;        &quot;octave&quot;     
 ## [11] &quot;perl&quot;        &quot;psql&quot;        &quot;Rscript&quot;     &quot;ruby&quot;        &quot;sas&quot;        
@@ -78,9 +80,11 @@ DisableComments: no
 \```  </code></pre>
 <p></br></p>
 <p>Inline code will look like this `<code>r</code> <code>&lt;code&gt;</code>` and can be executed by R. If you wish to only highlight without executing then make an inline chunk without ‘r’.</p>
-<p>e.g. `<code>r</code> <code>1 + 2</code>` -&gt;becomes-&gt; 3
-e.g. `<code>python</code> <code>1 + 2</code>` -&gt;becomes-&gt; <code>python 1 + 2</code>
-e.g. ` <code>1 + 2</code> ` -&gt;becomes-&gt; <code>1 + 2</code></p>
+<p>e.g. ` <code>1 + 2</code> ` -&gt;becomes-&gt; <code>1 + 2</code></p>
+<p>e.g. `<code>r</code> <code>1 + 2</code>` -&gt;becomes-&gt; 3</p>
+<p>e.g. `<code>r</code> <code>c(1,2,3) %&gt;% mean()</code>` -&gt;becomes-&gt; 2</p>
+<p>e.g. `<code>r</code> <code>colnames(PlantGrowth)</code>` -&gt;becomes-&gt; <code>colnames(PlantGrowth)</code></p>
+<p>e.g. `<code>r</code> <code>PlantGrowth$weight[PlantGrowth$group == "trt1"] %&gt;% mean()</code>` -&gt;becomes-&gt; 4.661</p>
 <p></br></br></p>
 </div>
 <div id="code-chunk-options" class="section level3">
@@ -130,17 +134,13 @@ $('.body').css('color', 'red')
 }</code></pre>
 <p></br></br></p>
 </div>
-<div id="making-it-real" class="section level3">
-<h3>Making it real</h3>
-<p><code>blogdown</code> must now generate menu items and connect other dots. The command <code>serve_site</code> will prepare the website and serve it locally. This command does the minimal amount of updating to generate the website, unlike <code>build_site</code> which will generate the whole site from scratch.</p>
-<pre class="r"><code>blogdown::serve_site()</code></pre>
-<p></br></p>
-<p>If the page looks good then we can put it online.</p>
+<div id="add-content-render-changes" class="section level3">
+<h3>Add content &amp; render changes</h3>
+<pre class="r klippy"><code>blogdown::serve_site()</code></pre>
 <p></br></br></p>
 </div>
 <div id="commit-and-push-to-github" class="section level3">
 <h3>Commit and push to GitHub!</h3>
-<p></br></p>
 <p>Push your changes to the main repository branch (the one on GitHub) and see your changes.</p>
 <p></br></p>
 <pre class="bash"><code>git add .

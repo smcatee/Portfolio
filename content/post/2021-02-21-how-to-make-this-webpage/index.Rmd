@@ -13,16 +13,18 @@ DisableComments: no
 
 </br>
 
-### Motivation for Static Websites
+### Motivation for Rmd.
 
-The primary characteristics that make static websites convenient.
+https://rmarkdown.rstudio.com/gallery.html
+
+
+The primary characteristics that make Rmd. convenient:
 
 * Simplicity
 
+* Code Chunks
 
 </br></br>
-
-
 
 ### Libraries Used
 ```{r}
@@ -43,7 +45,7 @@ The R project will save environment variables from your last session, so everyth
 
 ### Make a _new_ new webpage
 
-```{r eval=FALSE}
+```{r eval=FALSE, class.source='klippy'}
 blogdown::new_post(title = "How to make this webpage")
 ```
 
@@ -61,7 +63,7 @@ Add content...
 
 The HTML and CSS documents are generated from the Rmd. template by the `blogdown` package which depends upon the `knitr` package. `knitr` can execute and display blocks of code nested in the Rmd. document. R scripts can be executed in Rmd. by `knitr`, as well as [other languages](https://yihui.org/knitr/demo/engines/)). 
 
-```{r}
+```{r class.source='klippy'}
 knitr::knit_engines$get() %>% names()
 ```
 
@@ -110,9 +112,16 @@ This is what code chunks will look like in Rmd.
 
 Inline code will look like this \``r` `<code>`\` and can be executed by R. If you wish to only highlight without executing then make an inline chunk without 'r'.
 
-e.g. \``r` `1 + 2`\` ->becomes-> `r 1 + 2`
-e.g. \``python` `1 + 2`\` ->becomes-> `python 1 + 2`
 e.g. \` `1 + 2` \` ->becomes-> `1 + 2`
+
+e.g. \``r` `1 + 2`\` ->becomes-> `r 1 + 2`
+
+e.g. \``r` `c(1,2,3) %>% mean()`\` ->becomes-> `r c(1,2,3) %>% mean()`
+
+e.g. \``r` `colnames(PlantGrowth)`\` ->becomes-> `colnames(PlantGrowth)`
+
+e.g. \``r` `PlantGrowth$weight[PlantGrowth$group == "trt1"] %>% mean()`\` ->becomes-> `r PlantGrowth$weight[PlantGrowth$group == "trt1"] %>% mean()`
+
 
 </br></br>
 
@@ -182,23 +191,15 @@ body {
 
 </br></br>
 
-### Making it real
+### Add content & render changes
 
-`blogdown` must now generate menu items and connect other dots. The command `serve_site` will prepare the website and serve it locally. This command does the minimal amount of updating to generate the website, unlike `build_site` which will generate the whole site from scratch.
-
-```{r eval=FALSE}
+```{r eval=FALSE, class.source='klippy'}
 blogdown::serve_site()
 ```
-
-</br>
-
-If the page looks good then we can put it online.
 
 </br></br>
 
 ### Commit and push to GitHub!
-
-</br>
 
 Push your changes to the main repository branch (the one on GitHub) and see your changes.
 
