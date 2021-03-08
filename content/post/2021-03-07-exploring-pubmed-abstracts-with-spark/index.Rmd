@@ -11,6 +11,10 @@ Categories: []
 DisableComments: no
 ---
 
+***
+# _UNDER DEVELOPMENT_
+***
+
 </br>
 
 ## Motivation: 
@@ -134,8 +138,6 @@ rescaled to generate TF-IDF values.
 ## Pairwise Cosine Similarity
 
 ![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.jpg)
-
-![equation](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.png)
 
 
 Subgroups of journal titles were selected based three health terms: Diabetes, HIV, and

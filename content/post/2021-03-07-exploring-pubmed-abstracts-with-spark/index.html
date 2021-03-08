@@ -13,6 +13,10 @@ DisableComments: no
 
 
 
+<hr />
+<div id="under-development" class="section level1">
+<h1><em>UNDER DEVELOPMENT</em></h1>
+<hr />
 <p></br></p>
 <div id="motivation" class="section level2">
 <h2>Motivation:</h2>
@@ -102,10 +106,6 @@ rescaled to generate TF-IDF values.</p>
 <div id="pairwise-cosine-similarity" class="section level2">
 <h2>Pairwise Cosine Similarity</h2>
 <p><img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.jpg" /></p>
-<div class="figure">
-<img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.png" alt="" />
-<p class="caption">equation</p>
-</div>
 <p>Subgroups of journal titles were selected based three health terms: Diabetes, HIV, and
 Asthma. This was done in order to gather three groups for cosine similarity analysis.
 The subgroups were selected using RegEx pattern matching. Each group was passed to
@@ -277,5 +277,6 @@ hiv_sim_matrix &lt;- as.matrix(hiv_long[-1])
 rownames(hiv_sim_matrix) &lt;- hiv_long[[1]]
 
 heatmap(hiv_sim_matrix)</code></pre>
+</div>
 </div>
 </div>
