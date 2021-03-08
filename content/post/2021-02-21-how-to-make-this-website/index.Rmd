@@ -11,11 +11,6 @@ Categories: []
 DisableComments: no
 ---
 
-***
-# _UNDER DEVELOPMENT_
-***
-
-
 </br>
 
 ### Motivation for Static Websites
