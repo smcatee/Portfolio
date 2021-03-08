@@ -133,13 +133,10 @@ rescaled to generate TF-IDF values.
 
 ## Pairwise Cosine Similarity
 
-![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.svg)
+![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.png)
 
-![equation](./static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.svg)
+![equation](./static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.png)
 
-![equation]("./static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.svg")
-
-![equation]("/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.svg")
 
 Subgroups of journal titles were selected based three health terms: Diabetes, HIV, and
 Asthma. This was done in order to gather three groups for cosine similarity analysis.
