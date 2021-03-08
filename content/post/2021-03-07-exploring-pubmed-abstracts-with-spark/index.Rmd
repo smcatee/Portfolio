@@ -1,0 +1,366 @@
+---
+title: Exploring PubMed Abstracts with Spark
+author: Sean D McAtee
+date: '2021-03-07'
+slug: exploring-pubmed-abstracts-with-spark
+categories: []
+tags: []
+Description: 'TF-IDF of Abstract text to explore Journal titles'
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+## Libraries Used
+```{r message=FALSE, warning=FALSE}
+library(magrittr); library(readr); library(glue); library(dplyr); library(tidyr)
+```
+
+
+
+####################### Paper
+# Word Corpus as a Feature Vector for Journals
+Realtime Big Data Analytics
+Dr. Lakshminarayanan Subramanian \\
+12/21/2020
+
+
+## abstract
+
+In this paper a workflow for document similarity comparisons is explained. Many text
+analysis methods use feature vectors to compare groups of documents. Generally the feature vectors
+are used to identify similar or unique documents. The workflow explained below uses feature
+vectors to examine academic journals with papers indexed on PubMed. The distributed computing
+environment Spark on HDFS is used to filter and transform text into grouped TF-IDF vectors.
+Three subgroups of journals were compared to the whole corpus: Diabetes, Asthma, and HIV.
+The journal feature vectors were compared using cosine similarity, then quantiles of
+each subgroup was compared.
+
+
+## Introduction
+
+Document comparison can be performed in many ways. One way is to construct word
+vectors for each document, containing indexes for all possible words in the corpus.
+These feature vectors can be count based, where each word is taken as a direct
+frequency count or a weighted in some way. Feature vectors can also be generated
+through predictive modeling. Generating feature vectors over a
+whole corpus is usually performed to find unknown documents that are similar to
+a document of interest. There are additional methods to measure the variance
+among groups of similar documents or across the whole corpus.
+This paper describes one example of a highly customizable workflow for similar-document
+identification.
+
+PubMed abstract articles are loaded into a distributed computing
+environment. Spark is used to filter and transform the abstracts into feature vectors
+for each academic journal. These journals are then compared to each other. Three subgroups
+are filtered from the whole set. Each subgroup reflects a sample of journals in different
+health subjects: Diabetes, Asthma, and HIV. These three subgroups are then compared to the
+whole set of feature vectors. The cosine similarity is calculated for all comparisons,
+and each subgroup's distribution from 0 (no similarities) to 1 (identical) is assessed.
+
+
+## Motivation
+
+Biomedical research is performed at a remarkable pace. Many stakeholders benefit from 
+the advance of this research, however the volume of literature in various Biomedical subjects
+is increasingly becoming a hurdle for researchers and practitioners. Valuable time is
+spent in literature review, searching for relevant literature and extracting useful
+information from it. There are many tools for semi automated literature search and
+review, including information extraction.
+
+The number of academic journals is also potenially overwhelming.
+Some journals have massively broad subjects and wide circulation, while others may be
+niche journals with smaller readerships. Subject matter is difficult to determine based
+on a cursory glance at the title and a few published articles. Therefore it could be
+useful to classify journals based on the literature that they publish.
+
+
+## Related Work
+
+There are many techniques to extract information from a body of text.
+Popular techniques range from in text syntactic structure relation to whole
+corpus classification using Support Vector Machines. The utility
+of this task is apparent based on the number of tools, papers, and forum posts on
+the topic. One common technique to generate a feature vector for a document is to
+calculate Term Frequency (TF) and Inverse Document Frequency (IDF). The first example
+of TF in academic literature by Luhn, H.P. in 1957. Luhn's paper calculated
+TF as the per document frequency of terms. When using TF the assumption is that the
+frequency of a term in a document is linearly proportional to its weight, therefore TF
+could be used directly as the term weight. In a later paper by Sparck in 1972, a
+similar statistic to measure the weight of terms in a document is described, IDF.
+IDF assumes that the weight of a term in a specific document is proportional to the
+number of documents in which that term occurs. Since the introduction
+of TF and IDF, researchers have used TF and IDF separately or in a combined approach
+to measure the similarity or differences between documents.
+Calculating TF and IDF generates a feature vector for each term in each document. 
+Once the feature vector is calculated there
+are once again a plethora of techniques for analysis. Cosine similarity, also known as
+dot product similarity, is a popular method to compare two vectors.
+This technique has a number of advantages. It is relatively simple, allowing researchers
+to implement it and understand its assumptions. Finally, it is a dot product
+and magnitude vector calculation, making it tractible to programers.
+There is an inherent problem when comparing many n dimensional vectors with only a one dimension
+statistic. Researchers generally reduce the dimension among all pairwise documents, then
+perform an additional reduction to the group of documents. Issues with data reduction were
+made famous as Anscombe's Quartet, discussed by Anscombe in his 1973 paper. The primary issue highlighted by Anscombe is that
+data reduction will ignore the original distribution. Statistical tools have been
+developed to combat this issue. Notably, estimators based on quantiles have become a robust
+technique that can have good statistical power even in skewed distributions. A quantile approach does not assume data is normally distributed nor does
+it assume that variance is homogenous, unlike ANOVA.
+
+It is important to understand the confidence interval and p-value when rejecting the null or
+alternative hypothesis. Researchers noticed that the standard p-value
+calculations might not hold in the case of quantiles, leading to the creation of Qp and the
+critical p-value adjustment. The critical
+p-value adjustment is a particularly useful method to find confidence intervals and p-values
+for quantile comparisons. The R command stats::p.adjust() reimplements the techniques
+developed in two papers by Benjamini and Hochberg, and Benjamini and Yekutieli.
+The critical p-value adjustment has been used in a number of R calculations, such as the
+WRS2 package used in the analysis below.
+
+
+
+
+## Datasets
+
+This analysis uses PubMed metadata to compare subgroups of journals. The data was
+downloaded from the PubMed Baseline at ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline.
+This data contains many fields for each article hosted on PubMed. The fields used
+in the analysis below were 'PMID', 'AbstractText', and 'JournalTitle'.  
+The downloaded metadata was loaded as XML into the NYU HPC distributed file
+system (HDFS). The spark-xml package from Databricks was used to parse the XML
+files into a Spark DataFrame. As a DataFrame the metadata was filtered and
+transformed into word feature vectors for every journal listed.
+
+
+
+## Design
+
+### Lemma Array Generation
+
+Data was cleaned, analyzed, and visualized in Spark and R. After data collection
+and XML parsing, the Spark DataFrame was selected for "PMID", "AbstractText", and
+"JournalTitle" columns. The Stanford CoreNLP package was used to split sentences
+in each AbstractText string into word arrays, and
+convert words into generic lemmas. Part of speech tags were generated for each
+lemma to filter out uninformative elements, such as coordinating conjunctions
+and prepositions. Once filtered, the lemmas were aggregated into an array for each
+JournalTitle. This resulted in all unique JournalTitle having a corresponding
+array of lemmas from all articles in this PubMed sample. At this stage there were
+5591 unique JournalTitles and 112,405 unique lemmas across all JournalTitles.  
+
+
+
+## TF-IDF Features
+
+Lemma arrays were converted to TF-IDF feature vectors in the following way. The Spark
+ML package was used to hash lemmas. The number of features for the hash function 
+was set above 5591 to $2^17$ to avoid collisions and to increase calculation speed.
+Spark ML was also used to calculate IDF for the hashed lemma vectors. IDF values were
+rescaled to generate TF-IDF values.
+
+## Pairwise Cosine Similarity
+
+$ similarity = cos(\theta) = (A * B)/(||A||||B||) $
+
+Subgroups of journal titles were selected based three health terms: Diabetes, HIV, and
+Asthma. This was done in order to gather three groups for cosine similarity analysis.
+The subgroups were selected using RegEx pattern matching. Each group was passed to
+the pairwise cosine similarity user-defined-function to be compared against the
+whole set. Each cosine similarity DataFrame was written to csv files for further
+analysis in R.
+
+
+
+[Top rows of the Spark DataFrame containing part]()
+
+
+## Quantile Comparisons
+
+The final analysis and visualization steps were completed in R. Each 10th quantile
+was calculated for each set using stats::quantile(). The distributions of
+each set is concentrated towards 0 with long tails trailing towards 1. This is
+due to the fact that the cosine similarity of most JournalTitle feature vectors
+are not similar. A thin distribution tail contains the relatively few feature
+vectors that are similar. Quantiles were also calculated for isolated subgroups
+to determine if the pattern matching technique yielded groups that were internally
+more similar than the whole corpus. Internally, the groups had less spread than the
+whole corpus according to quantile calculations.
+
+
+### Within Group Similarity Quantiles
+
+Subgroup | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 |
+ ---- |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |
+Diabetes | 0.0115 | 0.0358 | 0.0565 | 0.0838 | 0.1074 | 0.1402 | 0.1715 | 0.2033 | 0.2548 |
+Asthma | 0.0253 | 0.0286 | 0.0373 | 0.0896 | 0.1358 | 0.1669 | 0.2097 | 0.2627 | 0.3244 |
+HIV | 0.0245 | 0.0454 | 0.0814 | 0.0922 | 0.1255 | 0.1597 | 0.1742 | 0.2013 | 0.2405 |
+
+Quantiles of cosine similarity calculations for journals within the three subgroups.
+
+
+
+Now, the similarities of the groups Diabetes, HIV, and Asthma versus the whole set
+can be compared to one another. The tail of each distribution yields information
+about how much the corpus is similar to a group, while the bulk of the distribution
+yields information about how much the corpus is not similar to the group.
+
+[](QuantDiffDiabetesAsthma.png)
+[](QuantDiffDiabetesHIV.png)
+[](quantDiffAsthmaHIV.png)
+
+Estimated difference of quantiles. Calculated with WRS2 in R.
+
+  
+  
+The R package WRS2 was used to calculate quantile differences between each group.
+The function qcomb() was run on each of the following
+pairs: diabetes-asthma, diabetes-hiv, asthma-hiv. The output values include estimated difference
+for each quantile, a standard p-value, and a p.crit value. Asside from the 0 percentile estimate,
+all standard p-values and p.crit values were below 0.05, while most were below 0.01.
+All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.
+The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are
+the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
+than the groups HIV and Asthma.
+
+## Conclusion
+
+The workflow described in this paper can be customized to group vectors for any of the metadata
+fields in PubMed. For example, grant agency, author affiliation, year, and MESH terms are all loaded
+in the beginning of the workflow. They could easily be incorporated into an analysis.
+
+Highly skewed distributions are difficult to characterize because most estimators focus on the maximum
+area of a distribution. In the case of cosine similarity in a large corpus, the distribution tail will
+contain the most useful information. This workflow, and other similar workflows, allow researchers
+to gather information that might not be readily apparent with a standard statistical approach.
+
+
+
+
+## thebibliography
+
+    \bibitem{b1} Allen, E. A., Erhardt, E. B.,  Calhoun, V. D. (2012). Data Visualization in the Neurosciences: Overcoming the Curse of Dimensionality. Neuron, 74(4), 603–608. https://doi.org/10.1016/j.neuron.2012.05.001
+    \bibitem{b2} Altınel, B., Can Ganiz, M.,  Diri, B. (2015). A corpus-based semantic kernel for text classification by using meaning values of terms. Engineering Applications of Artificial Intelligence, 43, 54–66. https://doi.org/10.1016/j.engappai.2015.03.015
+    \bibitem{b3} amoeba. (2016, October 4). What’s the formula for the Benjamini-Hochberg adjusted p-value? [Forum Comment]. Cross Validated. https://stats.stackexchange.com/questions/238458/whats-the-formula-for-the-benjamini-hochberg-adjusted-p-value/402217
+    \bibitem{b4} Anscombe, F. J. (1973). Graphs in Statistical Analysis. The American Statistician, 27(1), 17. https://doi.org/10.2307/2682899
+    \bibitem{b5} Benjamini, Y., Heller, R.,  Yekutieli, D. (2009). Selective inference in complex research. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences, 367(1906), 4255–4271. https://doi.org/10.1098/rsta.2009.0127
+    \bibitem{b6} Benjamini, Y.,  Hochberg, Y. (1995). Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing. Journal of the Royal Statistical Society: Series B (Methodological), 57(1), 289–300. https://doi.org/10.1111/j.2517-6161.1995.tb02031.x
+    \bibitem{b7} Databricks. (n.d.). Databricks spark-xml. GitHub. https://github.com/databricks/spark-xml
+    \bibitem{b8} Doan, S., Yang, E. W., Tilak, S. S., Li, P. W., Zisook, D. S.,  Torii, M. (2019). Extracting health-related causality from twitter messages using natural language processing. BMC Medical Informatics and Decision Making, 19(S3), 19. https://doi.org/10.1186/s12911-019-0785-0
+    \bibitem{b9} Felizardo, K. R., MacDonell, S. G., Mendes, E.,  Maldonado, J. C. (2012). A Systematic Mapping on the use of Visual Data Mining to Support the Conduct of Systematic Literature Reviews. Journal of Software, 7(2), 1. https://doi.org/10.4304/jsw.7.2.450-461
+    \bibitem{b10} HARRELL, F. R. A. N. K. E.,  DAVIS, C. E. (1982). A new distribution-free quantile estimator. Biometrika, 69(3), 635–640. https://doi.org/10.1093/biomet/69.3.635
+    \bibitem{b11} Kurland, O.,  Lee, L. (2009). Clusters, language models, and ad hoc information retrieval. ACM Transactions on Information Systems, 27(3), 1–39. https://doi.org/10.1145/1508850.1508851
+    \bibitem{b12} Luhn, H. P. (1957). A Statistical Approach to Mechanized Encoding and Searching of Literary Information. IBM Journal of Research and Development, 1(4), 309–317. https://doi.org/10.1147/rd.14.0309
+    \bibitem{b13} Mair, P.,  Wilcox, R. (2019). Robust statistical methods in R using the WRS2 package. Behavior Research Methods, 52(2), 464–488. https://doi.org/10.3758/s13428-019-01246-w
+    \bibitem{b14} Manning, C. D., Raghavan, P.,  Schütze, H. (2008). Introduction to Information Retrieval [E-book]. Cambridge University Press. https://www-nlp.stanford.edu/IR-book/
+    \bibitem{b15} Manning, C., Surdeanu, M., Bauer, J., Finkel, J., Bethard, S.,  McClosky, D. (2014). The Stanford CoreNLP Natural Language Processing Toolkit. Stanford. https://nlp.stanford.edu/pubs/StanfordCoreNlp2014.pdf
+    \bibitem{b16} Pennington, J., Socher, R.,  Manning, C. (2014). Glove: Global Vectors for Word Representation. Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), 1. https://doi.org/10.3115/v1/d14-1162
+    \bibitem{b17} Rousselet, G. A., Pernet, C. R.,  Wilcox, R. R. (2017). Beyond differences in means: robust graphical methods to compare two groups in neuroscience. European Journal of Neuroscience, 46(2), 1738–1748. https://doi.org/10.1111/ejn.13610
+    \bibitem{b18} Salton, G.,  Buckley, C. (1988). Term-weighting approaches in automatic text retrieval. Information Processing  Management, 24(5), 513–523. https://doi.org/10.1016/0306-4573(88)90021-0
+    \bibitem{b19} Singhal, A. S. (2001). Modern Information Retrieval: A Brief Overview. IEEE. http://singhal.info/ieee2001.pdf
+    \bibitem{b20} Smyth, G. S. gordon-smyth. (2012, January 1). Bioconductor Forum. Bioconductor Forum. https://support.bioconductor.org/p/49864/
+    \bibitem{b21} SPARCK JONES, K. A. R. E. N. (1972). A STATISTICAL INTERPRETATION OF TERM SPECIFICITY AND ITS APPLICATION IN RETRIEVAL. Journal of Documentation, 28(1), 11–21. https://doi.org/10.1108/eb026526
+    \bibitem{b22} Wilcox, R. R. (2001). Modern Insights About Pearson’s Correlation and Least Squares Regression. International Journal of Selection and Assessment, 9(1  2), 195–205. https://doi.org/10.1111/1468-2389.00172
+    \bibitem{b23} Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
+    \bibitem{b23} Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
+    \bibitem{b24} Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664
+
+
+
+####################### Paper
+
+
+
+
+## Further R Analysis
+
+
+```{r}
+workingDir <- "C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/"
+dir(workingDir)
+
+asthma <- read_csv(glue("{workingDir}asthmaAll.csv"),
+                   col_names = c("journal_x", "journal_asthma", "cosine_similarity"))
+
+diabetes <- read_csv(glue("{workingDir}diabetesAll.csv"),
+                   col_names = c("journal_x", "journal_diabetes", "cosine_similarity"))
+
+hiv <- read_csv(glue("{workingDir}hivAll.csv"),
+                   col_names = c("journal_x", "journal_hiv", "cosine_similarity"))
+
+```
+
+
+simple exploration
+
+```{r eval=FALSE}
+asthma$journal_asthma %>% n_distinct() # 5
+diabetes$journal_diabetes %>% n_distinct() # 40
+hiv$journal_hiv %>% n_distinct() # 8
+
+
+asthma %>%
+  summarise(
+    distinct_x = n_distinct(journal_x),
+    distinct_asthma = n_distinct(journal_asthma)
+  )
+
+```
+
+
+most similar in outgroup
+
+```{r eval=FALSE}
+ingroup_asthma_cossim <- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
+asthma$journal_x[asthma$cosine_similarity > quantile(ingroup_asthma_cossim, probs = 0.75) & !(asthma$journal_x %in% asthma$journal_asthma)]
+```
+
+```{r eval=FALSE}
+ingroup_diabetes_cossim <- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
+diabetes$journal_x[diabetes$cosine_similarity > quantile(ingroup_diabetes_cossim, probs = 0.95) & !(diabetes$journal_x %in% diabetes$journal_diabetes)]
+```
+
+```{r eval=FALSE}
+ingroup_hiv_cossim <- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
+hiv$journal_x[hiv$cosine_similarity > quantile(ingroup_hiv_cossim, probs = 0.85) & !(hiv$journal_x %in% hiv$journal_hiv)]
+```
+
+
+
+
+```{r eval=FALSE}
+asthma_long <- asthma %>%
+                dplyr::arrange(desc(cosine_similarity)) %>% 
+                pivot_wider(
+                  names_from = journal_asthma,
+                  values_from = cosine_similarity
+                  )
+
+
+asthma_sim_matrix <- as.matrix(asthma_long[-1])
+rownames(asthma_sim_matrix) <- asthma_long[[1]]
+
+heatmap(asthma_sim_matrix)
+heatmap(asthma_long[-1])
+```
+
+```{r eval=FALSE}
+diabetes_long <- diabetes %>% dplyr::arrange(cosine_similarity) %>% pivot_wider( names_from = journal_diabetes, values_from = cosine_similarity)
+
+diabetes_sim_matrix <- as.matrix(diabetes_long[-1])
+rownames(diabetes_sim_matrix) <- diabetes_long[[1]]
+
+heatmap(diabetes_sim_matrix)
+```
+
+```{r eval=FALSE}
+hiv_long <- hiv %>% dplyr::arrange(cosine_similarity) %>% pivot_wider( names_from = journal_hiv, values_from = cosine_similarity)
+
+hiv_sim_matrix <- as.matrix(hiv_long[-1])
+rownames(hiv_sim_matrix) <- hiv_long[[1]]
+
+heatmap(hiv_sim_matrix)
+```
+
+
+
