@@ -133,7 +133,7 @@ rescaled to generate TF-IDF values.
 
 ## Pairwise Cosine Similarity
 
-[equation](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.svg)
+![equation](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.svg)
 
 [equation](./static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.svg)
 
