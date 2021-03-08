@@ -134,11 +134,14 @@ rescaled to generate TF-IDF values.
 ## Pairwise Cosine Similarity
 
 $$
-"similarity" = cos( \theta ) = (A * B)/(||A||||B||)
+cos(\pmb x, \pmb y) = \frac {\pmb x \cdot \pmb y}{||\pmb x|| \cdot ||\pmb y||}(A * B)/(||A||||B||)
 $$
 
 
-$1 + 2$
+$cos(\pmb x, \pmb y) = \frac {\pmb x \cdot \pmb y}{||\pmb x|| \cdot ||\pmb y||}$
+
+
+$$cos(\pmb x, \pmb y) = \frac {\pmb x \cdot \pmb y}{||\pmb x|| \cdot ||\pmb y||}$$
 
 Subgroups of journal titles were selected based three health terms: Diabetes, HIV, and
 Asthma. This was done in order to gather three groups for cosine similarity analysis.
