@@ -11,58 +11,9 @@ Categories: []
 DisableComments: no
 ---
 
+</br>
 
-Summary summary summary summary summary summary summary summary summary summary summary summary summary summary summary
-
-## Libraries Used
-```{r message=FALSE, warning=FALSE}
-library(magrittr); library(readr); library(glue); library(dplyr); library(tidyr)
-```
-
-
-
-####################### Paper
-# Word Corpus as a Feature Vector for Journals
-Realtime Big Data Analytics
-Dr. Lakshminarayanan Subramanian \\
-12/21/2020
-
-
-## abstract
-
-In this paper a workflow for document similarity comparisons is explained. Many text
-analysis methods use feature vectors to compare groups of documents. Generally the feature vectors
-are used to identify similar or unique documents. The workflow explained below uses feature
-vectors to examine academic journals with papers indexed on PubMed. The distributed computing
-environment Spark on HDFS is used to filter and transform text into grouped TF-IDF vectors.
-Three subgroups of journals were compared to the whole corpus: Diabetes, Asthma, and HIV.
-The journal feature vectors were compared using cosine similarity, then quantiles of
-each subgroup was compared.
-
-
-## Introduction
-
-Document comparison can be performed in many ways. One way is to construct word
-vectors for each document, containing indexes for all possible words in the corpus.
-These feature vectors can be count based, where each word is taken as a direct
-frequency count or a weighted in some way. Feature vectors can also be generated
-through predictive modeling. Generating feature vectors over a
-whole corpus is usually performed to find unknown documents that are similar to
-a document of interest. There are additional methods to measure the variance
-among groups of similar documents or across the whole corpus.
-This paper describes one example of a highly customizable workflow for similar-document
-identification.
-
-PubMed abstract articles are loaded into a distributed computing
-environment. Spark is used to filter and transform the abstracts into feature vectors
-for each academic journal. These journals are then compared to each other. Three subgroups
-are filtered from the whole set. Each subgroup reflects a sample of journals in different
-health subjects: Diabetes, Asthma, and HIV. These three subgroups are then compared to the
-whole set of feature vectors. The cosine similarity is calculated for all comparisons,
-and each subgroup's distribution from 0 (no similarities) to 1 (identical) is assessed.
-
-
-## Motivation
+## Motivation: 
 
 Biomedical research is performed at a remarkable pace. Many stakeholders benefit from 
 the advance of this research, however the volume of literature in various Biomedical subjects
@@ -77,52 +28,13 @@ niche journals with smaller readerships. Subject matter is difficult to determin
 on a cursory glance at the title and a few published articles. Therefore it could be
 useful to classify journals based on the literature that they publish.
 
+</br>
 
-## Related Work
+The PubMed database of article metadata is an XML structured mass of information containing the titles, authors, abstracts, affiliations and many other potentially useful fields. 
 
-There are many techniques to extract information from a body of text.
-Popular techniques range from in text syntactic structure relation to whole
-corpus classification using Support Vector Machines. The utility
-of this task is apparent based on the number of tools, papers, and forum posts on
-the topic. One common technique to generate a feature vector for a document is to
-calculate Term Frequency (TF) and Inverse Document Frequency (IDF). The first example
-of TF in academic literature by Luhn, H.P. in 1957. Luhn's paper calculated
-TF as the per document frequency of terms. When using TF the assumption is that the
-frequency of a term in a document is linearly proportional to its weight, therefore TF
-could be used directly as the term weight. In a later paper by Sparck in 1972, a
-similar statistic to measure the weight of terms in a document is described, IDF.
-IDF assumes that the weight of a term in a specific document is proportional to the
-number of documents in which that term occurs. Since the introduction
-of TF and IDF, researchers have used TF and IDF separately or in a combined approach
-to measure the similarity or differences between documents.
-Calculating TF and IDF generates a feature vector for each term in each document. 
-Once the feature vector is calculated there
-are once again a plethora of techniques for analysis. Cosine similarity, also known as
-dot product similarity, is a popular method to compare two vectors.
-This technique has a number of advantages. It is relatively simple, allowing researchers
-to implement it and understand its assumptions. Finally, it is a dot product
-and magnitude vector calculation, making it tractible to programers.
-There is an inherent problem when comparing many n dimensional vectors with only a one dimension
-statistic. Researchers generally reduce the dimension among all pairwise documents, then
-perform an additional reduction to the group of documents. Issues with data reduction were
-made famous as Anscombe's Quartet, discussed by Anscombe in his 1973 paper. The primary issue highlighted by Anscombe is that
-data reduction will ignore the original distribution. Statistical tools have been
-developed to combat this issue. Notably, estimators based on quantiles have become a robust
-technique that can have good statistical power even in skewed distributions. A quantile approach does not assume data is normally distributed nor does
-it assume that variance is homogenous, unlike ANOVA.
+I used TF-IDF feature vectors to examine academic journals using abstracts on PubMed. The distributed computing environment, Spark, is used to filter and transform text into TF-IDF vectors.
 
-It is important to understand the confidence interval and p-value when rejecting the null or
-alternative hypothesis. Researchers noticed that the standard p-value
-calculations might not hold in the case of quantiles, leading to the creation of Qp and the
-critical p-value adjustment. The critical
-p-value adjustment is a particularly useful method to find confidence intervals and p-values
-for quantile comparisons. The R command stats::p.adjust() reimplements the techniques
-developed in two papers by Benjamini and Hochberg, and Benjamini and Yekutieli.
-The critical p-value adjustment has been used in a number of R calculations, such as the
-WRS2 package used in the analysis below.
-
-
-
+</br></br>
 
 ## Datasets
 
@@ -136,8 +48,63 @@ files into a Spark DataFrame. As a DataFrame the metadata was filtered and
 transformed into word feature vectors for every journal listed.
 
 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(magrittr); library(readr); library(glue); library(dplyr); library(tidyr)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+workingDir <- 
+  "C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/"
+
+asthma <- read_csv(glue("{workingDir}asthmaAll.csv"),
+                   col_names = c("journal_x", "journal_asthma", "cosine_similarity"))
+
+diabetes <- read_csv(glue("{workingDir}diabetesAll.csv"),
+                   col_names = c("journal_x", "journal_diabetes", "cosine_similarity"))
+
+hiv <- read_csv(glue("{workingDir}hivAll.csv"),
+                   col_names = c("journal_x", "journal_hiv", "cosine_similarity"))
+```
+
+</br>
+
+Three hand selected subgroups of journals were compared to the whole corpus: Diabetes, Asthma, and HIV. Journals were selected for each group if their title contained the disease term. I was curious to find out what journals had similar TF-IDF feature vectors to these highly specific groups of journals.
+
+```{r}
+asthma$journal_asthma %>% unique() %>% head(3)
+diabetes$journal_diabetes %>% unique() %>% head(3)
+hiv$journal_hiv %>% unique() %>% head(3)
+```
+
+</br></br>
+
+The sizes of the hand-selected groups compared to the whole set of journals:
+
+```{r eval=FALSE}
+list(
+  distinct_all = n_distinct(asthma$journal_x),
+  distinct_asthma = n_distinct(asthma$journal_asthma),
+  distinct_diabetes = n_distinct(diabetes$journal_diabetes),
+  distinct_hiv = n_distinct(hiv$journal_hiv)
+  ) %>% as.data.frame( row.names = "n_journals")
+```
+
+</br></br>
+
+
+Spark is used to filter and transform the abstracts into feature vectors
+for each academic journal. These journals are then compared to each other. Three subgroups
+are filtered from the whole set. Each subgroup reflects a sample of journals in different
+health subjects: Diabetes, Asthma, and HIV. These three subgroups are then compared to the
+whole set of feature vectors. The cosine similarity is calculated for all comparisons,
+and each subgroup's distribution from 0 (no similarities) to 1 (identical) is assessed.
+
+
+</br></br>
 
 ## Design
+
+</br>
 
 ### Lemma Array Generation
 
@@ -152,7 +119,7 @@ JournalTitle. This resulted in all unique JournalTitle having a corresponding
 array of lemmas from all articles in this PubMed sample. At this stage there were
 5591 unique JournalTitles and 112,405 unique lemmas across all JournalTitles.  
 
-
+</br></br>
 
 ## TF-IDF Features
 
@@ -161,6 +128,8 @@ ML package was used to hash lemmas. The number of features for the hash function
 was set above 5591 to $2^17$ to avoid collisions and to increase calculation speed.
 Spark ML was also used to calculate IDF for the hashed lemma vectors. IDF values were
 rescaled to generate TF-IDF values.
+
+</br></br>
 
 ## Pairwise Cosine Similarity
 
@@ -177,6 +146,7 @@ analysis in R.
 
 [Top rows of the Spark DataFrame containing part]()
 
+</br></br>
 
 ## Quantile Comparisons
 
@@ -190,6 +160,7 @@ to determine if the pattern matching technique yielded groups that were internal
 more similar than the whole corpus. Internally, the groups had less spread than the
 whole corpus according to quantile calculations.
 
+</br></br>
 
 #### Within Group Similarity Quantiles
 
@@ -230,6 +201,8 @@ The most stark difference is in the 80th quantile and above. Diabetes-Asthma and
 the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
 than the groups HIV and Asthma.
 
+</br></br>
+
 ## Conclusion
 
 The workflow described in this paper can be customized to group vectors for any of the metadata
@@ -241,8 +214,7 @@ area of a distribution. In the case of cosine similarity in a large corpus, the 
 contain the most useful information. This workflow, and other similar workflows, allow researchers
 to gather information that might not be readily apparent with a standard statistical approach.
 
-
-
+</br></br>
 
 ## thebibliography
 
@@ -278,41 +250,8 @@ to gather information that might not be readily apparent with a standard statist
 
 
 
+</br></br>
 
-## Further R Analysis
-
-
-```{r}
-workingDir <- "C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/"
-dir(workingDir)
-
-asthma <- read_csv(glue("{workingDir}asthmaAll.csv"),
-                   col_names = c("journal_x", "journal_asthma", "cosine_similarity"))
-
-diabetes <- read_csv(glue("{workingDir}diabetesAll.csv"),
-                   col_names = c("journal_x", "journal_diabetes", "cosine_similarity"))
-
-hiv <- read_csv(glue("{workingDir}hivAll.csv"),
-                   col_names = c("journal_x", "journal_hiv", "cosine_similarity"))
-
-```
-
-
-simple exploration
-
-```{r eval=FALSE}
-asthma$journal_asthma %>% n_distinct() # 5
-diabetes$journal_diabetes %>% n_distinct() # 40
-hiv$journal_hiv %>% n_distinct() # 8
-
-
-asthma %>%
-  summarise(
-    distinct_x = n_distinct(journal_x),
-    distinct_asthma = n_distinct(journal_asthma)
-  )
-
-```
 
 
 most similar in outgroup

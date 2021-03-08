@@ -13,52 +13,9 @@ DisableComments: no
 
 
 
-<p>Summary summary summary summary summary summary summary summary summary summary summary summary summary summary summary</p>
-<div id="libraries-used" class="section level2">
-<h2>Libraries Used</h2>
-<pre class="r"><code>library(magrittr); library(readr); library(glue); library(dplyr); library(tidyr)</code></pre>
-<div id="paper" class="section level23">
-<p class="heading">Paper</p>
-</div>
-</div>
-<div id="word-corpus-as-a-feature-vector-for-journals" class="section level1">
-<h1>Word Corpus as a Feature Vector for Journals</h1>
-<p>Realtime Big Data Analytics
-Dr. Lakshminarayanan Subramanian \
-12/21/2020</p>
-<div id="abstract" class="section level2">
-<h2>abstract</h2>
-<p>In this paper a workflow for document similarity comparisons is explained. Many text
-analysis methods use feature vectors to compare groups of documents. Generally the feature vectors
-are used to identify similar or unique documents. The workflow explained below uses feature
-vectors to examine academic journals with papers indexed on PubMed. The distributed computing
-environment Spark on HDFS is used to filter and transform text into grouped TF-IDF vectors.
-Three subgroups of journals were compared to the whole corpus: Diabetes, Asthma, and HIV.
-The journal feature vectors were compared using cosine similarity, then quantiles of
-each subgroup was compared.</p>
-</div>
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>Document comparison can be performed in many ways. One way is to construct word
-vectors for each document, containing indexes for all possible words in the corpus.
-These feature vectors can be count based, where each word is taken as a direct
-frequency count or a weighted in some way. Feature vectors can also be generated
-through predictive modeling. Generating feature vectors over a
-whole corpus is usually performed to find unknown documents that are similar to
-a document of interest. There are additional methods to measure the variance
-among groups of similar documents or across the whole corpus.
-This paper describes one example of a highly customizable workflow for similar-document
-identification.</p>
-<p>PubMed abstract articles are loaded into a distributed computing
-environment. Spark is used to filter and transform the abstracts into feature vectors
-for each academic journal. These journals are then compared to each other. Three subgroups
-are filtered from the whole set. Each subgroup reflects a sample of journals in different
-health subjects: Diabetes, Asthma, and HIV. These three subgroups are then compared to the
-whole set of feature vectors. The cosine similarity is calculated for all comparisons,
-and each subgroup’s distribution from 0 (no similarities) to 1 (identical) is assessed.</p>
-</div>
+<p></br></p>
 <div id="motivation" class="section level2">
-<h2>Motivation</h2>
+<h2>Motivation:</h2>
 <p>Biomedical research is performed at a remarkable pace. Many stakeholders benefit from
 the advance of this research, however the volume of literature in various Biomedical subjects
 is increasingly becoming a hurdle for researchers and practitioners. Valuable time is
@@ -70,48 +27,10 @@ Some journals have massively broad subjects and wide circulation, while others m
 niche journals with smaller readerships. Subject matter is difficult to determine based
 on a cursory glance at the title and a few published articles. Therefore it could be
 useful to classify journals based on the literature that they publish.</p>
-</div>
-<div id="related-work" class="section level2">
-<h2>Related Work</h2>
-<p>There are many techniques to extract information from a body of text.
-Popular techniques range from in text syntactic structure relation to whole
-corpus classification using Support Vector Machines. The utility
-of this task is apparent based on the number of tools, papers, and forum posts on
-the topic. One common technique to generate a feature vector for a document is to
-calculate Term Frequency (TF) and Inverse Document Frequency (IDF). The first example
-of TF in academic literature by Luhn, H.P. in 1957. Luhn’s paper calculated
-TF as the per document frequency of terms. When using TF the assumption is that the
-frequency of a term in a document is linearly proportional to its weight, therefore TF
-could be used directly as the term weight. In a later paper by Sparck in 1972, a
-similar statistic to measure the weight of terms in a document is described, IDF.
-IDF assumes that the weight of a term in a specific document is proportional to the
-number of documents in which that term occurs. Since the introduction
-of TF and IDF, researchers have used TF and IDF separately or in a combined approach
-to measure the similarity or differences between documents.
-Calculating TF and IDF generates a feature vector for each term in each document.
-Once the feature vector is calculated there
-are once again a plethora of techniques for analysis. Cosine similarity, also known as
-dot product similarity, is a popular method to compare two vectors.
-This technique has a number of advantages. It is relatively simple, allowing researchers
-to implement it and understand its assumptions. Finally, it is a dot product
-and magnitude vector calculation, making it tractible to programers.
-There is an inherent problem when comparing many n dimensional vectors with only a one dimension
-statistic. Researchers generally reduce the dimension among all pairwise documents, then
-perform an additional reduction to the group of documents. Issues with data reduction were
-made famous as Anscombe’s Quartet, discussed by Anscombe in his 1973 paper. The primary issue highlighted by Anscombe is that
-data reduction will ignore the original distribution. Statistical tools have been
-developed to combat this issue. Notably, estimators based on quantiles have become a robust
-technique that can have good statistical power even in skewed distributions. A quantile approach does not assume data is normally distributed nor does
-it assume that variance is homogenous, unlike ANOVA.</p>
-<p>It is important to understand the confidence interval and p-value when rejecting the null or
-alternative hypothesis. Researchers noticed that the standard p-value
-calculations might not hold in the case of quantiles, leading to the creation of Qp and the
-critical p-value adjustment. The critical
-p-value adjustment is a particularly useful method to find confidence intervals and p-values
-for quantile comparisons. The R command stats::p.adjust() reimplements the techniques
-developed in two papers by Benjamini and Hochberg, and Benjamini and Yekutieli.
-The critical p-value adjustment has been used in a number of R calculations, such as the
-WRS2 package used in the analysis below.</p>
+<p></br></p>
+<p>The PubMed database of article metadata is an XML structured mass of information containing the titles, authors, abstracts, affiliations and many other potentially useful fields.</p>
+<p>I used TF-IDF feature vectors to examine academic journals using abstracts on PubMed. The distributed computing environment, Spark, is used to filter and transform text into TF-IDF vectors.</p>
+<p></br></br></p>
 </div>
 <div id="datasets" class="section level2">
 <h2>Datasets</h2>
@@ -123,9 +42,39 @@ The downloaded metadata was loaded as XML into the NYU HPC distributed file
 system (HDFS). The spark-xml package from Databricks was used to parse the XML
 files into a Spark DataFrame. As a DataFrame the metadata was filtered and
 transformed into word feature vectors for every journal listed.</p>
+<p></br></p>
+<p>Three hand selected subgroups of journals were compared to the whole corpus: Diabetes, Asthma, and HIV. Journals were selected for each group if their title contained the disease term. I was curious to find out what journals had similar TF-IDF feature vectors to these highly specific groups of journals.</p>
+<pre class="r"><code>asthma$journal_asthma %&gt;% unique() %&gt;% head(3)</code></pre>
+<pre><code>## [1] &quot;Journal of asthma and allergy&quot;                                                                                         
+## [2] &quot;The Journal of asthma : official journal of the Association for the Care of Asthma&quot;                                    
+## [3] &quot;Annals of allergy, asthma &amp; immunology : official publication of the American College of Allergy, Asthma, &amp; Immunology&quot;</code></pre>
+<pre class="r"><code>diabetes$journal_diabetes %&gt;% unique() %&gt;% head(3)</code></pre>
+<pre><code>## [1] &quot;Diabetology &amp; metabolic syndrome&quot; &quot;Journal of diabetes research&quot;    
+## [3] &quot;JMIR diabetes&quot;</code></pre>
+<pre class="r"><code>hiv$journal_hiv %&gt;% unique() %&gt;% head(3)</code></pre>
+<pre><code>## [1] &quot;Southern African journal of HIV medicine&quot;
+## [2] &quot;Current HIV research&quot;                    
+## [3] &quot;Current HIV/AIDS reports&quot;</code></pre>
+<p></br></br></p>
+<p>The sizes of the hand-selected groups compared to the whole set of journals:</p>
+<pre class="r"><code>list(
+  distinct_all = n_distinct(asthma$journal_x),
+  distinct_asthma = n_distinct(asthma$journal_asthma),
+  distinct_diabetes = n_distinct(diabetes$journal_diabetes),
+  distinct_hiv = n_distinct(hiv$journal_hiv)
+  ) %&gt;% as.data.frame( row.names = &quot;n_journals&quot;)</code></pre>
+<p></br></br></p>
+<p>Spark is used to filter and transform the abstracts into feature vectors
+for each academic journal. These journals are then compared to each other. Three subgroups
+are filtered from the whole set. Each subgroup reflects a sample of journals in different
+health subjects: Diabetes, Asthma, and HIV. These three subgroups are then compared to the
+whole set of feature vectors. The cosine similarity is calculated for all comparisons,
+and each subgroup’s distribution from 0 (no similarities) to 1 (identical) is assessed.</p>
+<p></br></br></p>
 </div>
 <div id="design" class="section level2">
 <h2>Design</h2>
+<p></br></p>
 <div id="lemma-array-generation" class="section level3">
 <h3>Lemma Array Generation</h3>
 <p>Data was cleaned, analyzed, and visualized in Spark and R. After data collection
@@ -138,6 +87,7 @@ and prepositions. Once filtered, the lemmas were aggregated into an array for ea
 JournalTitle. This resulted in all unique JournalTitle having a corresponding
 array of lemmas from all articles in this PubMed sample. At this stage there were
 5591 unique JournalTitles and 112,405 unique lemmas across all JournalTitles.</p>
+<p></br></br></p>
 </div>
 </div>
 <div id="tf-idf-features" class="section level2">
@@ -147,6 +97,7 @@ ML package was used to hash lemmas. The number of features for the hash function
 was set above 5591 to <span class="math inline">\(2^17\)</span> to avoid collisions and to increase calculation speed.
 Spark ML was also used to calculate IDF for the hashed lemma vectors. IDF values were
 rescaled to generate TF-IDF values.</p>
+<p></br></br></p>
 </div>
 <div id="pairwise-cosine-similarity" class="section level2">
 <h2>Pairwise Cosine Similarity</h2>
@@ -158,6 +109,7 @@ the pairwise cosine similarity user-defined-function to be compared against the
 whole set. Each cosine similarity DataFrame was written to csv files for further
 analysis in R.</p>
 <p><a href="">Top rows of the Spark DataFrame containing part</a></p>
+<p></br></br></p>
 </div>
 <div id="quantile-comparisons" class="section level2">
 <h2>Quantile Comparisons</h2>
@@ -170,6 +122,7 @@ vectors that are similar. Quantiles were also calculated for isolated subgroups
 to determine if the pattern matching technique yielded groups that were internally
 more similar than the whole corpus. Internally, the groups had less spread than the
 whole corpus according to quantile calculations.</p>
+<p></br></br></p>
 <div id="within-group-similarity-quantiles" class="section level4">
 <h4>Within Group Similarity Quantiles</h4>
 <table>
@@ -244,6 +197,7 @@ All pairwise comparisons show a high degree of similarity in the 40th and 60th p
 The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are
 the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
 than the groups HIV and Asthma.</p>
+<p></br></br></p>
 </div>
 </div>
 <div id="conclusion" class="section level2">
@@ -255,6 +209,7 @@ in the beginning of the workflow. They could easily be incorporated into an anal
 area of a distribution. In the case of cosine similarity in a large corpus, the distribution tail will
 contain the most useful information. This workflow, and other similar workflows, allow researchers
 to gather information that might not be readily apparent with a standard statistical approach.</p>
+<p></br></br></p>
 </div>
 <div id="thebibliography" class="section level2">
 <h2>thebibliography</h2>
@@ -283,53 +238,9 @@ to gather information that might not be readily apparent with a standard statist
 \bibitem{b23} Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
 \bibitem{b23} Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
 \bibitem{b24} Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664</code></pre>
-<div id="paper-1" class="section level23">
+<div id="paper" class="section level23">
 <p class="heading">Paper</p>
-</div>
-</div>
-<div id="further-r-analysis" class="section level2">
-<h2>Further R Analysis</h2>
-<pre class="r"><code>workingDir &lt;- &quot;C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/&quot;
-dir(workingDir)</code></pre>
-<pre><code>## [1] &quot;asthmaAll.csv&quot;   &quot;diabetesAll.csv&quot; &quot;hivAll.csv&quot;</code></pre>
-<pre class="r"><code>asthma &lt;- read_csv(glue(&quot;{workingDir}asthmaAll.csv&quot;),
-                   col_names = c(&quot;journal_x&quot;, &quot;journal_asthma&quot;, &quot;cosine_similarity&quot;))</code></pre>
-<pre><code>## 
-## -- Column specification --------------------------------------------------------
-## cols(
-##   journal_x = col_character(),
-##   journal_asthma = col_character(),
-##   cosine_similarity = col_double()
-## )</code></pre>
-<pre class="r"><code>diabetes &lt;- read_csv(glue(&quot;{workingDir}diabetesAll.csv&quot;),
-                   col_names = c(&quot;journal_x&quot;, &quot;journal_diabetes&quot;, &quot;cosine_similarity&quot;))</code></pre>
-<pre><code>## 
-## -- Column specification --------------------------------------------------------
-## cols(
-##   journal_x = col_character(),
-##   journal_diabetes = col_character(),
-##   cosine_similarity = col_double()
-## )</code></pre>
-<pre class="r"><code>hiv &lt;- read_csv(glue(&quot;{workingDir}hivAll.csv&quot;),
-                   col_names = c(&quot;journal_x&quot;, &quot;journal_hiv&quot;, &quot;cosine_similarity&quot;))</code></pre>
-<pre><code>## 
-## -- Column specification --------------------------------------------------------
-## cols(
-##   journal_x = col_character(),
-##   journal_hiv = col_character(),
-##   cosine_similarity = col_double()
-## )</code></pre>
-<p>simple exploration</p>
-<pre class="r"><code>asthma$journal_asthma %&gt;% n_distinct() # 5
-diabetes$journal_diabetes %&gt;% n_distinct() # 40
-hiv$journal_hiv %&gt;% n_distinct() # 8
-
-
-asthma %&gt;%
-  summarise(
-    distinct_x = n_distinct(journal_x),
-    distinct_asthma = n_distinct(journal_asthma)
-  )</code></pre>
+<p></br></br></p>
 <p>most similar in outgroup</p>
 <pre class="r"><code>ingroup_asthma_cossim &lt;- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
 asthma$journal_x[asthma$cosine_similarity &gt; quantile(ingroup_asthma_cossim, probs = 0.75) &amp; !(asthma$journal_x %in% asthma$journal_asthma)]</code></pre>
