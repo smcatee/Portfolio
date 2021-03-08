@@ -1,0 +1,26 @@
+---
+title: Distance
+author: Sean D McAtee
+date: '2021-03-08'
+slug: distance
+categories: []
+tags: []
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+## Distance Measures
+
+Otsuka-Ochiai coefficient
+https://en.wikipedia.org/wiki/Cosine_similarity#Otsuka-Ochiai_coefficient
+
+https://en.wikipedia.org/wiki/Cosine_similarity#Angular_distance_and_similarity
+
+classic dist fx and proposed new fx
+https://axon.cs.byu.edu/~randy/jair/wilson2.html
+
+
+
