@@ -191,7 +191,8 @@ more similar than the whole corpus. Internally, the groups had less spread than 
 whole corpus according to quantile calculations.
 
 
-### Within Group Similarity Quantiles
+#### Within Group Similarity Quantiles
+
 ```{r table, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 tabl = "
 | Subgroup | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 |
