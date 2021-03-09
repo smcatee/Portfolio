@@ -84,7 +84,7 @@ hiv$journal_hiv %>% unique() %>% head(3)
 
 The sizes of the hand-selected groups compared to the whole set of journals:
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 list(
   distinct_all = n_distinct(asthma$journal_x),
   distinct_asthma = n_distinct(asthma$journal_asthma),
@@ -315,7 +315,7 @@ hiv_top_sim
 
 ## Heatmap of top 2 unique pairs vs the disease group
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 asthma_long <- asthma[asthma$journal_x %in% unique(asthma_top_sim$journal_x),] %>% 
   pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
@@ -325,7 +325,7 @@ rownames(asthma_sim_matrix) <- asthma_long[[1]]
 heatmap(asthma_sim_matrix)
 ```
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 diabetes_long <- diabetes[diabetes$journal_x %in% unique(diabetes_top_sim$journal_x),] %>% 
   pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
@@ -335,7 +335,7 @@ rownames(diabetes_sim_matrix) <- diabetes_long[[1]]
 heatmap(diabetes_sim_matrix)
 ```
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 hiv_long <- hiv[hiv$journal_x %in% unique(hiv_top_sim$journal_x),] %>% 
   pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 

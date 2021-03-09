@@ -67,6 +67,8 @@ transformed into word feature vectors for every journal listed.</p>
   distinct_diabetes = n_distinct(diabetes$journal_diabetes),
   distinct_hiv = n_distinct(hiv$journal_hiv)
   ) %&gt;% as.data.frame( row.names = &quot;n_journals&quot;)</code></pre>
+<pre><code>##            distinct_all distinct_asthma distinct_diabetes distinct_hiv
+## n_journals         5591               5                40            8</code></pre>
 <p></br></br></p>
 <p>Spark is used to filter and transform the abstracts into feature vectors
 for each academic journal. These journals are then compared to each other. Three subgroups
@@ -457,6 +459,7 @@ asthma_sim_matrix &lt;- as.matrix(asthma_long[-1])
 rownames(asthma_sim_matrix) &lt;- asthma_long[[1]]
 
 heatmap(asthma_sim_matrix)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <pre class="r"><code>diabetes_long &lt;- diabetes[diabetes$journal_x %in% unique(diabetes_top_sim$journal_x),] %&gt;% 
   pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
@@ -464,6 +467,7 @@ diabetes_sim_matrix &lt;- as.matrix(diabetes_long[-1])
 rownames(diabetes_sim_matrix) &lt;- diabetes_long[[1]]
 
 heatmap(diabetes_sim_matrix)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <pre class="r"><code>hiv_long &lt;- hiv[hiv$journal_x %in% unique(hiv_top_sim$journal_x),] %&gt;% 
   pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
@@ -471,5 +475,6 @@ hiv_sim_matrix &lt;- as.matrix(hiv_long[-1])
 rownames(hiv_sim_matrix) &lt;- hiv_long[[1]]
 
 heatmap(hiv_sim_matrix)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 </div>
 </div>
