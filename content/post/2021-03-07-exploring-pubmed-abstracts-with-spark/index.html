@@ -242,41 +242,234 @@ to gather information that might not be readily apparent with a standard statist
 \bibitem{b23} Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
 \bibitem{b23} Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
 \bibitem{b24} Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664</code></pre>
-<div id="paper" class="section level23">
-<p class="heading">Paper</p>
 <p></br></br></p>
-<p>most similar in outgroup</p>
+</div>
+<div id="similar-journals" class="section level2">
+<h2>Similar journals</h2>
 <pre class="r"><code>ingroup_asthma_cossim &lt;- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
 asthma$journal_x[asthma$cosine_similarity &gt; quantile(ingroup_asthma_cossim, probs = 0.75) &amp; !(asthma$journal_x %in% asthma$journal_asthma)]</code></pre>
+<pre><code>## [1] &quot;The European respiratory journal&quot;                           
+## [2] &quot;Pediatric pulmonology&quot;                                      
+## [3] &quot;Canadian respiratory journal&quot;                               
+## [4] &quot;Expert review of respiratory medicine&quot;                      
+## [5] &quot;Lung India : official organ of Indian Chest Society&quot;        
+## [6] &quot;Zhonghua nei ke za zhi&quot;                                     
+## [7] &quot;Pediatric clinics of North America&quot;                         
+## [8] &quot;The journal of allergy and clinical immunology. In practice&quot;
+## [9] &quot;Allergy&quot;</code></pre>
 <pre class="r"><code>ingroup_diabetes_cossim &lt;- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
 diabetes$journal_x[diabetes$cosine_similarity &gt; quantile(ingroup_diabetes_cossim, probs = 0.95) &amp; !(diabetes$journal_x %in% diabetes$journal_diabetes)]</code></pre>
+<pre><code>##  [1] &quot;The British journal of dermatology&quot;                                                                                                      
+##  [2] &quot;The Lancet. Respiratory medicine&quot;                                                                                                        
+##  [3] &quot;Journal of nutritional science&quot;                                                                                                          
+##  [4] &quot;Vox sanguinis&quot;                                                                                                                           
+##  [5] &quot;Lancet (London, England)&quot;                                                                                                                
+##  [6] &quot;Public health nutrition&quot;                                                                                                                 
+##  [7] &quot;Medicina (Kaunas, Lithuania)&quot;                                                                                                            
+##  [8] &quot;PloS one&quot;                                                                                                                                
+##  [9] &quot;Medicine&quot;                                                                                                                                
+## [10] &quot;Therapeutic advances in endocrinology and metabolism&quot;                                                                                    
+## [11] &quot;International journal of environmental research and public health&quot;                                                                       
+## [12] &quot;Clinical nutrition (Edinburgh, Scotland)&quot;                                                                                                
+## [13] &quot;Clinical nutrition ESPEN&quot;                                                                                                                
+## [14] &quot;Journal of the American Heart Association&quot;                                                                                               
+## [15] &quot;The lancet. Psychiatry&quot;                                                                                                                  
+## [16] &quot;The Lancet. Global health&quot;                                                                                                               
+## [17] &quot;British journal of haematology&quot;                                                                                                          
+## [18] &quot;Clinical physiology and functional imaging&quot;                                                                                              
+## [19] &quot;Journal of family medicine and primary care&quot;                                                                                             
+## [20] &quot;BMC public health&quot;                                                                                                                       
+## [21] &quot;Journal of clinical medicine&quot;                                                                                                            
+## [22] &quot;Nutrients&quot;                                                                                                                               
+## [23] &quot;Progress in cardiovascular diseases&quot;                                                                                                     
+## [24] &quot;BJS open&quot;                                                                                                                                
+## [25] &quot;The Lancet. Infectious diseases&quot;                                                                                                         
+## [26] &quot;The Lancet. Neurology&quot;                                                                                                                   
+## [27] &quot;Journal of Taibah University Medical Sciences&quot;                                                                                           
+## [28] &quot;The British journal of surgery&quot;                                                                                                          
+## [29] &quot;The Lancet. Child &amp; adolescent health&quot;                                                                                                   
+## [30] &quot;Endocrine practice : official journal of the American College of Endocrinology and the American Association of Clinical Endocrinologists&quot;
+## [31] &quot;BMJ open&quot;                                                                                                                                
+## [32] &quot;The Lancet. Oncology&quot;                                                                                                                    
+## [33] &quot;The Lancet. Planetary health&quot;                                                                                                            
+## [34] &quot;Frontiers in endocrinology&quot;                                                                                                              
+## [35] &quot;The Lancet. Haematology&quot;                                                                                                                 
+## [36] &quot;BMC endocrine disorders&quot;                                                                                                                 
+## [37] &quot;Asia Pacific journal of clinical nutrition&quot;                                                                                              
+## [38] &quot;The lancet. HIV&quot;                                                                                                                         
+## [39] &quot;Endocrine&quot;</code></pre>
 <pre class="r"><code>ingroup_hiv_cossim &lt;- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
 hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.85) &amp; !(hiv$journal_x %in% hiv$journal_hiv)]</code></pre>
-<pre class="r"><code>asthma_long &lt;- asthma %&gt;%
-                dplyr::arrange(desc(cosine_similarity)) %&gt;% 
-                pivot_wider(
-                  names_from = journal_asthma,
-                  values_from = cosine_similarity
-                  )
-
+<pre><code>##  [1] &quot;Virologie (Montrouge, France)&quot;                                                                                                  
+##  [2] &quot;Vaccine: X&quot;                                                                                                                     
+##  [3] &quot;Current immunology reviews&quot;                                                                                                     
+##  [4] &quot;AIDS care&quot;                                                                                                                      
+##  [5] &quot;African journal of AIDS research : AJAR&quot;                                                                                        
+##  [6] &quot;Virologie (Montrouge, France)&quot;                                                                                                  
+##  [7] &quot;The Journal of the Association of Nurses in AIDS Care : JANAC&quot;                                                                  
+##  [8] &quot;AIDS care&quot;                                                                                                                      
+##  [9] &quot;The Journal of the Association of Nurses in AIDS Care : JANAC&quot;                                                                  
+## [10] &quot;AIDS care&quot;                                                                                                                      
+## [11] &quot;AIDS care&quot;                                                                                                                      
+## [12] &quot;The British journal of dermatology&quot;                                                                                             
+## [13] &quot;The Lancet. Respiratory medicine&quot;                                                                                               
+## [14] &quot;The Lancet. Public health&quot;                                                                                                      
+## [15] &quot;Journal of nutritional science&quot;                                                                                                 
+## [16] &quot;Virologie (Montrouge, France)&quot;                                                                                                  
+## [17] &quot;Vox sanguinis&quot;                                                                                                                  
+## [18] &quot;Lancet (London, England)&quot;                                                                                                       
+## [19] &quot;Public health nutrition&quot;                                                                                                        
+## [20] &quot;AIDS care&quot;                                                                                                                      
+## [21] &quot;AIDS care&quot;                                                                                                                      
+## [22] &quot;Letters in applied microbiology&quot;                                                                                                
+## [23] &quot;Vaccine&quot;                                                                                                                        
+## [24] &quot;Culture, health &amp; sexuality&quot;                                                                                                    
+## [25] &quot;The lancet. Psychiatry&quot;                                                                                                         
+## [26] &quot;The Lancet. Global health&quot;                                                                                                      
+## [27] &quot;The lancet. Diabetes &amp; endocrinology&quot;                                                                                           
+## [28] &quot;Journal of the International Association of Providers of AIDS Care&quot;                                                             
+## [29] &quot;British journal of haematology&quot;                                                                                                 
+## [30] &quot;Clinical physiology and functional imaging&quot;                                                                                     
+## [31] &quot;Journal of the International AIDS Society&quot;                                                                                      
+## [32] &quot;Journal of life sciences (Westlake Village, Calif.)&quot;                                                                            
+## [33] &quot;AIDS and behavior&quot;                                                                                                              
+## [34] &quot;Journal of the International AIDS Society&quot;                                                                                      
+## [35] &quot;AIDS and behavior&quot;                                                                                                              
+## [36] &quot;Infectious disease clinics of North America&quot;                                                                                    
+## [37] &quot;Journal of the International AIDS Society&quot;                                                                                      
+## [38] &quot;AIDS and behavior&quot;                                                                                                              
+## [39] &quot;AIDS and behavior&quot;                                                                                                              
+## [40] &quot;Journal of the International AIDS Society&quot;                                                                                      
+## [41] &quot;BJS open&quot;                                                                                                                       
+## [42] &quot;The Lancet. Infectious diseases&quot;                                                                                                
+## [43] &quot;Journal of applied microbiology&quot;                                                                                                
+## [44] &quot;AIDS and behavior&quot;                                                                                                              
+## [45] &quot;The Lancet. Neurology&quot;                                                                                                          
+## [46] &quot;AIDS (London, England)&quot;                                                                                                         
+## [47] &quot;International journal of infectious diseases : IJID : official publication of the International Society for Infectious Diseases&quot;
+## [48] &quot;Wiener medizinische Wochenschrift (1946)&quot;                                                                                       
+## [49] &quot;AIDS (London, England)&quot;                                                                                                         
+## [50] &quot;Wiener medizinische Wochenschrift (1946)&quot;                                                                                       
+## [51] &quot;AIDS (London, England)&quot;                                                                                                         
+## [52] &quot;AIDS (London, England)&quot;                                                                                                         
+## [53] &quot;AIDS (London, England)&quot;                                                                                                         
+## [54] &quot;The British journal of surgery&quot;                                                                                                 
+## [55] &quot;The Lancet. Child &amp; adolescent health&quot;                                                                                          
+## [56] &quot;Human vaccines &amp; immunotherapeutics&quot;                                                                                            
+## [57] &quot;The Lancet. Oncology&quot;                                                                                                           
+## [58] &quot;The Lancet. Planetary health&quot;                                                                                                   
+## [59] &quot;Journal of acquired immune deficiency syndromes (1999)&quot;                                                                         
+## [60] &quot;AIDS research and human retroviruses&quot;                                                                                           
+## [61] &quot;Journal of acquired immune deficiency syndromes (1999)&quot;                                                                         
+## [62] &quot;AIDS research and human retroviruses&quot;                                                                                           
+## [63] &quot;The British journal of nutrition&quot;                                                                                               
+## [64] &quot;Journal of acquired immune deficiency syndromes (1999)&quot;                                                                         
+## [65] &quot;AIDS research and human retroviruses&quot;                                                                                           
+## [66] &quot;The Lancet. Haematology&quot;                                                                                                        
+## [67] &quot;AIDS research and therapy&quot;                                                                                                      
+## [68] &quot;Pathogens and disease&quot;                                                                                                          
+## [69] &quot;Vaccines&quot;                                                                                                                       
+## [70] &quot;AIDS research and therapy&quot;                                                                                                      
+## [71] &quot;Pathogens and disease&quot;                                                                                                          
+## [72] &quot;AIDS research and therapy&quot;</code></pre>
+<p></br></br></p>
+</div>
+<div id="cosine-similarity" class="section level2">
+<h2>Cosine similarity</h2>
+<pre class="r"><code>asthma_top_sim &lt;- unique(asthma$journal_asthma[!(asthma$journal_x %in% asthma$journal_asthma)]) %&gt;% 
+  purrr::map_dfr(
+    ~ asthma[!(asthma$journal_x %in% asthma$journal_asthma),] %&gt;% 
+    dplyr::filter(journal_asthma == .x ) %&gt;%
+    dplyr::arrange(desc(cosine_similarity)) %&gt;%
+    head(2)
+  )
+asthma_top_sim</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##    journal_x                 journal_asthma                     cosine_similari~
+##    &lt;chr&gt;                     &lt;chr&gt;                                         &lt;dbl&gt;
+##  1 Allergy                   Journal of asthma and allergy                 0.213
+##  2 NPJ primary care respira~ Journal of asthma and allergy                 0.175
+##  3 Allergy                   The Journal of asthma : official ~            0.337
+##  4 The journal of allergy a~ The Journal of asthma : official ~            0.287
+##  5 Pediatric clinics of Nor~ Annals of allergy, asthma &amp; immun~            0.208
+##  6 International archives o~ Annals of allergy, asthma &amp; immun~            0.208
+##  7 The European respiratory~ Allergy, asthma, and clinical imm~            0.202
+##  8 Respiratory research      Allergy, asthma, and clinical imm~            0.198
+##  9 Allergy                   Asthma research and practice                  0.207
+## 10 The journal of allergy a~ Asthma research and practice                  0.188</code></pre>
+<pre class="r"><code>diabetes_top_sim &lt;- unique(diabetes$journal_diabetes[!(diabetes$journal_x %in% diabetes$journal_diabetes)]) %&gt;% 
+  purrr::map_dfr(
+    ~ diabetes[!(diabetes$journal_x %in% diabetes$journal_diabetes),] %&gt;% 
+    dplyr::filter(journal_diabetes == .x ) %&gt;%
+    dplyr::arrange(desc(cosine_similarity)) %&gt;%
+    head(2)
+  )
+diabetes_top_sim</code></pre>
+<pre><code>## # A tibble: 80 x 3
+##    journal_x                 journal_diabetes                   cosine_similari~
+##    &lt;chr&gt;                     &lt;chr&gt;                                         &lt;dbl&gt;
+##  1 Nutrients                 Diabetology &amp; metabolic syndrome              0.270
+##  2 PloS one                  Diabetology &amp; metabolic syndrome              0.268
+##  3 Pediatric dimensions      Journal of diabetes research                  0.229
+##  4 Nature metabolism         Journal of diabetes research                  0.219
+##  5 Monographs of the Societ~ JMIR diabetes                                 0.237
+##  6 JMIR mHealth and uHealth  JMIR diabetes                                 0.236
+##  7 Progress in cardiovascul~ Diabetes therapy : research, trea~            0.347
+##  8 BMJ (Clinical research e~ Diabetes therapy : research, trea~            0.220
+##  9 The Journal of endocrino~ Diabetes                                      0.226
+## 10 Frontiers in endocrinolo~ Diabetes                                      0.209
+## # ... with 70 more rows</code></pre>
+<pre class="r"><code>hiv_top_sim &lt;- unique(hiv$journal_hiv[!(hiv$journal_x %in% hiv$journal_hiv)]) %&gt;% 
+  purrr::map_dfr(
+    ~ hiv[!(hiv$journal_x %in% hiv$journal_hiv),] %&gt;% 
+    dplyr::filter(journal_hiv == .x ) %&gt;%
+    dplyr::arrange(desc(cosine_similarity)) %&gt;%
+    head(2)
+  )
+hiv_top_sim</code></pre>
+<pre><code>## # A tibble: 16 x 3
+##    journal_x                        journal_hiv                 cosine_similari~
+##    &lt;chr&gt;                            &lt;chr&gt;                                  &lt;dbl&gt;
+##  1 AIDS research and therapy        Southern African journal o~            0.210
+##  2 Journal of the International AI~ Southern African journal o~            0.205
+##  3 Natural product communications   Current HIV research                   0.172
+##  4 Journal of life sciences (Westl~ Current HIV research                   0.142
+##  5 AIDS care                        Current HIV/AIDS reports               0.360
+##  6 AIDS and behavior                Current HIV/AIDS reports               0.358
+##  7 AIDS and behavior                Current opinion in HIV and~            0.437
+##  8 AIDS care                        Current opinion in HIV and~            0.412
+##  9 AIDS and behavior                Journal of HIV/AIDS &amp; soci~            0.288
+## 10 AIDS care                        Journal of HIV/AIDS &amp; soci~            0.277
+## 11 AIDS care                        HIV/AIDS (Auckland, N.Z.)              0.267
+## 12 AIDS and behavior                HIV/AIDS (Auckland, N.Z.)              0.266
+## 13 AIDS and behavior                HIV medicine                           0.380
+## 14 Journal of the International AI~ HIV medicine                           0.377
+## 15 The lancet. Diabetes &amp; endocrin~ The lancet. HIV                        0.726
+## 16 BJS open                         The lancet. HIV                        0.675</code></pre>
+<p></br></br></p>
+</div>
+<div id="heatmap-of-top-2-unique-pairs-vs-the-disease-group" class="section level2">
+<h2>Heatmap of top 2 unique pairs vs the disease group</h2>
+<pre class="r"><code>asthma_long &lt;- asthma[asthma$journal_x %in% unique(asthma_top_sim$journal_x),] %&gt;% 
+  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
 asthma_sim_matrix &lt;- as.matrix(asthma_long[-1])
 rownames(asthma_sim_matrix) &lt;- asthma_long[[1]]
 
-heatmap(asthma_sim_matrix)
-heatmap(asthma_long[-1])</code></pre>
-<pre class="r"><code>diabetes_long &lt;- diabetes %&gt;% dplyr::arrange(cosine_similarity) %&gt;% pivot_wider( names_from = journal_diabetes, values_from = cosine_similarity)
+heatmap(asthma_sim_matrix)</code></pre>
+<pre class="r"><code>diabetes_long &lt;- diabetes[diabetes$journal_x %in% unique(diabetes_top_sim$journal_x),] %&gt;% 
+  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
 diabetes_sim_matrix &lt;- as.matrix(diabetes_long[-1])
 rownames(diabetes_sim_matrix) &lt;- diabetes_long[[1]]
 
 heatmap(diabetes_sim_matrix)</code></pre>
-<pre class="r"><code>hiv_long &lt;- hiv %&gt;% dplyr::arrange(cosine_similarity) %&gt;% pivot_wider( names_from = journal_hiv, values_from = cosine_similarity)
+<pre class="r"><code>hiv_long &lt;- hiv[hiv$journal_x %in% unique(hiv_top_sim$journal_x),] %&gt;% 
+  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
 hiv_sim_matrix &lt;- as.matrix(hiv_long[-1])
 rownames(hiv_sim_matrix) &lt;- hiv_long[[1]]
 
 heatmap(hiv_sim_matrix)</code></pre>
-</div>
 </div>
 </div>

@@ -251,52 +251,83 @@ to gather information that might not be readily apparent with a standard statist
 
 
 
-####################### Paper
-
-
-
 </br></br>
 
+## Similar journals
 
-
-most similar in outgroup
-
-```{r eval=FALSE}
+```{r}
 ingroup_asthma_cossim <- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
 asthma$journal_x[asthma$cosine_similarity > quantile(ingroup_asthma_cossim, probs = 0.75) & !(asthma$journal_x %in% asthma$journal_asthma)]
 ```
 
-```{r eval=FALSE}
+```{r}
 ingroup_diabetes_cossim <- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
 diabetes$journal_x[diabetes$cosine_similarity > quantile(ingroup_diabetes_cossim, probs = 0.95) & !(diabetes$journal_x %in% diabetes$journal_diabetes)]
 ```
 
-```{r eval=FALSE}
+```{r}
 ingroup_hiv_cossim <- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
 hiv$journal_x[hiv$cosine_similarity > quantile(ingroup_hiv_cossim, probs = 0.85) & !(hiv$journal_x %in% hiv$journal_hiv)]
 ```
 
 
+</br></br>
 
+## Cosine similarity
+
+```{r}
+asthma_top_sim <- unique(asthma$journal_asthma[!(asthma$journal_x %in% asthma$journal_asthma)]) %>% 
+  purrr::map_dfr(
+    ~ asthma[!(asthma$journal_x %in% asthma$journal_asthma),] %>% 
+    dplyr::filter(journal_asthma == .x ) %>%
+    dplyr::arrange(desc(cosine_similarity)) %>%
+    head(2)
+  )
+asthma_top_sim
+```
+
+```{r}
+diabetes_top_sim <- unique(diabetes$journal_diabetes[!(diabetes$journal_x %in% diabetes$journal_diabetes)]) %>% 
+  purrr::map_dfr(
+    ~ diabetes[!(diabetes$journal_x %in% diabetes$journal_diabetes),] %>% 
+    dplyr::filter(journal_diabetes == .x ) %>%
+    dplyr::arrange(desc(cosine_similarity)) %>%
+    head(2)
+  )
+diabetes_top_sim
+```
+
+```{r}
+hiv_top_sim <- unique(hiv$journal_hiv[!(hiv$journal_x %in% hiv$journal_hiv)]) %>% 
+  purrr::map_dfr(
+    ~ hiv[!(hiv$journal_x %in% hiv$journal_hiv),] %>% 
+    dplyr::filter(journal_hiv == .x ) %>%
+    dplyr::arrange(desc(cosine_similarity)) %>%
+    head(2)
+  )
+hiv_top_sim
+```
+
+
+
+
+</br></br>
+
+## Heatmap of top 2 unique pairs vs the disease group
 
 ```{r eval=FALSE}
-asthma_long <- asthma %>%
-                dplyr::arrange(desc(cosine_similarity)) %>% 
-                pivot_wider(
-                  names_from = journal_asthma,
-                  values_from = cosine_similarity
-                  )
-
+asthma_long <- asthma[asthma$journal_x %in% unique(asthma_top_sim$journal_x),] %>% 
+  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
 asthma_sim_matrix <- as.matrix(asthma_long[-1])
 rownames(asthma_sim_matrix) <- asthma_long[[1]]
 
 heatmap(asthma_sim_matrix)
-heatmap(asthma_long[-1])
 ```
 
 ```{r eval=FALSE}
-diabetes_long <- diabetes %>% dplyr::arrange(cosine_similarity) %>% pivot_wider( names_from = journal_diabetes, values_from = cosine_similarity)
+diabetes_long <- diabetes[diabetes$journal_x %in% unique(diabetes_top_sim$journal_x),] %>% 
+  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
 diabetes_sim_matrix <- as.matrix(diabetes_long[-1])
 rownames(diabetes_sim_matrix) <- diabetes_long[[1]]
@@ -305,13 +336,15 @@ heatmap(diabetes_sim_matrix)
 ```
 
 ```{r eval=FALSE}
-hiv_long <- hiv %>% dplyr::arrange(cosine_similarity) %>% pivot_wider( names_from = journal_hiv, values_from = cosine_similarity)
+hiv_long <- hiv[hiv$journal_x %in% unique(hiv_top_sim$journal_x),] %>% 
+  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
 
 hiv_sim_matrix <- as.matrix(hiv_long[-1])
 rownames(hiv_sim_matrix) <- hiv_long[[1]]
 
 heatmap(hiv_sim_matrix)
 ```
+
 
 
 
