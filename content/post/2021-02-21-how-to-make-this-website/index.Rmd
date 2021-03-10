@@ -24,19 +24,19 @@ The primary characteristics that make static websites convenient.
 
 ### Other Similar Options & Variations
 
-https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/
+https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/ `# GitLab website/portfolio`
 
 https://pages.github.com/
 
-https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/
+https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/ `# Jekyll, similar to Hugo`
 
-https://hexo.io/
+https://hexo.io/ `# Hexo, similar to Hugo`
 
 </br>
 
 ### Sources & Resources:
 
-https://bookdown.org/yihui/blogdown/ `# the Blogdown book` 
+![the Blogdown book](https://bookdown.org/yihui/blogdown/)
 
 https://gohugo.io/ `# The Hugo program website`
 
