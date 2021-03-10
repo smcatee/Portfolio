@@ -36,23 +36,25 @@ https://hexo.io/
 
 ### Sources & Resources:
 
-https://bookdown.org/yihui/blogdown/
+https://bookdown.org/yihui/blogdown/ `# the Blogdown book` 
 
-https://gohugo.io/
+https://gohugo.io/ `# The Hugo program website`
 
-https://cran.r-project.org/web/packages/rmarkdown/rmarkdown.pdf
+https://cran.r-project.org/web/packages/rmarkdown/rmarkdown.pdf `# Download R Markdown`
 
-https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1
+https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1 `# User guide R Markdown`
 
-https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1
+https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1 `# Cheatsheet R Markdown`
 
-https://rmarkdown.rstudio.com/lesson-1.html
+https://rmarkdown.rstudio.com/lesson-1.html `# More R Markdown resources`
 
-https://bookdown.org/yihui/blogdown/workflow.html
+https://bookdown.org/yihui/blogdown/workflow.html `# Recommended website build workflow`
 
-https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control#ch01-getting-started
+https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control#ch01-getting-started `# Git basics`
 
 https://yihui.org/  `# The primary blogdown & knitr author`
+
+https://drive.google.com/drive/folders/1Or_AFogbpRCHf3eSlvMd2SAVy1dXTFEz?usp=sharing `# Drive folder with this tutorial as .pdf and .Rmd`
 
 
 </br></br>
