@@ -36,11 +36,11 @@ https://hexo.io/ `# Hexo, similar to Hugo`
 
 ### Sources & Resources:
 
-![the Blogdown book](https://bookdown.org/yihui/blogdown/)
+[the Blogdown book](https://bookdown.org/yihui/blogdown/)
 
-https://gohugo.io/ `# The Hugo program website`
+[The Hugo program website](https://gohugo.io/)
 
-https://cran.r-project.org/web/packages/rmarkdown/rmarkdown.pdf `# Download R Markdown`
+[Download R Markdown](https://cran.r-project.org/web/packages/rmarkdown/rmarkdown.pdf)
 
 https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1 `# User guide R Markdown`
 
