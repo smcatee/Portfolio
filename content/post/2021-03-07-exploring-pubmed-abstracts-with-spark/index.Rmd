@@ -590,9 +590,7 @@ It should also be possible to make larger inferences about the industry which th
 
 </br></br>
 
-### The works cited from my paper
-
-Some of these sources were noted and linked directly in this page, other sources contributed to ideas and understanding.
+### Sources and inspiration
 
     Allen, E. A., Erhardt, E. B.,  Calhoun, V. D. (2012). Data Visualization in the Neurosciences: Overcoming the Curse of Dimensionality. Neuron, 74(4), 603–608. https://doi.org/10.1016/j.neuron.2012.05.001
     Altınel, B., Can Ganiz, M.,  Diri, B. (2015). A corpus-based semantic kernel for text classification by using meaning values of terms. Engineering Applications of Artificial Intelligence, 43, 54–66. https://doi.org/10.1016/j.engappai.2015.03.015
