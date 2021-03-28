@@ -518,13 +518,13 @@ asthma_hiv_diff <- tibble(quantile = asthma_hiv$partable$q,
 
 #### Plots of group pairwise quantile differences
 
-![words]('C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg')
+![words](mnt/c/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg)
 
-![hgsl](C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png)
+![hgsl](C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021\-03\-07\-exploring\-pubmed\-abstracts\-with\-spark/QuantDiffDiabetesHIV.png)
 
-![gshgwp](~/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
+![gshgwp](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
 
-![pcivpc](~/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
+![pcivpc](/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
 
 
 
