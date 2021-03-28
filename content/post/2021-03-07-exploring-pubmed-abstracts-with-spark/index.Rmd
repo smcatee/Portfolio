@@ -154,11 +154,7 @@ var journalLemmas =
       ).groupBy("journalTitle").agg(collect_list("lemma") as "lemma")
 ```
 
-</br>
-
-#### A snapshot of this Spark DataFrame from the terminal
-
-![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/posLemma.jpg)
+</br></br>
 
 
 ### TF-IDF Features
@@ -183,11 +179,6 @@ val journalDense =
     "journalTitle", "features").withColumn("features", asDense($"features"))
 ```
 
-</br>
-
-#### A snapshot of this Spark DataFrame from the terminal
-
-![](static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/featureVec.jpg)
 
 </br></br>
 
@@ -476,7 +467,7 @@ hivAve <- hiv %>%
 
 
 
-```{r eval=FALSE}
+```{r eval=FALSE, fig.show='hold'}
 joinedTable <- full_join(full_join(hivAve, diabetesAve, by = "journalTitle"),
                          asthmaAve,
                          by = "journalTitle")
@@ -512,20 +503,58 @@ asthma_hiv_diff <- tibble(quantile = asthma_hiv$partable$q,
                           estimatedDiff = asthma_hiv$partable$`est1-est.2`,
                           criticalPVal = asthma_hiv$partable$p.crit)
 
+
+plot(diabetes_asthma_diff$quantile, diabetes_asthma_diff$estimatedDiff,
+     type = "b",
+     main = "Quantile Difference: Diabetes & Asthma",
+     xlab = "Quantile",
+     ylab = "Estimated Difference",
+     ylim = c(0.02, -0.02)
+     )
+plot(diabetes_hiv_diff$quantile, diabetes_hiv_diff$estimatedDiff,
+     type = "b",
+     main = "Quantile Difference: Diabetes & HIV",
+     xlab = "Quantile",
+     ylab = "Estimated Difference",
+     ylim = c(0.02, -0.02)
+     )
+plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
+     type = "b",
+     main = "Quantile Difference: Asthma & HIV",
+     xlab = "Quantile",
+     ylab = "Estimated Difference",
+     ylim = c(0.02, -0.02)
+     )
 ```
 
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.show='hold'}
+diabetes_asthma_diff <- read_csv("C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/diabetes_asthma_diff.csv")
+diabetes_hiv_diff <- read_csv("C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/diabetes_hiv_diff.csv")
+asthma_hiv_diff <- read_csv("C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/asthma_hiv_diff.csv")
 
 
-#### Plots of group pairwise quantile differences
-
-![words](mnt/c/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg)
-
-![hgsl](C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021\-03\-07\-exploring\-pubmed\-abstracts\-with\-spark/QuantDiffDiabetesHIV.png)
-
-![gshgwp](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
-
-![pcivpc](/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
-
+plot(diabetes_asthma_diff$quantile, diabetes_asthma_diff$estimatedDiff,
+     type = "b",
+     main = "Quantile Difference: Diabetes & Asthma",
+     xlab = "Quantile",
+     ylab = "Estimated Difference",
+     ylim = c(0.02, -0.02)
+     )
+plot(diabetes_hiv_diff$quantile, diabetes_hiv_diff$estimatedDiff,
+     type = "b",
+     main = "Quantile Difference: Diabetes & HIV",
+     xlab = "Quantile",
+     ylab = "Estimated Difference",
+     ylim = c(0.02, -0.02)
+     )
+plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
+     type = "b",
+     main = "Quantile Difference: Asthma & HIV",
+     xlab = "Quantile",
+     ylab = "Estimated Difference",
+     ylim = c(0.02, -0.02)
+     )
+```
 
 
 </br>

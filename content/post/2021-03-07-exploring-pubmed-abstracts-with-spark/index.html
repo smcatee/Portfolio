@@ -104,11 +104,7 @@ var journalLemmas =
     &#39;journalTitle,
     &#39;lemma
       ).groupBy(&quot;journalTitle&quot;).agg(collect_list(&quot;lemma&quot;) as &quot;lemma&quot;)</code></pre>
-<p></br></p>
-<div id="a-snapshot-of-this-spark-dataframe-from-the-terminal" class="section level4">
-<h4>A snapshot of this Spark DataFrame from the terminal</h4>
-<p><img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/posLemma.jpg" /></p>
-</div>
+<p></br></br></p>
 </div>
 <div id="tf-idf-features" class="section level3">
 <h3>TF-IDF Features</h3>
@@ -128,12 +124,7 @@ val journalrescaledData = journalIdfModel.transform(journalhashedLemmas)
 val journalDense = 
   journalrescaledData.select(
     &quot;journalTitle&quot;, &quot;features&quot;).withColumn(&quot;features&quot;, asDense($&quot;features&quot;))</code></pre>
-<p></br></p>
-<div id="a-snapshot-of-this-spark-dataframe-from-the-terminal-1" class="section level4">
-<h4>A snapshot of this Spark DataFrame from the terminal</h4>
-<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/featureVec.jpg" /></p>
 <p></br></br></p>
-</div>
 </div>
 <div id="subgroup-comparison" class="section level3">
 <h3>Subgroup Comparison</h3>
@@ -527,31 +518,36 @@ diabetes_hiv_diff &lt;- tibble(quantile = diabetes_hiv$partable$q,
 
 asthma_hiv_diff &lt;- tibble(quantile = asthma_hiv$partable$q,
                           estimatedDiff = asthma_hiv$partable$`est1-est.2`,
-                          criticalPVal = asthma_hiv$partable$p.crit)</code></pre>
-<div id="plots-of-group-pairwise-quantile-differences" class="section level4">
-<h4>Plots of group pairwise quantile differences</h4>
-<div class="figure">
-<img src="mnt/c/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg" alt="" />
-<p class="caption">words</p>
-</div>
-<div class="figure">
-<img src="C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png" alt="" />
-<p class="caption">hgsl</p>
-</div>
-<div class="figure">
-<img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png" alt="" />
-<p class="caption">gshgwp</p>
-</div>
-<div class="figure">
-<img src="/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png" alt="" />
-<p class="caption">pcivpc</p>
-</div>
+                          criticalPVal = asthma_hiv$partable$p.crit)
+
+
+plot(diabetes_asthma_diff$quantile, diabetes_asthma_diff$estimatedDiff,
+     type = &quot;b&quot;,
+     main = &quot;Quantile Difference: Diabetes &amp; Asthma&quot;,
+     xlab = &quot;Quantile&quot;,
+     ylab = &quot;Estimated Difference&quot;,
+     ylim = c(0.02, -0.02)
+     )
+plot(diabetes_hiv_diff$quantile, diabetes_hiv_diff$estimatedDiff,
+     type = &quot;b&quot;,
+     main = &quot;Quantile Difference: Diabetes &amp; HIV&quot;,
+     xlab = &quot;Quantile&quot;,
+     ylab = &quot;Estimated Difference&quot;,
+     ylim = c(0.02, -0.02)
+     )
+plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
+     type = &quot;b&quot;,
+     main = &quot;Quantile Difference: Asthma &amp; HIV&quot;,
+     xlab = &quot;Quantile&quot;,
+     ylab = &quot;Estimated Difference&quot;,
+     ylim = c(0.02, -0.02)
+     )</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-19-1.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-19-2.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-19-3.png" width="672" /></p>
 <p></br></p>
 <p>Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.</p>
 <p>The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
 than the groups HIV and Asthma.</p>
 <p></br></br></p>
-</div>
 </div>
 </div>
 <div id="conclusion-mistakes-next-steps.." class="section level2">
