@@ -106,10 +106,10 @@ var journalLemmas =
     &#39;lemma
       ).groupBy(&quot;journalTitle&quot;).agg(collect_list(&quot;lemma&quot;) as &quot;lemma&quot;)</code></pre>
 <p></br></p>
-</div>
-<div id="a-snapshot-of-this-spark-dataframe-from-the-terminal" class="section level3">
-<h3>A snapshot of this Spark DataFrame from the terminal</h3>
+<div id="a-snapshot-of-this-spark-dataframe-from-the-terminal" class="section level4">
+<h4>A snapshot of this Spark DataFrame from the terminal</h4>
 <p><img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/posLemma.jpg" /></p>
+</div>
 </div>
 <div id="tf-idf-features" class="section level3">
 <h3>TF-IDF Features</h3>
@@ -129,11 +129,12 @@ val journalrescaledData = journalIdfModel.transform(journalhashedLemmas)
 val journalDense = 
   journalrescaledData.select(
     &quot;journalTitle&quot;, &quot;features&quot;).withColumn(&quot;features&quot;, asDense($&quot;features&quot;))</code></pre>
-</div>
-<div id="a-snapshot-of-this-spark-dataframe-from-the-terminal-1" class="section level3">
-<h3>A snapshot of this Spark DataFrame from the terminal</h3>
+<p></br></p>
+<div id="a-snapshot-of-this-spark-dataframe-from-the-terminal-1" class="section level4">
+<h4>A snapshot of this Spark DataFrame from the terminal</h4>
 <p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/featureVec.jpg" /></p>
 <p></br></br></p>
+</div>
 </div>
 <div id="subgroup-comparison" class="section level3">
 <h3>Subgroup Comparison</h3>
@@ -152,6 +153,8 @@ val hiv_journalDense =
   journalDense.filter(
     &#39;journalTitle.rlike(&quot;(\\b[Hh][Ii][Vv])&quot;)).select(
       &#39;journalTitle.alias(&quot;journalTitle_subset&quot;), &#39;features.alias(&quot;features_subset&quot;))</code></pre>
+<p></br></p>
+<p>Here is a short exploration of the three groups.</p>
 <p></br></p>
 <div id="the-number-of-journals-in-each-group" class="section level4">
 <h4>The number of journals in each group:</h4>
@@ -187,7 +190,7 @@ val hiv_journalDense =
 <p></br></br></p>
 <div id="cosine-similarity" class="section level3">
 <h3>Cosine similarity</h3>
-<p>Each group was passed to the pairwise cosine similarity user-defined-function (UDF) to be compared against the whole set. <a href="https://stackoverflow.com/a/62140182">I used the UDF from this stack answer</a></p>
+<p>Each group was passed to the pairwise cosine similarity user-defined-function (UDF) to be compared against the whole set. I used the UDF from <a href="https://stackoverflow.com/a/62140182">this stack answer</a></p>
 <p>A table of cosine similarities for these three groups vs the whole set was exported to my local environment to analyze in R.</p>
 <pre><code>val cosSimilarity = udf { (x: Vector, y: Vector) =&gt;
     val v1 = x.toArray
@@ -199,13 +202,16 @@ val hiv_journalDense =
     &quot;%.6f&quot;.format(cosineSim).toDouble
 }
 
-val joinedDf = journalDense.join(diabetes_journalDense, &#39;journalTitle =!= &#39;journalTitle_subset)
-val cosSimDf = joinedDf.withColumn(&quot;cosine_sim&quot;, cosSimilarity(&#39;features_subset, &#39;features)).select(&#39;journalTitle, &#39;journalTitle_subset, &#39;cosine_sim)</code></pre>
-<p></br></p>
-<p>The resulting DataFrame looks like this:</p>
+val joinedDf =
+  journalDense.join(diabetes_journalDense, &#39;journalTitle =!= &#39;journalTitle_subset)
+  
+val cosSimDf =
+  joinedDf.withColumn(&quot;cosine_sim&quot;, cosSimilarity(&#39;features_subset, &#39;features)).select(
+    &#39;journalTitle, &#39;journalTitle_subset, &#39;cosine_sim)</code></pre>
 <p></br></p>
 <div id="highest-cosine-similarity-scores-for-each-group" class="section level4">
 <h4>Highest cosine similarity scores for each group:</h4>
+<p>These are the two highest cosine similarity pairs for each journal in each group.</p>
 <pre class="r"><code>asthma_top_sim &lt;- unique(asthma$journal_asthma[!(asthma$journal_x %in% asthma$journal_asthma)]) %&gt;% 
   purrr::map_dfr(
     ~ asthma[!(asthma$journal_x %in% asthma$journal_asthma),] %&gt;% 
@@ -227,6 +233,7 @@ asthma_top_sim</code></pre>
 ##  8 Respiratory research      Allergy, asthma, and clinical imm~            0.198
 ##  9 Allergy                   Asthma research and practice                  0.207
 ## 10 The journal of allergy a~ Asthma research and practice                  0.188</code></pre>
+<p></br></p>
 <pre class="r"><code>diabetes_top_sim</code></pre>
 <pre><code>## # A tibble: 80 x 3
 ##    journal_x                 journal_diabetes                   cosine_similari~
@@ -242,6 +249,7 @@ asthma_top_sim</code></pre>
 ##  9 The Journal of endocrino~ Diabetes                                      0.226
 ## 10 Frontiers in endocrinolo~ Diabetes                                      0.209
 ## # ... with 70 more rows</code></pre>
+<p></br></p>
 <pre class="r"><code>hiv_top_sim</code></pre>
 <pre><code>## # A tibble: 16 x 3
 ##    journal_x                        journal_hiv                 cosine_similari~
@@ -262,12 +270,13 @@ asthma_top_sim</code></pre>
 ## 14 Journal of the International AI~ HIV medicine                           0.377
 ## 15 The lancet. Diabetes &amp; endocrin~ The lancet. HIV                        0.726
 ## 16 BJS open                         The lancet. HIV                        0.675</code></pre>
+<p>Note how most top cosine similarities are in the range of 0.1 to 0.3. These are rather low values, so it might be useful to preprocess this data in a way that amplifies similarity.</p>
 <p></br></br></p>
 </div>
 </div>
-<div id="similar-journals" class="section level3">
-<h3>Similar journals</h3>
-<p>These are the top percentiles of cosines for each comparison group. I selected the top 97.5%-ile for Diabetes and HIV, while lowering the percentile to 75% for the Asthma group to get a similar length output.</p>
+<div id="similar-journals-by-group" class="section level3">
+<h3>Similar journals by group</h3>
+<p>These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes and HIV, while lowering the percentile to 75% for the Asthma group to get a similar length output.</p>
 <pre class="r"><code>ingroup_asthma_cossim &lt;- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
 asthma$journal_x[asthma$cosine_similarity &gt; quantile(ingroup_asthma_cossim, probs = 0.75) &amp; !(asthma$journal_x %in% asthma$journal_asthma)]</code></pre>
 <pre><code>## [1] &quot;The European respiratory journal&quot;                           
@@ -279,6 +288,7 @@ asthma$journal_x[asthma$cosine_similarity &gt; quantile(ingroup_asthma_cossim, p
 ## [7] &quot;Pediatric clinics of North America&quot;                         
 ## [8] &quot;The journal of allergy and clinical immunology. In practice&quot;
 ## [9] &quot;Allergy&quot;</code></pre>
+<p></br></p>
 <pre class="r"><code>ingroup_diabetes_cossim &lt;- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
 diabetes$journal_x[diabetes$cosine_similarity &gt; quantile(ingroup_diabetes_cossim, probs = 0.975) &amp; !(diabetes$journal_x %in% diabetes$journal_diabetes)]</code></pre>
 <pre><code>##  [1] &quot;The British journal of dermatology&quot;           
@@ -304,6 +314,7 @@ diabetes$journal_x[diabetes$cosine_similarity &gt; quantile(ingroup_diabetes_cos
 ## [21] &quot;The Lancet. Planetary health&quot;                 
 ## [22] &quot;The Lancet. Haematology&quot;                      
 ## [23] &quot;The lancet. HIV&quot;</code></pre>
+<p></br></p>
 <pre class="r"><code>ingroup_hiv_cossim &lt;- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
 hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.975) &amp; !(hiv$journal_x %in% hiv$journal_hiv)]</code></pre>
 <pre><code>##  [1] &quot;Virologie (Montrouge, France)&quot;                         
@@ -348,41 +359,41 @@ hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.
 ## [40] &quot;The Lancet. Haematology&quot;                               
 ## [41] &quot;AIDS research and therapy&quot;                             
 ## [42] &quot;AIDS research and therapy&quot;</code></pre>
+<p></br></p>
 <p>Interestingly the HIV group has more similar journals than the Diabetes group. This could be mostly because I excluded “AIDS” in the RegEx pattern to select the group.</p>
 <p></br></br></p>
 </div>
 <div id="quantile-comparisons" class="section level3">
 <h3>Quantile Comparisons</h3>
-<pre><code>## 
-## -- Column specification --------------------------------------------------------
-## cols(
-##   X1 = col_character(),
-##   X2 = col_character(),
-##   X3 = col_double()
-## )
-## 
-## 
-## -- Column specification --------------------------------------------------------
-## cols(
-##   X1 = col_character(),
-##   X2 = col_character(),
-##   X3 = col_double()
-## )
-## 
-## 
-## -- Column specification --------------------------------------------------------
-## cols(
-##   X1 = col_character(),
-##   X2 = col_character(),
-##   X3 = col_double()
-## )</code></pre>
 <p>The final analysis and visualization steps were completed in R. Each 10th quantile of cosine similarities were calculated for each group using <code>stats::quantile</code>. The distribution of cosine similarities in each set is concentrated towards 0 with long tails trailing towards 1. It is to be expected that most cosine similarities will be closer to 0 since most journals will be dissimilar to each group. A thin distribution tail contains the relatively few journals that are similar. Within group quantiles were also calculated to determine if the pattern matching technique yielded groups that were internally more similar than the whole corpus.</p>
-<pre class="r"><code>hist(diabetes$X3, breaks = 100, main = &quot;Similarity To &#39;Diabetes&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<pre class="r"><code>hist(asthma$X3, breaks = 100, main = &quot;Similarity To &#39;HIV&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
-<pre class="r"><code>hist(hiv$X3, breaks = 100, main = &quot;Similarity To &#39;Asthma&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-12-3.png" width="672" /></p>
+<p></br></br></p>
+<pre class="r"><code>density(diabetes$X3) %&gt;% 
+     plot(main = &quot;All Journal&#39;s Similarity To &#39;Diabetes&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<pre class="r"><code>density(asthma$X3) %&gt;% 
+  plot(breaks = 100, main = &quot;All Journal&#39;s Similarity To &#39;HIV&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
+<pre><code>## Warning in plot.window(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in plot.xy(xy, type, ...): &quot;breaks&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in axis(side = side, at = at, labels = labels, ...): &quot;breaks&quot; is not a
+## graphical parameter
+
+## Warning in axis(side = side, at = at, labels = labels, ...): &quot;breaks&quot; is not a
+## graphical parameter</code></pre>
+<pre><code>## Warning in box(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in title(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-13-2.png" width="672" /></p>
+<pre class="r"><code>density(hiv$X3) %&gt;% 
+  plot(breaks = 100, main = &quot;All Journal&#39;s Similarity To &#39;Asthma&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
+<pre><code>## Warning in plot.window(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in plot.xy(xy, type, ...): &quot;breaks&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in axis(side = side, at = at, labels = labels, ...): &quot;breaks&quot; is not a
+## graphical parameter
+
+## Warning in axis(side = side, at = at, labels = labels, ...): &quot;breaks&quot; is not a
+## graphical parameter</code></pre>
+<pre><code>## Warning in box(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in title(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-13-3.png" width="672" /></p>
 <p></br></br></p>
 <div id="within-group-similarity-quantiles" class="section level4">
 <h4>Within Group Similarity Quantiles</h4>
@@ -397,6 +408,7 @@ asthma[(asthma$X1 %in% asthmaArticleNames),]$X3 %&gt;% quantile(probs = seq(0, 1
 hiv[(hiv$X1 %in% hivArticleNames),]$X3 %&gt;% quantile(probs = seq(0, 1, 0.1))</code></pre>
 <p></br></p>
 <p>This code chunk produces the table:</p>
+<p></br></p>
 <table>
 <thead>
 <tr class="header">
@@ -451,6 +463,8 @@ hiv[(hiv$X1 %in% hivArticleNames),]$X3 %&gt;% quantile(probs = seq(0, 1, 0.1))</
 </tr>
 </tbody>
 </table>
+<p></br></p>
+<p>Characteristics of these deciles:</p>
 <ul>
 <li>all groups seem to be similar from 40% to 70%</li>
 <li>asthma journals are more similar to eachother as a whole (down to lowest quantiles)</li>
@@ -498,34 +512,11 @@ diabetes_hiv_diff &lt;- tibble(quantile = diabetes_hiv$partable$q,
 asthma_hiv_diff &lt;- tibble(quantile = asthma_hiv$partable$q,
                           estimatedDiff = asthma_hiv$partable$`est1-est.2`,
                           criticalPVal = asthma_hiv$partable$p.crit)</code></pre>
-<p>Plotting the results</p>
-<pre class="r"><code>plot(diabetes_asthma_diff$quantile, diabetes_asthma_diff$estimatedDiff,
-     type = &quot;b&quot;,
-     main = &quot;Quantile Difference: Diabetes &amp; Asthma&quot;,
-     xlab = &quot;Quantile&quot;,
-     ylab = &quot;Estimated Difference&quot;,
-     ylim = c(0.02, -0.02)
-     )
-plot(diabetes_hiv_diff$quantile, diabetes_hiv_diff$estimatedDiff,
-     type = &quot;b&quot;,
-     main = &quot;Quantile Difference: Diabetes &amp; HIV&quot;,
-     xlab = &quot;Quantile&quot;,
-     ylab = &quot;Estimated Difference&quot;,
-     ylim = c(0.02, -0.02)
-     )
-plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
-     type = &quot;b&quot;,
-     main = &quot;Quantile Difference: Asthma &amp; HIV&quot;,
-     xlab = &quot;Quantile&quot;,
-     ylab = &quot;Estimated Difference&quot;,
-     ylim = c(0.02, -0.02)
-     )</code></pre>
-<p></br></p>
 <div id="plots-of-group-pairwise-quantile-differences" class="section level4">
 <h4>Plots of group pairwise quantile differences</h4>
-<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg" /></p>
-<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.jpg" /></p>
-<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.jpg" /></p>
+<p><img src="C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg" /></p>
+<p><img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.jpg" /></p>
+<p><img src="/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.jpg" /></p>
 <p></br></p>
 <p>Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.</p>
 <p>The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
@@ -549,9 +540,8 @@ to gather information that might not be readily apparent with a standard statist
 <p>It should also be possible to make larger inferences about the industry which the journal covers. To do this one could extract terms that are highly correlated with specific journals or combinations of journals. For example, Radiology journals have recently included the term “deep learning” in many top articles. The crossover of terms from ML to Radiology indicates the adoption of new technology. This has healthcare and business implications. It would be possible to extract these emerging terms over all of PubMed to discover changes and partnerships among industries. With the additional metadata it would also be possible to determine where these changes are occurring (by city, hospital, or university) and who is funding this research.</p>
 <p></br></br></p>
 </div>
-</div>
-<div id="the-works-cited-from-my-paper" class="section level2">
-<h2>The works cited from my paper</h2>
+<div id="the-works-cited-from-my-paper" class="section level3">
+<h3>The works cited from my paper</h3>
 <p>Some of these sources were noted and linked directly in this page, other sources contributed to ideas and understanding.</p>
 <pre><code>Allen, E. A., Erhardt, E. B.,  Calhoun, V. D. (2012). Data Visualization in the Neurosciences: Overcoming the Curse of Dimensionality. Neuron, 74(4), 603–608. https://doi.org/10.1016/j.neuron.2012.05.001
 Altınel, B., Can Ganiz, M.,  Diri, B. (2015). A corpus-based semantic kernel for text classification by using meaning values of terms. Engineering Applications of Artificial Intelligence, 43, 54–66. https://doi.org/10.1016/j.engappai.2015.03.015
@@ -578,5 +568,6 @@ Wilcox, R. R. (2001). Modern Insights About Pearson’s Correlation and Least Sq
 Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
 Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
 Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664</code></pre>
+</div>
 </div>
 </div>

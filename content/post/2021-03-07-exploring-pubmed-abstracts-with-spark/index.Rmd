@@ -153,7 +153,7 @@ var journalLemmas =
 
 </br>
 
-### A snapshot of this Spark DataFrame from the terminal
+#### A snapshot of this Spark DataFrame from the terminal
 
 ![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/posLemma.jpg)
 
@@ -180,8 +180,9 @@ val journalDense =
     "journalTitle", "features").withColumn("features", asDense($"features"))
 ```
 
+</br>
 
-### A snapshot of this Spark DataFrame from the terminal
+#### A snapshot of this Spark DataFrame from the terminal
 
 ![](static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/featureVec.jpg)
 
@@ -208,6 +209,11 @@ val hiv_journalDense =
     'journalTitle.rlike("(\\b[Hh][Ii][Vv])")).select(
       'journalTitle.alias("journalTitle_subset"), 'features.alias("features_subset"))
 ```
+
+</br>
+
+Here is a short exploration of the three groups.
+
 </br>
 
 #### The number of journals in each group:
@@ -244,7 +250,7 @@ hiv$journal_hiv %>% unique() %>% head(3)
 
 ### Cosine similarity
 
-Each group was passed to the pairwise cosine similarity user-defined-function (UDF) to be compared against the whole set. [I used the UDF from this stack answer](https://stackoverflow.com/a/62140182)
+Each group was passed to the pairwise cosine similarity user-defined-function (UDF) to be compared against the whole set. I used the UDF from [this stack answer](https://stackoverflow.com/a/62140182)
 
 A table of cosine similarities for these three groups vs the whole set was exported to my local environment to analyze in R.
 
@@ -259,18 +265,20 @@ val cosSimilarity = udf { (x: Vector, y: Vector) =>
     "%.6f".format(cosineSim).toDouble
 }
 
-val joinedDf = journalDense.join(diabetes_journalDense, 'journalTitle =!= 'journalTitle_subset)
-val cosSimDf = joinedDf.withColumn("cosine_sim", cosSimilarity('features_subset, 'features)).select('journalTitle, 'journalTitle_subset, 'cosine_sim)
+val joinedDf =
+  journalDense.join(diabetes_journalDense, 'journalTitle =!= 'journalTitle_subset)
+  
+val cosSimDf =
+  joinedDf.withColumn("cosine_sim", cosSimilarity('features_subset, 'features)).select(
+    'journalTitle, 'journalTitle_subset, 'cosine_sim)
 ```
-
-</br>
-
-The resulting DataFrame looks like this:
 
 
 </br>
 
 #### Highest cosine similarity scores for each group:
+
+These are the two highest cosine similarity pairs for each journal in each group.
 
 ```{r}
 asthma_top_sim <- unique(asthma$journal_asthma[!(asthma$journal_x %in% asthma$journal_asthma)]) %>% 
@@ -301,33 +309,47 @@ hiv_top_sim <- unique(hiv$journal_hiv[!(hiv$journal_x %in% hiv$journal_hiv)]) %>
   )
 ```
 
+</br>
+
 ```{r}
 diabetes_top_sim
+```
+
+</br>
+
+```{r}
 hiv_top_sim
 ```
 
 
+Note how most top cosine similarities are in the range of 0.1 to 0.3. These are rather low values, so it might be useful to preprocess this data in a way that amplifies similarity.
 
 </br></br>
 
-### Similar journals
+### Similar journals by group
 
-These are the top percentiles of cosines for each comparison group. I selected the top 97.5%-ile for Diabetes and HIV, while lowering the percentile to 75% for the Asthma group to get a similar length output.
+These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes and HIV, while lowering the percentile to 75% for the Asthma group to get a similar length output.
 
 ```{r}
 ingroup_asthma_cossim <- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
 asthma$journal_x[asthma$cosine_similarity > quantile(ingroup_asthma_cossim, probs = 0.75) & !(asthma$journal_x %in% asthma$journal_asthma)]
 ```
 
+</br>
+
 ```{r}
 ingroup_diabetes_cossim <- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
 diabetes$journal_x[diabetes$cosine_similarity > quantile(ingroup_diabetes_cossim, probs = 0.975) & !(diabetes$journal_x %in% diabetes$journal_diabetes)]
 ```
 
+</br>
+
 ```{r}
 ingroup_hiv_cossim <- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
 hiv$journal_x[hiv$cosine_similarity > quantile(ingroup_hiv_cossim, probs = 0.975) & !(hiv$journal_x %in% hiv$journal_hiv)]
 ```
+
+</br>
 
 Interestingly the HIV group has more similar journals than the Diabetes group. This could be mostly because I excluded "AIDS" in the RegEx pattern to select the group.
 
@@ -336,7 +358,7 @@ Interestingly the HIV group has more similar journals than the Diabetes group. T
 
 ### Quantile Comparisons
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 path <- "C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/"
 
 diabetes <- read_csv(glue("{path}diabetesAll.csv"), col_names = FALSE)
@@ -346,10 +368,16 @@ hiv <- read_csv(glue("{path}hivAll.csv"), col_names = FALSE)
 
 The final analysis and visualization steps were completed in R. Each 10th quantile of cosine similarities were calculated for each group using `stats::quantile`. The distribution of cosine similarities in each set is concentrated towards 0 with long tails trailing towards 1. It is to be expected that most cosine similarities will be closer to 0 since most journals will be dissimilar to each group. A thin distribution tail contains the relatively few journals that are similar. Within group quantiles were also calculated to determine if the pattern matching technique yielded groups that were internally more similar than the whole corpus.
 
+</br></br>
+
+
 ```{r}
-hist(diabetes$X3, breaks = 100, main = "Similarity To 'Diabetes' Subset", xlab = "Cosine Similarity")
-hist(asthma$X3, breaks = 100, main = "Similarity To 'HIV' Subset", xlab = "Cosine Similarity")
-hist(hiv$X3, breaks = 100, main = "Similarity To 'Asthma' Subset", xlab = "Cosine Similarity")
+density(diabetes$X3) %>% 
+     plot(main = "All Journal's Similarity To 'Diabetes' Subset", xlab = "Cosine Similarity")
+density(asthma$X3) %>% 
+  plot(breaks = 100, main = "All Journal's Similarity To 'HIV' Subset", xlab = "Cosine Similarity")
+density(hiv$X3) %>% 
+  plot(breaks = 100, main = "All Journal's Similarity To 'Asthma' Subset", xlab = "Cosine Similarity")
 ```
 
 
@@ -374,6 +402,8 @@ hiv[(hiv$X1 %in% hivArticleNames),]$X3 %>% quantile(probs = seq(0, 1, 0.1))
 
 This code chunk produces the table:
 
+</br>
+
 ```{r table, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 tabl = "
 | Subgroup | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 |
@@ -385,6 +415,10 @@ tabl = "
 cat(tabl)
 ```
 
+</br>
+
+
+Characteristics of these deciles:
 
 + all groups seem to be similar from 40% to 70%
 + asthma journals are more similar to eachother as a whole (down to lowest quantiles)
@@ -460,46 +494,16 @@ asthma_hiv_diff <- tibble(quantile = asthma_hiv$partable$q,
 
 
 
-Plotting the results
-
-```{r eval=FALSE}
-plot(diabetes_asthma_diff$quantile, diabetes_asthma_diff$estimatedDiff,
-     type = "b",
-     main = "Quantile Difference: Diabetes & Asthma",
-     xlab = "Quantile",
-     ylab = "Estimated Difference",
-     ylim = c(0.02, -0.02)
-     )
-plot(diabetes_hiv_diff$quantile, diabetes_hiv_diff$estimatedDiff,
-     type = "b",
-     main = "Quantile Difference: Diabetes & HIV",
-     xlab = "Quantile",
-     ylab = "Estimated Difference",
-     ylim = c(0.02, -0.02)
-     )
-plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
-     type = "b",
-     main = "Quantile Difference: Asthma & HIV",
-     xlab = "Quantile",
-     ylab = "Estimated Difference",
-     ylim = c(0.02, -0.02)
-     )
-```
-
-
-</br>
-
 #### Plots of group pairwise quantile differences
 
-![](static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg)
+![](C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg)
 
-![](static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.jpg)
+![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.jpg)
 
-![](static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.jpg)
+![](/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.jpg)
 
 
 </br>
-
 
 
 Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.
@@ -532,7 +536,7 @@ It should also be possible to make larger inferences about the industry which th
 
 </br></br>
 
-## The works cited from my paper
+### The works cited from my paper
 
 Some of these sources were noted and linked directly in this page, other sources contributed to ideas and understanding.
 
