@@ -2,7 +2,6 @@
 title: "Exploring PubMed Abstracts with Spark"
 author: "Sean D McAtee"
 date: '2021-03-07'
-output: pdf_document # REMOVE FOR BLOGDOWN TO WORK
 categories: []
 tags: []
 Description: TF-IDF of Abstract text to explore Journal titles
@@ -28,7 +27,7 @@ Therefore, it could be useful to classify journals based on the text that they p
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(magrittr); library(readr); library(glue); library(dplyr); library(tidyr);
-library(WRS2)
+library(WRS2); library(jpeg)
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -43,6 +42,10 @@ diabetes <- read_csv(glue("{workingDir}diabetesAll.csv"),
 
 hiv <- read_csv(glue("{workingDir}hivAll.csv"),
                    col_names = c("journal_x", "journal_hiv", "cosine_similarity"))
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qdif_diabetes_asthma <- jpeg::readJPEG("C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg")
 ```
 
 
@@ -474,18 +477,27 @@ hivAve <- hiv %>%
 
 
 ```{r eval=FALSE}
-joinedTable <- full_join(full_join(hivAve, diabetesAve, by = "journalTitle") , asthmaAve, by = "journalTitle")
+joinedTable <- full_join(full_join(hivAve, diabetesAve, by = "journalTitle"),
+                         asthmaAve,
+                         by = "journalTitle")
 
-joinedTableLong <- joinedTable %>% pivot_longer(cols = c("hivCosSim", "diabetesCosSim", "asthmaCosSim"),
+joinedTableLong <- joinedTable %>% 
+                    pivot_longer(cols = c("hivCosSim", "diabetesCosSim", "asthmaCosSim"),
                              names_to = "JournalGroup",
                              values_to = "CosineSimilarity"
                              )
 
-diabetes_asthma <- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != "hivCosSim"), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+diabetes_asthma <- WRS2::qcomhd(CosineSimilarity ~ JournalGroup,
+                                data = filter(joinedTableLong, JournalGroup != "hivCosSim"),
+                                q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
 
-diabetes_hiv <- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != "asthmaCosSim"), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+diabetes_hiv <- WRS2::qcomhd(CosineSimilarity ~ JournalGroup,
+                             data = filter(joinedTableLong, JournalGroup != "asthmaCosSim"),
+                             q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
 
-asthma_hiv <- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != "diabetesCosSim"), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+asthma_hiv <- WRS2::qcomhd(CosineSimilarity ~ JournalGroup,
+                           data = filter(joinedTableLong, JournalGroup != "diabetesCosSim"),
+                           q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
 
 
 diabetes_asthma_diff <- tibble(quantile = diabetes_asthma$partable$q,
@@ -508,7 +520,7 @@ asthma_hiv_diff <- tibble(quantile = asthma_hiv$partable$q,
 
 ![]("C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg")
 
-![](./static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png)
+![](C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png)
 
 ![](/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
 

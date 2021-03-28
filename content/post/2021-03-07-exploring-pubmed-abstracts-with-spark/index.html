@@ -2,7 +2,6 @@
 title: "Exploring PubMed Abstracts with Spark"
 author: "Sean D McAtee"
 date: '2021-03-07'
-output: pdf_document # REMOVE FOR BLOGDOWN TO WORK
 categories: []
 tags: []
 Description: TF-IDF of Abstract text to explore Journal titles
@@ -401,7 +400,7 @@ density(asthma$X3) %&gt;%
 ## graphical parameter</code></pre>
 <pre><code>## Warning in box(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
 <pre><code>## Warning in title(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-13-2.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-13-3.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-14-1.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-14-2.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-14-3.png" width="672" /></p>
 <p></br></br></p>
 <div id="within-group-similarity-quantiles" class="section level4">
 <h4>Within Group Similarity Quantiles</h4>
@@ -495,18 +494,27 @@ diabetesAve &lt;- diabetes %&gt;%
   ungroup() %&gt;% 
   select(journalTitle, diabetesCosSim = cosSim)</code></pre>
 <pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
-<pre class="r"><code>joinedTable &lt;- full_join(full_join(hivAve, diabetesAve, by = &quot;journalTitle&quot;) , asthmaAve, by = &quot;journalTitle&quot;)
+<pre class="r"><code>joinedTable &lt;- full_join(full_join(hivAve, diabetesAve, by = &quot;journalTitle&quot;),
+                         asthmaAve,
+                         by = &quot;journalTitle&quot;)
 
-joinedTableLong &lt;- joinedTable %&gt;% pivot_longer(cols = c(&quot;hivCosSim&quot;, &quot;diabetesCosSim&quot;, &quot;asthmaCosSim&quot;),
+joinedTableLong &lt;- joinedTable %&gt;% 
+                    pivot_longer(cols = c(&quot;hivCosSim&quot;, &quot;diabetesCosSim&quot;, &quot;asthmaCosSim&quot;),
                              names_to = &quot;JournalGroup&quot;,
                              values_to = &quot;CosineSimilarity&quot;
                              )
 
-diabetes_asthma &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != &quot;hivCosSim&quot;), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+diabetes_asthma &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup,
+                                data = filter(joinedTableLong, JournalGroup != &quot;hivCosSim&quot;),
+                                q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
 
-diabetes_hiv &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != &quot;asthmaCosSim&quot;), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+diabetes_hiv &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup,
+                             data = filter(joinedTableLong, JournalGroup != &quot;asthmaCosSim&quot;),
+                             q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
 
-asthma_hiv &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != &quot;diabetesCosSim&quot;), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+asthma_hiv &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup,
+                           data = filter(joinedTableLong, JournalGroup != &quot;diabetesCosSim&quot;),
+                           q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
 
 
 diabetes_asthma_diff &lt;- tibble(quantile = diabetes_asthma$partable$q,
@@ -523,7 +531,7 @@ asthma_hiv_diff &lt;- tibble(quantile = asthma_hiv$partable$q,
 <div id="plots-of-group-pairwise-quantile-differences" class="section level4">
 <h4>Plots of group pairwise quantile differences</h4>
 <p><img src="%22C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg%22" /></p>
-<p><img src="./static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png" /></p>
+<p><img src="C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png" /></p>
 <p><img src="/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png" /></p>
 <p></br></p>
 <p>Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.</p>
