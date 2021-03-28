@@ -19,9 +19,10 @@ slug: exploring-pubmed-abstracts-with-spark
 
 ## Motivation: 
 
-Academic literature information extraction is a fascinating subject. There is a big push to automate information extraction. This project is focused on how a whole journal corpus may be compared to another using their abstract text content. Journal corpus similarity could be a useful feature to use during other information extraction tasks. True subject matter is difficult to determine based on a cursory glance at the title and a few published articles. Additionally, a journal's or whole field's range of topics could shift over time because of new tools, job responsibilities, and knowledge (eg Radiology and Genetics are radically different than in 1900, their academic journals likely reflect these changes).
+Academic literature information extraction is a fascinating subject. Currently there is a push to automate information extraction in a few major medical spaces such as drug development and Oncology, however I think that the biggest potential for this technology is in Public Health. Healthcare, Population Health, Health Infrastructure, Epidemiology, and Public Policy are just a few highly intertwined fields in this space; each with some unique best practices, objectives, and terminology. This results in a highly complex Public Health field. On top of the complexity issue, there is a trend in academia for individuals with an interest in Maths and CS to study topics like Oncology and Bioinformatics rather than Public Health. As a biased observer, I will passionately argue that the problems in Public Health are more nuanced than other subjects since Public Health necessarily encompasses the contexts in and around other health fields (eg economic, government, law, and social contexts, etc..). The importance of smart public health is obvious to the world at this moment. So many issues involved in the COVID-19 pandemic could have been avoided if our public health system had more robust measurement techniques and better information distribution. Academic literature information extraction, or some wholesale shift in academic information storage, seems like a problem that must be solved before we can properly solve any other complex problems in this space.
 
-Therefore, it could be useful to classify journals based on the text that they publish. PubMed Baseline includes article abstracts as well as metadata like Grant Agency, University Affiliation, Date, and Authors. These fields allow the linkage of other data sources.
+
+This project was an assignment for the class Realtime Big Data Analytics, a course using Hadoop to learn about distributed computing environments. This project is focused on how a whole journal corpus may be compared to another using their abstract text content. Journal corpus similarity could be a useful feature to use during other information extraction tasks. True subject matter is difficult to determine based on a cursory glance at the title and a few published articles. Additionally, a journal's or whole field's range of topics could shift over time because of new tools, job responsibilities, and knowledge (eg Radiology and Genetics are radically different than in 1900, their academic journals likely reflect these changes). Therefore, it could be useful to classify journals based on the text that they publish. PubMed Baseline is one of the largest Biomedical literature repositories. NCBI Baseline provides open metadata for all of the articles listed on PubMed. This metadata includes article abstracts as well as Grant Agency, University Affiliation, Date, and Authors. These fields can help link to other data sources.
 
 
 
@@ -53,23 +54,33 @@ qdif_diabetes_asthma <- jpeg::readJPEG("C:/Users/seand/OneDrive/Documents/CS_Pro
 
 ## Overview
 
-brief overview hitting subtitles and key words
+General workflow for my project:
+
++ Download data from Baseline
++ Parse XML (Baseline) files into Spark DataFrame
++ Generate lemma arrays from article abstracts
++ Filter for useful lemmas with POS
++ TF-IDF feature vector generation
++ Create three journal groups (Diabetes, Asthma, HIV)
++ Calculate TF-IDF feature vector cosine similarity
++ Examine cosine similarity quantile differences across groups
+
 
 </br></br>
 
 ## Datasets
 
-This analysis uses PubMed data to compare subgroups of journals. The database is called [PubMed Baseline](ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline). I used a subset of the PubMed Baseline. Arguably, there would be a shift in popularity and word usage among journal topics which could take extra processing to normalize. It was simpler to take a snapshot of journals and sidestep this issue for now.
+[PubMed Baseline](ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline) metadata is used to compare groups of journals. I used a subset of the PubMed Baseline files. The files are arranged by year. Over time there would be a shift in popularity and word usage among journal topics, this could take extra processing to normalize. For a small project it was simpler to take a snapshot of journals and sidestep this issue for now.
 
 
 </br></br>
 
 ### XML Parsing
 
-PubMed Baseline data is stored in many zipped XML files. Each XML file contains data from many articles.
+PubMed Baseline data is stored in many zipped XML files ordered by year. Each XML file contains data from many articles and the structure of XML files is made up of many nested fields. The nested fields presented a challenge since I could not find an out-of-the box library to parse and join nested structures in a robust way. I decided to save time and solve the problem in a hackerish way, by joining XML files locally with a Bash script rather than joining data structures in Spark. The issue in Spark was a parsing inconsistency that made fields slightly different (interchanging a list structure with a struct structure on equivalent fields). Ideally this should be solved in a parsing or joining step.
 
 
-I downloaded and decompressed a selection of the Baseline files with a typical Bash script.
+Before parsing XML files I downloaded and decompressed a selection of the Baseline files with a typical Bash script.
 
 ```
 #!/bin/bash
@@ -94,7 +105,7 @@ rm -f ~/tmp/pubmed*.xml.gz.md5
 
 </br>
 
-The [spark-xml](https://github.com/databricks/spark-xml) package from [Databricks](https://databricks.com/), primarily developed by [Hyukjin Kwon](https://github.com/HyukjinKwon), was used to parse the XML files into a Spark DataFrame. 
+I used the [spark-xml](https://github.com/databricks/spark-xml) package from [Databricks](https://databricks.com/), primarily developed by [Hyukjin Kwon](https://github.com/HyukjinKwon), to parse the XML files into a Spark DataFrame.
 
 
 ```
@@ -110,14 +121,16 @@ val pubmed =
 
 </br>
 
-These steps will become a serious bottleneck if many XML files need to be parsed into a Spark format. To be a true map-reduce workflow, this step as well as the XML parsing should be distributed. In another life I ought to `wget`, parse xml files, and extract the few necessary fields in the map phase, then reduce/join everything into a single Spark DataFrame for intermediate storage on HDFS.
+These steps will become a serious bottleneck if many XML files need to be parsed into a Spark format. To design a true map-reduce workflow this step as well as the XML parsing should be distributed. In another life I ought to `wget`, parse xml files, and extract the few necessary fields in the map phase, then reduce everything into a single Spark DataFrame for intermediate storage on HDFS.
 
 
 </br></br>
 
 ### Lemma Array Generation
 
-The [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/) package was used to break down `AbstractText` strings into lemmas. Part of speech tags were generated for each lemma to filter out uninformative elements, such as coordinating conjunctions and prepositions. At this stage there are `r n_distinct(asthma$journal_x)` unique JournalTitles in the corpus and 112,405 unique lemmas across all JournalTitles.  
+The [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/) package was used to break down `AbstractText` strings into lemmas. Part of speech tags were generated for each lemma to filter out uninformative elements, such as coordinating conjunctions and prepositions. At this stage there are `r n_distinct(asthma$journal_x)` unique journalTitles in the corpus and 112,405 unique lemmas across all journalTitles. 
+
+The following code chunk demonstrates how I used CoreNLP to transform free text abstracts into filtered lemma vectors for each journalTitle.
 
 ```
 /** extract abstracts and extra info */
@@ -154,12 +167,17 @@ var journalLemmas =
       ).groupBy("journalTitle").agg(collect_list("lemma") as "lemma")
 ```
 
+</br>
+
+This is a critical step since the following analysis directly relies on the precision and recall of the lemmatisation and POS classifier. Stanford CoreNLP is a library for general text analysis. To make a more robust workflow it will be necessary to make this step specific to academic language. An academic-specific text classifier will also help extract useful information such as statistical tests used, confidence thresholds, and numeric results.
+
+
 </br></br>
 
 
 ### TF-IDF Features
 
-Lemma arrays were converted to TF-IDF feature vectors in the following way. The [Spark ML](https://spark.apache.org/docs/2.2.0/api/java/org/apache/spark/ml/package-summary.html) package was used to hash lemmas. The number of features for the hash function was set to 2^17, above 5591 to avoid collisions and set as a power of 2 to increase calculation speed. Spark ML was also used to calculate IDF for the hashed lemma vectors. IDF values were rescaled to generate TF-IDF values.
+The [Spark ML](https://spark.apache.org/docs/2.2.0/api/java/org/apache/spark/ml/package-summary.html) package was used to hash lemmas for faster computation. The number of features for the hash function was set to 2^17, above 5591 to avoid collisions and set as a power of 2 to increase calculation speed. Spark ML was also used to calculate IDF for the hashed lemma vectors. IDF values were rescaled to generate [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) values.
 
 ```
 var numFeatures = 131072
@@ -182,10 +200,10 @@ val journalDense =
 
 </br></br>
 
-### Subgroup Comparison
+### Group Comparison
 
 
-I chose subgroups to be highly specific and not even remotely selective -- if the journal title contains the word "Diabetes", "Asthma", or "HIV". The subgroups were selected using simple RegEx patterns.
+I chose groups to be highly specific and not even remotely selective -- the journal titles containing the word "Diabetes", "Asthma", or "HIV". The groups were selected using simple RegEx patterns.
 
 ```
 val diabetes_journalDense =
@@ -226,11 +244,20 @@ list(
 #### Three of the journal titles from each group:
 
 ```{r}
-asthma$journal_asthma %>% unique() %>% head(3)
 diabetes$journal_diabetes %>% unique() %>% head(3)
-hiv$journal_hiv %>% unique() %>% head(3)
 ```
 
+</br></br>
+
+```{r}
+asthma$journal_asthma %>% unique() %>% head(3)
+```
+
+</br></br>
+
+```{r}
+hiv$journal_hiv %>% unique() %>% head(3)
+```
 
 
 
@@ -238,15 +265,18 @@ hiv$journal_hiv %>% unique() %>% head(3)
 
 ## Exploring the results
 
+Next steps:
+
++ Calculate TF-IDF feature vector cosine similarity
++ Examine cosine similarity quantile differences across groups
 
 
 </br></br>
 
 ### Cosine similarity
 
-Each group was passed to the pairwise cosine similarity user-defined-function (UDF) to be compared against the whole set. I used the UDF from [this stack answer](https://stackoverflow.com/a/62140182)
+Each group was passed to the pairwise cosine similarity user-defined-function (UDF) to be compared against the whole set. I used a generic UDF from [this stack answer](https://stackoverflow.com/a/62140182).
 
-A table of cosine similarities for these three groups vs the whole set was exported to my local environment to analyze in R.
 
 ```
 val cosSimilarity = udf { (x: Vector, y: Vector) =>
@@ -267,22 +297,25 @@ val cosSimDf =
     'journalTitle, 'journalTitle_subset, 'cosine_sim)
 ```
 
+</br>
+
+A table of cosine similarities for these three groups vs the whole set was exported to my local environment to analyze in R.
 
 </br>
 
 #### Highest cosine similarity scores for each group:
 
-These are the two highest cosine similarity pairs for each journal in each group.
+The following code chunk finds the two most similar journals for each individual journal the three groups.
 
 ```{r}
-asthma_top_sim <- unique(asthma$journal_asthma[!(asthma$journal_x %in% asthma$journal_asthma)]) %>% 
+asthma_top_sim <-
+  unique(asthma$journal_asthma[!(asthma$journal_x %in% asthma$journal_asthma)]) %>% 
   purrr::map_dfr(
     ~ asthma[!(asthma$journal_x %in% asthma$journal_asthma),] %>% 
     dplyr::filter(journal_asthma == .x ) %>%
     dplyr::arrange(desc(cosine_similarity)) %>%
     head(2)
   )
-asthma_top_sim
 ```
 
 ```{r echo=FALSE}
@@ -305,6 +338,16 @@ hiv_top_sim <- unique(hiv$journal_hiv[!(hiv$journal_x %in% hiv$journal_hiv)]) %>
 
 </br>
 
+These are the two highest cosine similarity pairs for each journal in each group:
+
+</br>
+
+```{r}
+asthma_top_sim
+```
+
+</br>
+
 ```{r}
 diabetes_top_sim
 ```
@@ -315,14 +358,15 @@ diabetes_top_sim
 hiv_top_sim
 ```
 
+</br>
 
-Note how most top cosine similarities are in the range of 0.1 to 0.3. These are rather low values, so it might be useful to preprocess this data in a way that amplifies similarity.
+Note how most top cosine similarities are in the range of 0.1 to 0.3. These are rather low values, so it might be useful to preprocess this data in a way that amplifies similarity or to use a different measurement of similarity/difference.
 
 </br></br>
 
 ### Similar journals by group
 
-These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes and HIV, while lowering the percentile to 75% for the Asthma group to get a similar length output.
+These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes, 75% for Asthma, and 98% for HIV to get a similar length outputs.
 
 ```{r}
 ingroup_asthma_cossim <-
@@ -349,13 +393,13 @@ diabetes$journal_x[diabetes$cosine_similarity >
 ```{r}
 ingroup_hiv_cossim <- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
 hiv$journal_x[hiv$cosine_similarity > 
-                quantile(ingroup_hiv_cossim, probs = 0.975) &
+                quantile(ingroup_hiv_cossim, probs = 0.98) &
               !(hiv$journal_x %in% hiv$journal_hiv)]
 ```
 
 </br>
 
-Interestingly the HIV group has more similar journals than the Diabetes group. This could be mostly because I excluded "AIDS" in the RegEx pattern to select the group.
+Interestingly the HIV group has more similar journals than the Diabetes group, eventhough the Diabetes group contains more journal articles. This could be mostly because I excluded "AIDS" in the RegEx pattern to select the group.
 
 
 </br></br>
@@ -370,25 +414,26 @@ asthma <- read_csv(glue("{path}asthmaAll.csv"), col_names = FALSE)
 hiv <- read_csv(glue("{path}hivAll.csv"), col_names = FALSE)
 ```
 
-The final analysis and visualization steps were completed in R. Each 10th quantile of cosine similarities were calculated for each group using `stats::quantile`. The distribution of cosine similarities in each set is concentrated towards 0 with long tails trailing towards 1. It is to be expected that most cosine similarities will be closer to 0 since most journals will be dissimilar to each group. A thin distribution tail contains the relatively few journals that are similar. Within group quantiles were also calculated to determine if the pattern matching technique yielded groups that were internally more similar than the whole corpus.
+The final analysis and visualization steps were completed in R. Each 10th quantile of cosine similarities for each group were calculated using `stats::quantile`. The distribution of cosine similarities in each set is concentrated towards 0 with long tails trailing towards 1. It is to be expected that most cosine similarities will be closer to 0 since I selected highly specific journal groups. The thin tails of these distributions contain the relatively few journals that are similar. 
 
-</br></br>
+</br>
 
 
-```{r warnings=FALSE, message=FALSE, fig.show='hold'}
+```{r warning=FALSE, message=FALSE, fig.show='hold'}
 density(diabetes$X3) %>% 
      plot(main = "All Journal's Similarity To 'Diabetes' Subset", xlab = "Cosine Similarity")
 density(asthma$X3) %>% 
-  plot(breaks = 100, main = "All Journal's Similarity To 'HIV' Subset", xlab = "Cosine Similarity")
+  plot(main = "All Journal's Similarity To 'HIV' Subset", xlab = "Cosine Similarity")
 density(hiv$X3) %>% 
-  plot(breaks = 100, main = "All Journal's Similarity To 'Asthma' Subset", xlab = "Cosine Similarity")
+  plot(main = "All Journal's Similarity To 'Asthma' Subset", xlab = "Cosine Similarity")
 ```
-
 
 
 </br></br>
 
 #### Within Group Similarity Quantiles
+
+Within group quantiles were also calculated to determine if the pattern matching technique yielded groups that were internally more similar than the whole corpus.
 
 ```{r results='hide', warning=FALSE, message=FALSE}
 # get list of diabetes articles
@@ -404,13 +449,13 @@ hiv[(hiv$X1 %in% hivArticleNames),]$X3 %>% quantile(probs = seq(0, 1, 0.1))
 
 </br>
 
-This code chunk produces the table:
+The code above produced the following table:
 
 </br>
 
 ```{r table, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 tabl = "
-| Subgroup | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 |
+| Group | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 |
 | ---- |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |
 | Diabetes | 0.0115 | 0.0358 | 0.0565 | 0.0838 | 0.1074 | 0.1402 | 0.1715 | 0.2033 | 0.2548 |
 | Asthma | 0.0253 | 0.0286 | 0.0373 | 0.0896 | 0.1358 | 0.1669 | 0.2097 | 0.2627 | 0.3244 |
@@ -425,7 +470,7 @@ cat(tabl)
 Characteristics of these deciles:
 
 + all groups seem to be similar from 40% to 70%
-+ asthma journals are more similar to eachother as a whole (down to lowest quantiles)
++ asthma journals are more similar to each other as a whole (down to lowest quantiles)
 + diabetes and hiv have similar low quantile patterns, a few outliers made longer tails
 + the highest top similarities are in diabetes, appearing at the 90% quantile
 + the lowest top similarities are in hiv with no big spike, rather a slow decline
@@ -436,22 +481,26 @@ Characteristics of these deciles:
 
 ### Estimated difference of quantiles
 
-The R package [WRS2](https://cran.r-project.org/web/packages/WRS2/WRS2.pdf) was used to calculate quantile differences between each group. The function `qcomb` was run on each of the following pairs: Diabetes-Asthma, Diabetes-HIV, Asthma-HIV. The output values include estimated difference for each quantile, a standard p-value, and a p.crit value. 
-
-This final step uses the Harrell-Davis quantile estimator to get better info on tails. This estimator is a weighted average of all order statistics. The shift fx is then used to compare HD estimates to find confidence interval differences between quantiles.
+As I noted earlier, the information that I want from these cosine similarity distributions is in the tail rather than in the bulk of the distribution. I decided to use the [Harrell-Davis](https://s3-us-west-2.amazonaws.com/rfuncs.project/Harrell82A+New+Distribution-Free+Quantile+Estimator.pdf) quantile estimator since this popular method can be used to bootstrap significance levels when comparing quantiles.
 
 
-```{r}
+The R package [WRS2](https://cran.r-project.org/web/packages/WRS2/WRS2.pdf) was used to calculate quantile differences between each group. The function `qcombhd` finds the differences in estimated Harrell-Davis quantiles for each of the following pairs: Diabetes-Asthma, Diabetes-HIV, Asthma-HIV. The output values include estimated difference for each quantile, a standard p-value, and a p.crit value. These pairwise comparisons are plotted below.
+
+</br>
+
+First, averages are calculated and data is joined..
+
+
+```{r eval=FALSE, warning=FALSE, message=FALSE}
 # Average cosSim for all unique journal titles
 # an equivalent chunk computes asthaAve and hivAve
+
 diabetesAve <- diabetes %>%
   group_by(X1) %>%
   summarise(journalTitle = X1[[1]], cosSim = mean(X3)) %>%
   ungroup() %>% 
   select(journalTitle, diabetesCosSim = cosSim)
-```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
 asthmaAve <- asthma %>%
   group_by(X1) %>%
   summarise(journalTitle = X1[[1]], cosSim = mean(X3)) %>%
@@ -463,11 +512,9 @@ hivAve <- hiv %>%
   summarise(journalTitle = X1[[1]], cosSim = mean(X3)) %>%
   ungroup() %>% 
   select(journalTitle, hivCosSim = cosSim)
-```
 
 
 
-```{r eval=FALSE, fig.show='hold'}
 joinedTable <- full_join(full_join(hivAve, diabetesAve, by = "journalTitle"),
                          asthmaAve,
                          by = "journalTitle")
@@ -477,6 +524,15 @@ joinedTableLong <- joinedTable %>%
                              names_to = "JournalGroup",
                              values_to = "CosineSimilarity"
                              )
+```
+
+</br>
+
+Now `qcomhd` finds the differences between deciles and the output is plotted..
+
+</br>
+
+```{r eval=FALSE, fig.show='hold'}
 
 diabetes_asthma <- WRS2::qcomhd(CosineSimilarity ~ JournalGroup,
                                 data = filter(joinedTableLong, JournalGroup != "hivCosSim"),
@@ -556,11 +612,22 @@ plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
      )
 ```
 
+</br>
+
+Associated p values
+
+```{r warning=FALSE, message=FALSE}
+pvals <- rbind(rbind(diabetes_asthma_diff$criticalPVal, diabetes_hiv_diff$criticalPVal),
+      asthma_hiv_diff$criticalPVal)
+colnames(pvals) <- diabetes_asthma_diff$quantile
+pvals
+```
+
 
 </br>
 
 
-Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.
+Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. Therefore the null hypothesis (H0: no difference) can be rejected for all quantiles. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range, similar to what was observed earlier.
 
 The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
 than the groups HIV and Asthma.
@@ -569,28 +636,30 @@ than the groups HIV and Asthma.
 
 </br></br>
 
-## Conclusion, Mistakes, Next Steps..
+## Conclusion
 
 The workflow described in this paper can be customized to group vectors for any of the metadata
-fields in PubMed. For example, grant agency, author affiliation, year, and MESH terms are all loaded
-in the beginning of the workflow. They could easily be incorporated into an analysis.
+fields in PubMed. For example, grant agency, author affiliation, year, and MESH terms are all available in the beginning of the workflow. They could easily be incorporated into an analysis.
 
-Highly skewed distributions are difficult to characterize because most estimators focus on the maximum
-area of a distribution. In the case of cosine similarity in a large corpus, the distribution tail will
-contain the most useful information. This workflow, and other similar workflows, allow researchers
-to gather information that might not be readily apparent with a standard statistical approach.
+Highly skewed distributions are difficult to characterize because most estimators focus on the maximum area of a distribution. In the case of cosine similarity in a large corpus, the distribution tail will contain the most useful information. As shown above it is possible to compare the distribution tails by comparing Harrel-Davis quantile estimates. Even though this workflow resulted in significant results, I came across many steps that should be explored and improved.
+
+</br>
+
+#### ..and beyond..
+
+Theoretically, a clever individual could use a similar workflow to explore related connections and join silos of similar academic information.
+
+I noted earlier how I think that a similar workflow can be used to find useful information for academic researchers. It should also be possible to make larger inferences about the industry which a journal covers. To do this, one could extract terms that are highly correlated with specific journals or industries. For example, Radiology journals have recently included the term "deep learning" in many top articles. The crossover of terms from ML to Radiology indicates the adoption of new technology. Obviously this has healthcare and business implications. It would be possible to extract these emerging terms through all of PubMed to discover changes and partnerships among fields/industries. With the additional PubMed metadata it would also be possible to determine where these changes are occurring (by city, hospital, or university) and who is funding this research.
 
 
-#### Next Steps
-Theoretically a clever individual could take this similarity information and explore related connections to join silos of related academic information.
+</br>
 
-It should also be possible to make larger inferences about the industry which the journal covers. To do this one could extract terms that are highly correlated with specific journals or combinations of journals. For example, Radiology journals have recently included the term "deep learning" in many top articles. The crossover of terms from ML to Radiology indicates the adoption of new technology. This has healthcare and business implications. It would be possible to extract these emerging terms over all of PubMed to discover changes and partnerships among industries. With the additional metadata it would also be possible to determine where these changes are occurring (by city, hospital, or university) and who is funding this research.
-
+I have only scratched the surface of the potential riches that have yet to be extracted from the oceans of academic texts. Completing this project was a huge source of inspiration to more rigorously explore structures and methods for academic text analysis.
 
 
 </br></br>
 
-### Sources and inspiration
+### Sources and inspiration cited in my project paper
 
     Allen, E. A., Erhardt, E. B.,  Calhoun, V. D. (2012). Data Visualization in the Neurosciences: Overcoming the Curse of Dimensionality. Neuron, 74(4), 603–608. https://doi.org/10.1016/j.neuron.2012.05.001
     Altınel, B., Can Ganiz, M.,  Diri, B. (2015). A corpus-based semantic kernel for text classification by using meaning values of terms. Engineering Applications of Artificial Intelligence, 43, 54–66. https://doi.org/10.1016/j.engappai.2015.03.015
@@ -617,9 +686,4 @@ It should also be possible to make larger inferences about the industry which th
     Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
     Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
     Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664
-
-
-
-
-
 
