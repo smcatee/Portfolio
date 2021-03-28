@@ -46,15 +46,20 @@ hiv <- read_csv(glue("{workingDir}hivAll.csv"),
 ```
 
 
+</br></br>
+
+## Overview
+
+brief overview hitting subtitles and key words
+
+</br></br>
+
 ## Datasets
 
 This analysis uses PubMed data to compare subgroups of journals. The database is called [PubMed Baseline](ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline). I used a subset of the PubMed Baseline. Arguably, there would be a shift in popularity and word usage among journal topics which could take extra processing to normalize. It was simpler to take a snapshot of journals and sidestep this issue for now.
 
-</br>
 
-## Design
-
-</br>
+</br></br>
 
 ### XML Parsing
 
@@ -84,6 +89,8 @@ rm -f ~/tmp/pubmed*.xml.gz.md5
 #hdfs dfs -put *.xml /user/sm9553/project
 ```
 
+</br>
+
 The [spark-xml](https://github.com/databricks/spark-xml) package from [Databricks](https://databricks.com/), primarily developed by [Hyukjin Kwon](https://github.com/HyukjinKwon), was used to parse the XML files into a Spark DataFrame. 
 
 
@@ -98,10 +105,12 @@ val pubmed =
         )
 ```
 
+</br>
+
 These steps will become a serious bottleneck if many XML files need to be parsed into a Spark format. To be a true map-reduce workflow, this step as well as the XML parsing should be distributed. In another life I ought to `wget`, parse xml files, and extract the few necessary fields in the map phase, then reduce/join everything into a single Spark DataFrame for intermediate storage on HDFS.
 
 
-</br>
+</br></br>
 
 ### Lemma Array Generation
 
@@ -142,9 +151,11 @@ var journalLemmas =
       ).groupBy("journalTitle").agg(collect_list("lemma") as "lemma")
 ```
 
+</br>
+
 ### A snapshot of this Spark DataFrame from the terminal
 
-![](static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/posLemma.jpg)
+![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/posLemma.jpg)
 
 
 ### TF-IDF Features
@@ -521,33 +532,35 @@ It should also be possible to make larger inferences about the industry which th
 
 </br></br>
 
-## thebibliography
+## The works cited from my paper
 
-    \bibitem{b1} Allen, E. A., Erhardt, E. B.,  Calhoun, V. D. (2012). Data Visualization in the Neurosciences: Overcoming the Curse of Dimensionality. Neuron, 74(4), 603–608. https://doi.org/10.1016/j.neuron.2012.05.001
-    \bibitem{b2} Altınel, B., Can Ganiz, M.,  Diri, B. (2015). A corpus-based semantic kernel for text classification by using meaning values of terms. Engineering Applications of Artificial Intelligence, 43, 54–66. https://doi.org/10.1016/j.engappai.2015.03.015
-    \bibitem{b3} amoeba. (2016, October 4). What’s the formula for the Benjamini-Hochberg adjusted p-value? [Forum Comment]. Cross Validated. https://stats.stackexchange.com/questions/238458/whats-the-formula-for-the-benjamini-hochberg-adjusted-p-value/402217
-    \bibitem{b4} Anscombe, F. J. (1973). Graphs in Statistical Analysis. The American Statistician, 27(1), 17. https://doi.org/10.2307/2682899
-    \bibitem{b5} Benjamini, Y., Heller, R.,  Yekutieli, D. (2009). Selective inference in complex research. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences, 367(1906), 4255–4271. https://doi.org/10.1098/rsta.2009.0127
-    \bibitem{b6} Benjamini, Y.,  Hochberg, Y. (1995). Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing. Journal of the Royal Statistical Society: Series B (Methodological), 57(1), 289–300. https://doi.org/10.1111/j.2517-6161.1995.tb02031.x
-    \bibitem{b7} Databricks. (n.d.). Databricks spark-xml. GitHub. https://github.com/databricks/spark-xml
-    \bibitem{b8} Doan, S., Yang, E. W., Tilak, S. S., Li, P. W., Zisook, D. S.,  Torii, M. (2019). Extracting health-related causality from twitter messages using natural language processing. BMC Medical Informatics and Decision Making, 19(S3), 19. https://doi.org/10.1186/s12911-019-0785-0
-    \bibitem{b9} Felizardo, K. R., MacDonell, S. G., Mendes, E.,  Maldonado, J. C. (2012). A Systematic Mapping on the use of Visual Data Mining to Support the Conduct of Systematic Literature Reviews. Journal of Software, 7(2), 1. https://doi.org/10.4304/jsw.7.2.450-461
-    \bibitem{b10} HARRELL, F. R. A. N. K. E.,  DAVIS, C. E. (1982). A new distribution-free quantile estimator. Biometrika, 69(3), 635–640. https://doi.org/10.1093/biomet/69.3.635
-    \bibitem{b11} Kurland, O.,  Lee, L. (2009). Clusters, language models, and ad hoc information retrieval. ACM Transactions on Information Systems, 27(3), 1–39. https://doi.org/10.1145/1508850.1508851
-    \bibitem{b12} Luhn, H. P. (1957). A Statistical Approach to Mechanized Encoding and Searching of Literary Information. IBM Journal of Research and Development, 1(4), 309–317. https://doi.org/10.1147/rd.14.0309
-    \bibitem{b13} Mair, P.,  Wilcox, R. (2019). Robust statistical methods in R using the WRS2 package. Behavior Research Methods, 52(2), 464–488. https://doi.org/10.3758/s13428-019-01246-w
-    \bibitem{b14} Manning, C. D., Raghavan, P.,  Schütze, H. (2008). Introduction to Information Retrieval [E-book]. Cambridge University Press. https://www-nlp.stanford.edu/IR-book/
-    \bibitem{b15} Manning, C., Surdeanu, M., Bauer, J., Finkel, J., Bethard, S.,  McClosky, D. (2014). The Stanford CoreNLP Natural Language Processing Toolkit. Stanford. https://nlp.stanford.edu/pubs/StanfordCoreNlp2014.pdf
-    \bibitem{b16} Pennington, J., Socher, R.,  Manning, C. (2014). Glove: Global Vectors for Word Representation. Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), 1. https://doi.org/10.3115/v1/d14-1162
-    \bibitem{b17} Rousselet, G. A., Pernet, C. R.,  Wilcox, R. R. (2017). Beyond differences in means: robust graphical methods to compare two groups in neuroscience. European Journal of Neuroscience, 46(2), 1738–1748. https://doi.org/10.1111/ejn.13610
-    \bibitem{b18} Salton, G.,  Buckley, C. (1988). Term-weighting approaches in automatic text retrieval. Information Processing  Management, 24(5), 513–523. https://doi.org/10.1016/0306-4573(88)90021-0
-    \bibitem{b19} Singhal, A. S. (2001). Modern Information Retrieval: A Brief Overview. IEEE. http://singhal.info/ieee2001.pdf
-    \bibitem{b20} Smyth, G. S. gordon-smyth. (2012, January 1). Bioconductor Forum. Bioconductor Forum. https://support.bioconductor.org/p/49864/
-    \bibitem{b21} SPARCK JONES, K. A. R. E. N. (1972). A STATISTICAL INTERPRETATION OF TERM SPECIFICITY AND ITS APPLICATION IN RETRIEVAL. Journal of Documentation, 28(1), 11–21. https://doi.org/10.1108/eb026526
-    \bibitem{b22} Wilcox, R. R. (2001). Modern Insights About Pearson’s Correlation and Least Squares Regression. International Journal of Selection and Assessment, 9(1  2), 195–205. https://doi.org/10.1111/1468-2389.00172
-    \bibitem{b23} Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
-    \bibitem{b23} Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
-    \bibitem{b24} Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664
+Some of these sources were noted and linked directly in this page, other sources contributed to ideas and understanding.
+
+    Allen, E. A., Erhardt, E. B.,  Calhoun, V. D. (2012). Data Visualization in the Neurosciences: Overcoming the Curse of Dimensionality. Neuron, 74(4), 603–608. https://doi.org/10.1016/j.neuron.2012.05.001
+    Altınel, B., Can Ganiz, M.,  Diri, B. (2015). A corpus-based semantic kernel for text classification by using meaning values of terms. Engineering Applications of Artificial Intelligence, 43, 54–66. https://doi.org/10.1016/j.engappai.2015.03.015
+    amoeba. (2016, October 4). What’s the formula for the Benjamini-Hochberg adjusted p-value? [Forum Comment]. Cross Validated. https://stats.stackexchange.com/questions/238458/whats-the-formula-for-the-benjamini-hochberg-adjusted-p-value/402217
+    Anscombe, F. J. (1973). Graphs in Statistical Analysis. The American Statistician, 27(1), 17. https://doi.org/10.2307/2682899
+    Benjamini, Y., Heller, R.,  Yekutieli, D. (2009). Selective inference in complex research. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences, 367(1906), 4255–4271. https://doi.org/10.1098/rsta.2009.0127
+    Benjamini, Y.,  Hochberg, Y. (1995). Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing. Journal of the Royal Statistical Society: Series B (Methodological), 57(1), 289–300. https://doi.org/10.1111/j.2517-6161.1995.tb02031.x
+    Databricks. (n.d.). Databricks spark-xml. GitHub. https://github.com/databricks/spark-xml
+    Doan, S., Yang, E. W., Tilak, S. S., Li, P. W., Zisook, D. S.,  Torii, M. (2019). Extracting health-related causality from twitter messages using natural language processing. BMC Medical Informatics and Decision Making, 19(S3), 19. https://doi.org/10.1186/s12911-019-0785-0
+    Felizardo, K. R., MacDonell, S. G., Mendes, E.,  Maldonado, J. C. (2012). A Systematic Mapping on the use of Visual Data Mining to Support the Conduct of Systematic Literature Reviews. Journal of Software, 7(2), 1. https://doi.org/10.4304/jsw.7.2.450-461
+    HARRELL, F. R. A. N. K. E.,  DAVIS, C. E. (1982). A new distribution-free quantile estimator. Biometrika, 69(3), 635–640. https://doi.org/10.1093/biomet/69.3.635
+    Kurland, O.,  Lee, L. (2009). Clusters, language models, and ad hoc information retrieval. ACM Transactions on Information Systems, 27(3), 1–39. https://doi.org/10.1145/1508850.1508851
+    Luhn, H. P. (1957). A Statistical Approach to Mechanized Encoding and Searching of Literary Information. IBM Journal of Research and Development, 1(4), 309–317. https://doi.org/10.1147/rd.14.0309
+    Mair, P.,  Wilcox, R. (2019). Robust statistical methods in R using the WRS2 package. Behavior Research Methods, 52(2), 464–488. https://doi.org/10.3758/s13428-019-01246-w
+    Manning, C. D., Raghavan, P.,  Schütze, H. (2008). Introduction to Information Retrieval [E-book]. Cambridge University Press. https://www-nlp.stanford.edu/IR-book/
+    Manning, C., Surdeanu, M., Bauer, J., Finkel, J., Bethard, S.,  McClosky, D. (2014). The Stanford CoreNLP Natural Language Processing Toolkit. Stanford. https://nlp.stanford.edu/pubs/StanfordCoreNlp2014.pdf
+    Pennington, J., Socher, R.,  Manning, C. (2014). Glove: Global Vectors for Word Representation. Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), 1. https://doi.org/10.3115/v1/d14-1162
+    Rousselet, G. A., Pernet, C. R.,  Wilcox, R. R. (2017). Beyond differences in means: robust graphical methods to compare two groups in neuroscience. European Journal of Neuroscience, 46(2), 1738–1748. https://doi.org/10.1111/ejn.13610
+    Salton, G.,  Buckley, C. (1988). Term-weighting approaches in automatic text retrieval. Information Processing  Management, 24(5), 513–523. https://doi.org/10.1016/0306-4573(88)90021-0
+    Singhal, A. S. (2001). Modern Information Retrieval: A Brief Overview. IEEE. http://singhal.info/ieee2001.pdf
+    Smyth, G. S. gordon-smyth. (2012, January 1). Bioconductor Forum. Bioconductor Forum. https://support.bioconductor.org/p/49864/
+    SPARCK JONES, K. A. R. E. N. (1972). A STATISTICAL INTERPRETATION OF TERM SPECIFICITY AND ITS APPLICATION IN RETRIEVAL. Journal of Documentation, 28(1), 11–21. https://doi.org/10.1108/eb026526
+    Wilcox, R. R. (2001). Modern Insights About Pearson’s Correlation and Least Squares Regression. International Journal of Selection and Assessment, 9(1  2), 195–205. https://doi.org/10.1111/1468-2389.00172
+    Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
+    Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
+    Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664
 
 
 
