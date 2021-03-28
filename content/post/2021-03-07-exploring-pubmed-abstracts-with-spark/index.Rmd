@@ -506,9 +506,9 @@ asthma_hiv_diff <- tibble(quantile = asthma_hiv$partable$q,
 
 #### Plots of group pairwise quantile differences
 
-![](C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg)
+![]("C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg")
 
-![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png)
+![](./static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png)
 
 ![](/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
 
