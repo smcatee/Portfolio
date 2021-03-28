@@ -277,8 +277,12 @@ asthma_top_sim</code></pre>
 <div id="similar-journals-by-group" class="section level3">
 <h3>Similar journals by group</h3>
 <p>These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes and HIV, while lowering the percentile to 75% for the Asthma group to get a similar length output.</p>
-<pre class="r"><code>ingroup_asthma_cossim &lt;- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
-asthma$journal_x[asthma$cosine_similarity &gt; quantile(ingroup_asthma_cossim, probs = 0.75) &amp; !(asthma$journal_x %in% asthma$journal_asthma)]</code></pre>
+<pre class="r"><code>ingroup_asthma_cossim &lt;-
+  asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
+
+asthma$journal_x[asthma$cosine_similarity &gt;
+                   quantile(ingroup_asthma_cossim, probs = 0.75) &amp;
+                 !(asthma$journal_x %in% asthma$journal_asthma)]</code></pre>
 <pre><code>## [1] &quot;The European respiratory journal&quot;                           
 ## [2] &quot;Pediatric pulmonology&quot;                                      
 ## [3] &quot;Canadian respiratory journal&quot;                               
@@ -289,8 +293,12 @@ asthma$journal_x[asthma$cosine_similarity &gt; quantile(ingroup_asthma_cossim, p
 ## [8] &quot;The journal of allergy and clinical immunology. In practice&quot;
 ## [9] &quot;Allergy&quot;</code></pre>
 <p></br></p>
-<pre class="r"><code>ingroup_diabetes_cossim &lt;- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
-diabetes$journal_x[diabetes$cosine_similarity &gt; quantile(ingroup_diabetes_cossim, probs = 0.975) &amp; !(diabetes$journal_x %in% diabetes$journal_diabetes)]</code></pre>
+<pre class="r"><code>ingroup_diabetes_cossim &lt;-
+  diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
+
+diabetes$journal_x[diabetes$cosine_similarity &gt;
+                     quantile(ingroup_diabetes_cossim, probs = 0.975) &amp;
+                   !(diabetes$journal_x %in% diabetes$journal_diabetes)]</code></pre>
 <pre><code>##  [1] &quot;The British journal of dermatology&quot;           
 ##  [2] &quot;The Lancet. Respiratory medicine&quot;             
 ##  [3] &quot;Journal of nutritional science&quot;               
@@ -316,7 +324,9 @@ diabetes$journal_x[diabetes$cosine_similarity &gt; quantile(ingroup_diabetes_cos
 ## [23] &quot;The lancet. HIV&quot;</code></pre>
 <p></br></p>
 <pre class="r"><code>ingroup_hiv_cossim &lt;- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
-hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.975) &amp; !(hiv$journal_x %in% hiv$journal_hiv)]</code></pre>
+hiv$journal_x[hiv$cosine_similarity &gt; 
+                quantile(ingroup_hiv_cossim, probs = 0.975) &amp;
+              !(hiv$journal_x %in% hiv$journal_hiv)]</code></pre>
 <pre><code>##  [1] &quot;Virologie (Montrouge, France)&quot;                         
 ##  [2] &quot;Vaccine: X&quot;                                            
 ##  [3] &quot;Current immunology reviews&quot;                            
@@ -368,9 +378,8 @@ hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.
 <p>The final analysis and visualization steps were completed in R. Each 10th quantile of cosine similarities were calculated for each group using <code>stats::quantile</code>. The distribution of cosine similarities in each set is concentrated towards 0 with long tails trailing towards 1. It is to be expected that most cosine similarities will be closer to 0 since most journals will be dissimilar to each group. A thin distribution tail contains the relatively few journals that are similar. Within group quantiles were also calculated to determine if the pattern matching technique yielded groups that were internally more similar than the whole corpus.</p>
 <p></br></br></p>
 <pre class="r"><code>density(diabetes$X3) %&gt;% 
-     plot(main = &quot;All Journal&#39;s Similarity To &#39;Diabetes&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
-<pre class="r"><code>density(asthma$X3) %&gt;% 
+     plot(main = &quot;All Journal&#39;s Similarity To &#39;Diabetes&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)
+density(asthma$X3) %&gt;% 
   plot(breaks = 100, main = &quot;All Journal&#39;s Similarity To &#39;HIV&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
 <pre><code>## Warning in plot.window(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
 <pre><code>## Warning in plot.xy(xy, type, ...): &quot;breaks&quot; is not a graphical parameter</code></pre>
@@ -381,7 +390,6 @@ hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.
 ## graphical parameter</code></pre>
 <pre><code>## Warning in box(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
 <pre><code>## Warning in title(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-13-2.png" width="672" /></p>
 <pre class="r"><code>density(hiv$X3) %&gt;% 
   plot(breaks = 100, main = &quot;All Journal&#39;s Similarity To &#39;Asthma&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
 <pre><code>## Warning in plot.window(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
@@ -393,7 +401,7 @@ hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.
 ## graphical parameter</code></pre>
 <pre><code>## Warning in box(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
 <pre><code>## Warning in title(...): &quot;breaks&quot; is not a graphical parameter</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-13-3.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-13-2.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-13-3.png" width="672" /></p>
 <p></br></br></p>
 <div id="within-group-similarity-quantiles" class="section level4">
 <h4>Within Group Similarity Quantiles</h4>
@@ -515,8 +523,8 @@ asthma_hiv_diff &lt;- tibble(quantile = asthma_hiv$partable$q,
 <div id="plots-of-group-pairwise-quantile-differences" class="section level4">
 <h4>Plots of group pairwise quantile differences</h4>
 <p><img src="C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg" /></p>
-<p><img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.jpg" /></p>
-<p><img src="/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.jpg" /></p>
+<p><img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png" /></p>
+<p><img src="/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png" /></p>
 <p></br></p>
 <p>Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.</p>
 <p>The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct

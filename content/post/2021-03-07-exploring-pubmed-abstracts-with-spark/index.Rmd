@@ -331,22 +331,32 @@ Note how most top cosine similarities are in the range of 0.1 to 0.3. These are 
 These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes and HIV, while lowering the percentile to 75% for the Asthma group to get a similar length output.
 
 ```{r}
-ingroup_asthma_cossim <- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
-asthma$journal_x[asthma$cosine_similarity > quantile(ingroup_asthma_cossim, probs = 0.75) & !(asthma$journal_x %in% asthma$journal_asthma)]
+ingroup_asthma_cossim <-
+  asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
+
+asthma$journal_x[asthma$cosine_similarity >
+                   quantile(ingroup_asthma_cossim, probs = 0.75) &
+                 !(asthma$journal_x %in% asthma$journal_asthma)]
 ```
 
 </br>
 
 ```{r}
-ingroup_diabetes_cossim <- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
-diabetes$journal_x[diabetes$cosine_similarity > quantile(ingroup_diabetes_cossim, probs = 0.975) & !(diabetes$journal_x %in% diabetes$journal_diabetes)]
+ingroup_diabetes_cossim <-
+  diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
+
+diabetes$journal_x[diabetes$cosine_similarity >
+                     quantile(ingroup_diabetes_cossim, probs = 0.975) &
+                   !(diabetes$journal_x %in% diabetes$journal_diabetes)]
 ```
 
 </br>
 
 ```{r}
 ingroup_hiv_cossim <- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
-hiv$journal_x[hiv$cosine_similarity > quantile(ingroup_hiv_cossim, probs = 0.975) & !(hiv$journal_x %in% hiv$journal_hiv)]
+hiv$journal_x[hiv$cosine_similarity > 
+                quantile(ingroup_hiv_cossim, probs = 0.975) &
+              !(hiv$journal_x %in% hiv$journal_hiv)]
 ```
 
 </br>
@@ -371,7 +381,7 @@ The final analysis and visualization steps were completed in R. Each 10th quanti
 </br></br>
 
 
-```{r}
+```{r warnings=FALSE, message=FALSE, fig.show='hold'}
 density(diabetes$X3) %>% 
      plot(main = "All Journal's Similarity To 'Diabetes' Subset", xlab = "Cosine Similarity")
 density(asthma$X3) %>% 
@@ -498,9 +508,9 @@ asthma_hiv_diff <- tibble(quantile = asthma_hiv$partable$q,
 
 ![](C:/Users/seand/OneDrive/Documents/CS_Projects/WebDevel/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg)
 
-![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.jpg)
+![](/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.png)
 
-![](/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.jpg)
+![](/Portfolio/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.png)
 
 
 </br>
