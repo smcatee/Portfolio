@@ -27,4 +27,8 @@ classic dist fx and proposed new fx
 https://axon.cs.byu.edu/~randy/jair/wilson2.html
 
 
+squared distance
+mahalonobis dist
+https://www.mathworks.com/help/stats/mahal.html
+
 

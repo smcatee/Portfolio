@@ -1,14 +1,15 @@
 ---
-title: Exploring PubMed Abstracts with Spark
-author: Sean D McAtee
+title: "Exploring PubMed Abstracts with Spark"
+author: "Sean D McAtee"
 date: '2021-03-07'
-slug: exploring-pubmed-abstracts-with-spark
+output: pdf_document # REMOVE FOR BLOGDOWN TO WORK
 categories: []
 tags: []
-Description: 'TF-IDF of Abstract text to explore Journal titles'
+Description: TF-IDF of Abstract text to explore Journal titles
 Tags: []
 Categories: []
 DisableComments: no
+slug: exploring-pubmed-abstracts-with-spark
 ---
 
 
@@ -20,34 +21,147 @@ DisableComments: no
 <p></br></p>
 <div id="motivation" class="section level2">
 <h2>Motivation:</h2>
-<p>Biomedical research is performed at a remarkable pace. Many stakeholders benefit from
-the advance of this research, however the volume of literature in various Biomedical subjects
-is increasingly becoming a hurdle for researchers and practitioners. Valuable time is
-spent in literature review, searching for relevant literature and extracting useful
-information from it. There are many tools for semi automated literature search and
-review, including information extraction.</p>
-<p>The number of academic journals is also potenially overwhelming.
-Some journals have massively broad subjects and wide circulation, while others may be
-niche journals with smaller readerships. Subject matter is difficult to determine based
-on a cursory glance at the title and a few published articles. Therefore it could be
-useful to classify journals based on the literature that they publish.</p>
-<p></br></p>
-<p>The PubMed database of article metadata is an XML structured mass of information containing the titles, authors, abstracts, affiliations and many other potentially useful fields.</p>
-<p>I used TF-IDF feature vectors to examine academic journals using abstracts on PubMed. The distributed computing environment, Spark, is used to filter and transform text into TF-IDF vectors.</p>
-<p></br></br></p>
+<p>Academic literature information extraction is a fascinating subject. There is a big push to automate information extraction. This project is focused on how a whole journal corpus may be compared to another using their abstract text content. Journal corpus similarity could be a useful feature to use during other information extraction tasks. True subject matter is difficult to determine based on a cursory glance at the title and a few published articles. Additionally, a journal’s or whole field’s range of topics could shift over time because of new tools, job responsibilities, and knowledge (eg Radiology and Genetics are radically different than in 1900, their academic journals likely reflect these changes).</p>
+<p>Therefore, it could be useful to classify journals based on the text that they publish. PubMed Baseline includes article abstracts as well as metadata like Grant Agency, University Affiliation, Date, and Authors. These fields allow the linkage of other data sources.</p>
 </div>
 <div id="datasets" class="section level2">
 <h2>Datasets</h2>
-<p>This analysis uses PubMed metadata to compare subgroups of journals. The data was
-downloaded from the PubMed Baseline at <a href="ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline" class="uri">ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline</a>.
-This data contains many fields for each article hosted on PubMed. The fields used
-in the analysis below were ‘PMID’, ‘AbstractText’, and ‘JournalTitle’.<br />
-The downloaded metadata was loaded as XML into the NYU HPC distributed file
-system (HDFS). The spark-xml package from Databricks was used to parse the XML
-files into a Spark DataFrame. As a DataFrame the metadata was filtered and
-transformed into word feature vectors for every journal listed.</p>
+<p>This analysis uses PubMed data to compare subgroups of journals. The database is called <a href="ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline">PubMed Baseline</a>. I used a subset of the PubMed Baseline. Arguably, there would be a shift in popularity and word usage among journal topics which could take extra processing to normalize. It was simpler to take a snapshot of journals and sidestep this issue for now.</p>
 <p></br></p>
-<p>Three hand selected subgroups of journals were compared to the whole corpus: Diabetes, Asthma, and HIV. Journals were selected for each group if their title contained the disease term. I was curious to find out what journals had similar TF-IDF feature vectors to these highly specific groups of journals.</p>
+</div>
+<div id="design" class="section level2">
+<h2>Design</h2>
+<p></br></p>
+<div id="xml-parsing" class="section level3">
+<h3>XML Parsing</h3>
+<p>PubMed Baseline data is stored in many zipped XML files. Each XML file contains data from many articles.</p>
+<p>I downloaded and decompressed a selection of the Baseline files with a typical Bash script.</p>
+<pre><code>#!/bin/bash
+
+## LOCALLY
+
+# Download files from ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline/
+wget -P ~/tmp/ ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline/pubmed20n1*  # define file set
+
+# For each file downloaded check md5
+md5sum --check ~/tmp/pubmed*.xml.gz.md5
+
+# Unzip .gz files
+gzip -d ~/tmp/pubmed*.gz
+
+# Remove md5 files
+rm -f ~/tmp/pubmed*.xml.gz.md5
+
+# Move files to HDFS
+#hdfs dfs -put *.xml /user/sm9553/project</code></pre>
+<p>The <a href="https://github.com/databricks/spark-xml">spark-xml</a> package from <a href="https://databricks.com/">Databricks</a>, primarily developed by <a href="https://github.com/HyukjinKwon">Hyukjin Kwon</a>, was used to parse the XML files into a Spark DataFrame.</p>
+<pre><code>/** Parse XML to DataFrame */
+val pubmed =
+  sqlContext.read.format(
+    &quot;org.apache.spark.sql.xml&quot;
+    ).option(&quot;rootTag&quot;, &quot;PubmedArticle&quot;
+      ).load(
+        &quot;tmp/PubMed.xml&quot;
+        )</code></pre>
+<p>These steps will become a serious bottleneck if many XML files need to be parsed into a Spark format. To be a true map-reduce workflow, this step as well as the XML parsing should be distributed. In another life I ought to <code>wget</code>, parse xml files, and extract the few necessary fields in the map phase, then reduce/join everything into a single Spark DataFrame for intermediate storage on HDFS.</p>
+<p></br></p>
+</div>
+<div id="lemma-array-generation" class="section level3">
+<h3>Lemma Array Generation</h3>
+<p>The <a href="https://stanfordnlp.github.io/CoreNLP/">Stanford CoreNLP</a> package was used to break down <code>AbstractText</code> strings into lemmas. Part of speech tags were generated for each lemma to filter out uninformative elements, such as coordinating conjunctions and prepositions. At this stage there are 5591 unique JournalTitles in the corpus and 112,405 unique lemmas across all JournalTitles.</p>
+<pre><code>/** extract abstracts and extra info */
+var abstractsEtc =
+  pubmed.select(
+    $&quot;MedlineCitation.PMID&quot;,
+    $&quot;MedlineCitation.Article.Abstract.AbstractText&quot;,
+    $&quot;MedlineCitation.Article.Journal.Title&quot;.as(&#39;journalTitle)
+    ).withColumn(
+      &quot;AbstractText&quot;, concat_ws(&quot; &quot;, col(&quot;AbstractText&quot;))
+      )
+      
+/** explode sentences */
+var lemmas =
+  abstractsEtc.select(
+    &#39;PMID, &#39;journalTitle,
+    explode(ssplit(&#39;AbstractText)).as(&#39;sentence)
+    ).select(
+      &#39;PMID, &#39;journalTitle,
+      explode(lemma(&#39;sentence)).as(&quot;lemma&quot;)
+      ).withColumn(&quot;pos&quot;, pos(&#39;lemma) )
+
+/** filter out useless pos-types, make a udf */
+val filtLemmas =
+  lemmas.filter(
+    &#39;pos(0).rlike(&quot;[^(DT)(CD)(CC)(IN)(LS)(SYM)(TO)(\\.)(\\,)(\\;)(\\:)]&quot;)
+    )
+
+/** group by */
+var journalLemmas =
+  filtLemmas.select(
+    &#39;journalTitle,
+    &#39;lemma
+      ).groupBy(&quot;journalTitle&quot;).agg(collect_list(&quot;lemma&quot;) as &quot;lemma&quot;)</code></pre>
+</div>
+<div id="a-snapshot-of-this-spark-dataframe-from-the-terminal" class="section level3">
+<h3>A snapshot of this Spark DataFrame from the terminal</h3>
+<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/posLemma.jpg" /></p>
+</div>
+<div id="tf-idf-features" class="section level3">
+<h3>TF-IDF Features</h3>
+<p>Lemma arrays were converted to TF-IDF feature vectors in the following way. The <a href="https://spark.apache.org/docs/2.2.0/api/java/org/apache/spark/ml/package-summary.html">Spark ML</a> package was used to hash lemmas. The number of features for the hash function was set to 2^17, above 5591 to avoid collisions and set as a power of 2 to increase calculation speed. Spark ML was also used to calculate IDF for the hashed lemma vectors. IDF values were rescaled to generate TF-IDF values.</p>
+<pre><code>var numFeatures = 131072
+
+val hashingTF =
+  new HashingTF(
+    ).setInputCol(&quot;lemma&quot;).setOutputCol(&quot;rawFeatures&quot;).setNumFeatures(numFeatures)
+
+val journalhashedLemmas = hashingTF.transform(journalLemmas)
+val idf = new IDF().setInputCol(&quot;rawFeatures&quot;).setOutputCol(&quot;features&quot;)
+val journalIdfModel = idf.fit(journalhashedLemmas)
+
+val journalrescaledData = journalIdfModel.transform(journalhashedLemmas)
+
+val journalDense = 
+  journalrescaledData.select(
+    &quot;journalTitle&quot;, &quot;features&quot;).withColumn(&quot;features&quot;, asDense($&quot;features&quot;))</code></pre>
+</div>
+<div id="a-snapshot-of-this-spark-dataframe-from-the-terminal-1" class="section level3">
+<h3>A snapshot of this Spark DataFrame from the terminal</h3>
+<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/featureVec.jpg" /></p>
+<p></br></br></p>
+</div>
+<div id="subgroup-comparison" class="section level3">
+<h3>Subgroup Comparison</h3>
+<p>I chose subgroups to be highly specific and not even remotely selective – if the journal title contains the word “Diabetes”, “Asthma”, or “HIV”. The subgroups were selected using simple RegEx patterns.</p>
+<pre><code>val diabetes_journalDense =
+  journalDense.filter(
+    &#39;journalTitle.rlike(&quot;(\\b[Dd]iabet)&quot;)).select(
+      &#39;journalTitle.alias(&quot;journalTitle_subset&quot;), &#39;features.alias(&quot;features_subset&quot;))
+
+val asthma_journalDense =
+  journalDense.filter(
+    &#39;journalTitle.rlike(&quot;(\\b[Aa]sthma)&quot;)).select(
+      &#39;journalTitle.alias(&quot;journalTitle_subset&quot;), &#39;features.alias(&quot;features_subset&quot;))
+
+val hiv_journalDense =
+  journalDense.filter(
+    &#39;journalTitle.rlike(&quot;(\\b[Hh][Ii][Vv])&quot;)).select(
+      &#39;journalTitle.alias(&quot;journalTitle_subset&quot;), &#39;features.alias(&quot;features_subset&quot;))</code></pre>
+<p></br></p>
+<div id="the-number-of-journals-in-each-group" class="section level4">
+<h4>The number of journals in each group:</h4>
+<pre class="r"><code>list(
+  distinct_all = n_distinct(asthma$journal_x),
+  distinct_asthma = n_distinct(asthma$journal_asthma),
+  distinct_diabetes = n_distinct(diabetes$journal_diabetes),
+  distinct_hiv = n_distinct(hiv$journal_hiv)
+  ) %&gt;% as.data.frame( row.names = &quot;n_journals&quot;)</code></pre>
+<pre><code>##            distinct_all distinct_asthma distinct_diabetes distinct_hiv
+## n_journals         5591               5                40            8</code></pre>
+<p></br></p>
+</div>
+<div id="three-of-the-journal-titles-from-each-group" class="section level4">
+<h4>Three of the journal titles from each group:</h4>
 <pre class="r"><code>asthma$journal_asthma %&gt;% unique() %&gt;% head(3)</code></pre>
 <pre><code>## [1] &quot;Journal of asthma and allergy&quot;                                                                                         
 ## [2] &quot;The Journal of asthma : official journal of the Association for the Care of Asthma&quot;                                    
@@ -60,77 +174,224 @@ transformed into word feature vectors for every journal listed.</p>
 ## [2] &quot;Current HIV research&quot;                    
 ## [3] &quot;Current HIV/AIDS reports&quot;</code></pre>
 <p></br></br></p>
-<p>The sizes of the hand-selected groups compared to the whole set of journals:</p>
-<pre class="r"><code>list(
-  distinct_all = n_distinct(asthma$journal_x),
-  distinct_asthma = n_distinct(asthma$journal_asthma),
-  distinct_diabetes = n_distinct(diabetes$journal_diabetes),
-  distinct_hiv = n_distinct(hiv$journal_hiv)
-  ) %&gt;% as.data.frame( row.names = &quot;n_journals&quot;)</code></pre>
-<pre><code>##            distinct_all distinct_asthma distinct_diabetes distinct_hiv
-## n_journals         5591               5                40            8</code></pre>
-<p></br></br></p>
-<p>Spark is used to filter and transform the abstracts into feature vectors
-for each academic journal. These journals are then compared to each other. Three subgroups
-are filtered from the whole set. Each subgroup reflects a sample of journals in different
-health subjects: Diabetes, Asthma, and HIV. These three subgroups are then compared to the
-whole set of feature vectors. The cosine similarity is calculated for all comparisons,
-and each subgroup’s distribution from 0 (no similarities) to 1 (identical) is assessed.</p>
-<p></br></br></p>
 </div>
-<div id="design" class="section level2">
-<h2>Design</h2>
+</div>
+</div>
+<div id="exploring-the-results" class="section level2">
+<h2>Exploring the results</h2>
+<p></br></br></p>
+<div id="cosine-similarity" class="section level3">
+<h3>Cosine similarity</h3>
+<p>Each group was passed to the pairwise cosine similarity user-defined-function (UDF) to be compared against the whole set. <a href="https://stackoverflow.com/a/62140182">I used the UDF from this stack answer</a></p>
+<p>A table of cosine similarities for these three groups vs the whole set was exported to my local environment to analyze in R.</p>
+<pre><code>val cosSimilarity = udf { (x: Vector, y: Vector) =&gt;
+    val v1 = x.toArray
+    val v2 = y.toArray
+    val l1 = scala.math.sqrt(v1.map(x =&gt; x*x).sum)
+    val l2 = scala.math.sqrt(v2.map(x =&gt; x*x).sum)
+    val scalar = v1.zip(v2).map(p =&gt; p._1*p._2).sum
+    val cosineSim = scalar/(l1*l2)
+    &quot;%.6f&quot;.format(cosineSim).toDouble
+}
+
+val joinedDf = journalDense.join(diabetes_journalDense, &#39;journalTitle =!= &#39;journalTitle_subset)
+val cosSimDf = joinedDf.withColumn(&quot;cosine_sim&quot;, cosSimilarity(&#39;features_subset, &#39;features)).select(&#39;journalTitle, &#39;journalTitle_subset, &#39;cosine_sim)</code></pre>
 <p></br></p>
-<div id="lemma-array-generation" class="section level3">
-<h3>Lemma Array Generation</h3>
-<p>Data was cleaned, analyzed, and visualized in Spark and R. After data collection
-and XML parsing, the Spark DataFrame was selected for “PMID”, “AbstractText”, and
-“JournalTitle” columns. The Stanford CoreNLP package was used to split sentences
-in each AbstractText string into word arrays, and
-convert words into generic lemmas. Part of speech tags were generated for each
-lemma to filter out uninformative elements, such as coordinating conjunctions
-and prepositions. Once filtered, the lemmas were aggregated into an array for each
-JournalTitle. This resulted in all unique JournalTitle having a corresponding
-array of lemmas from all articles in this PubMed sample. At this stage there were
-5591 unique JournalTitles and 112,405 unique lemmas across all JournalTitles.</p>
+<p>The resulting DataFrame looks like this:</p>
+<p></br></p>
+<div id="highest-cosine-similarity-scores-for-each-group" class="section level4">
+<h4>Highest cosine similarity scores for each group:</h4>
+<pre class="r"><code>asthma_top_sim &lt;- unique(asthma$journal_asthma[!(asthma$journal_x %in% asthma$journal_asthma)]) %&gt;% 
+  purrr::map_dfr(
+    ~ asthma[!(asthma$journal_x %in% asthma$journal_asthma),] %&gt;% 
+    dplyr::filter(journal_asthma == .x ) %&gt;%
+    dplyr::arrange(desc(cosine_similarity)) %&gt;%
+    head(2)
+  )
+asthma_top_sim</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##    journal_x                 journal_asthma                     cosine_similari~
+##    &lt;chr&gt;                     &lt;chr&gt;                                         &lt;dbl&gt;
+##  1 Allergy                   Journal of asthma and allergy                 0.213
+##  2 NPJ primary care respira~ Journal of asthma and allergy                 0.175
+##  3 Allergy                   The Journal of asthma : official ~            0.337
+##  4 The journal of allergy a~ The Journal of asthma : official ~            0.287
+##  5 Pediatric clinics of Nor~ Annals of allergy, asthma &amp; immun~            0.208
+##  6 International archives o~ Annals of allergy, asthma &amp; immun~            0.208
+##  7 The European respiratory~ Allergy, asthma, and clinical imm~            0.202
+##  8 Respiratory research      Allergy, asthma, and clinical imm~            0.198
+##  9 Allergy                   Asthma research and practice                  0.207
+## 10 The journal of allergy a~ Asthma research and practice                  0.188</code></pre>
+<pre class="r"><code>diabetes_top_sim</code></pre>
+<pre><code>## # A tibble: 80 x 3
+##    journal_x                 journal_diabetes                   cosine_similari~
+##    &lt;chr&gt;                     &lt;chr&gt;                                         &lt;dbl&gt;
+##  1 Nutrients                 Diabetology &amp; metabolic syndrome              0.270
+##  2 PloS one                  Diabetology &amp; metabolic syndrome              0.268
+##  3 Pediatric dimensions      Journal of diabetes research                  0.229
+##  4 Nature metabolism         Journal of diabetes research                  0.219
+##  5 Monographs of the Societ~ JMIR diabetes                                 0.237
+##  6 JMIR mHealth and uHealth  JMIR diabetes                                 0.236
+##  7 Progress in cardiovascul~ Diabetes therapy : research, trea~            0.347
+##  8 BMJ (Clinical research e~ Diabetes therapy : research, trea~            0.220
+##  9 The Journal of endocrino~ Diabetes                                      0.226
+## 10 Frontiers in endocrinolo~ Diabetes                                      0.209
+## # ... with 70 more rows</code></pre>
+<pre class="r"><code>hiv_top_sim</code></pre>
+<pre><code>## # A tibble: 16 x 3
+##    journal_x                        journal_hiv                 cosine_similari~
+##    &lt;chr&gt;                            &lt;chr&gt;                                  &lt;dbl&gt;
+##  1 AIDS research and therapy        Southern African journal o~            0.210
+##  2 Journal of the International AI~ Southern African journal o~            0.205
+##  3 Natural product communications   Current HIV research                   0.172
+##  4 Journal of life sciences (Westl~ Current HIV research                   0.142
+##  5 AIDS care                        Current HIV/AIDS reports               0.360
+##  6 AIDS and behavior                Current HIV/AIDS reports               0.358
+##  7 AIDS and behavior                Current opinion in HIV and~            0.437
+##  8 AIDS care                        Current opinion in HIV and~            0.412
+##  9 AIDS and behavior                Journal of HIV/AIDS &amp; soci~            0.288
+## 10 AIDS care                        Journal of HIV/AIDS &amp; soci~            0.277
+## 11 AIDS care                        HIV/AIDS (Auckland, N.Z.)              0.267
+## 12 AIDS and behavior                HIV/AIDS (Auckland, N.Z.)              0.266
+## 13 AIDS and behavior                HIV medicine                           0.380
+## 14 Journal of the International AI~ HIV medicine                           0.377
+## 15 The lancet. Diabetes &amp; endocrin~ The lancet. HIV                        0.726
+## 16 BJS open                         The lancet. HIV                        0.675</code></pre>
 <p></br></br></p>
 </div>
 </div>
-<div id="tf-idf-features" class="section level2">
-<h2>TF-IDF Features</h2>
-<p>Lemma arrays were converted to TF-IDF feature vectors in the following way. The Spark
-ML package was used to hash lemmas. The number of features for the hash function
-was set above 5591 to <span class="math inline">\(2^17\)</span> to avoid collisions and to increase calculation speed.
-Spark ML was also used to calculate IDF for the hashed lemma vectors. IDF values were
-rescaled to generate TF-IDF values.</p>
+<div id="similar-journals" class="section level3">
+<h3>Similar journals</h3>
+<p>These are the top percentiles of cosines for each comparison group. I selected the top 97.5%-ile for Diabetes and HIV, while lowering the percentile to 75% for the Asthma group to get a similar length output.</p>
+<pre class="r"><code>ingroup_asthma_cossim &lt;- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
+asthma$journal_x[asthma$cosine_similarity &gt; quantile(ingroup_asthma_cossim, probs = 0.75) &amp; !(asthma$journal_x %in% asthma$journal_asthma)]</code></pre>
+<pre><code>## [1] &quot;The European respiratory journal&quot;                           
+## [2] &quot;Pediatric pulmonology&quot;                                      
+## [3] &quot;Canadian respiratory journal&quot;                               
+## [4] &quot;Expert review of respiratory medicine&quot;                      
+## [5] &quot;Lung India : official organ of Indian Chest Society&quot;        
+## [6] &quot;Zhonghua nei ke za zhi&quot;                                     
+## [7] &quot;Pediatric clinics of North America&quot;                         
+## [8] &quot;The journal of allergy and clinical immunology. In practice&quot;
+## [9] &quot;Allergy&quot;</code></pre>
+<pre class="r"><code>ingroup_diabetes_cossim &lt;- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
+diabetes$journal_x[diabetes$cosine_similarity &gt; quantile(ingroup_diabetes_cossim, probs = 0.975) &amp; !(diabetes$journal_x %in% diabetes$journal_diabetes)]</code></pre>
+<pre><code>##  [1] &quot;The British journal of dermatology&quot;           
+##  [2] &quot;The Lancet. Respiratory medicine&quot;             
+##  [3] &quot;Journal of nutritional science&quot;               
+##  [4] &quot;Vox sanguinis&quot;                                
+##  [5] &quot;Lancet (London, England)&quot;                     
+##  [6] &quot;Public health nutrition&quot;                      
+##  [7] &quot;PloS one&quot;                                     
+##  [8] &quot;Journal of the American Heart Association&quot;    
+##  [9] &quot;The Lancet. Global health&quot;                    
+## [10] &quot;British journal of haematology&quot;               
+## [11] &quot;Clinical physiology and functional imaging&quot;   
+## [12] &quot;Nutrients&quot;                                    
+## [13] &quot;Progress in cardiovascular diseases&quot;          
+## [14] &quot;BJS open&quot;                                     
+## [15] &quot;The Lancet. Infectious diseases&quot;              
+## [16] &quot;The Lancet. Neurology&quot;                        
+## [17] &quot;Journal of Taibah University Medical Sciences&quot;
+## [18] &quot;The British journal of surgery&quot;               
+## [19] &quot;The Lancet. Child &amp; adolescent health&quot;        
+## [20] &quot;The Lancet. Oncology&quot;                         
+## [21] &quot;The Lancet. Planetary health&quot;                 
+## [22] &quot;The Lancet. Haematology&quot;                      
+## [23] &quot;The lancet. HIV&quot;</code></pre>
+<pre class="r"><code>ingroup_hiv_cossim &lt;- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
+hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.975) &amp; !(hiv$journal_x %in% hiv$journal_hiv)]</code></pre>
+<pre><code>##  [1] &quot;Virologie (Montrouge, France)&quot;                         
+##  [2] &quot;Vaccine: X&quot;                                            
+##  [3] &quot;Current immunology reviews&quot;                            
+##  [4] &quot;AIDS care&quot;                                             
+##  [5] &quot;Virologie (Montrouge, France)&quot;                         
+##  [6] &quot;AIDS care&quot;                                             
+##  [7] &quot;The British journal of dermatology&quot;                    
+##  [8] &quot;The Lancet. Respiratory medicine&quot;                      
+##  [9] &quot;Journal of nutritional science&quot;                        
+## [10] &quot;Vox sanguinis&quot;                                         
+## [11] &quot;Lancet (London, England)&quot;                              
+## [12] &quot;Public health nutrition&quot;                               
+## [13] &quot;AIDS care&quot;                                             
+## [14] &quot;Vaccine&quot;                                               
+## [15] &quot;The Lancet. Global health&quot;                             
+## [16] &quot;The lancet. Diabetes &amp; endocrinology&quot;                  
+## [17] &quot;British journal of haematology&quot;                        
+## [18] &quot;Clinical physiology and functional imaging&quot;            
+## [19] &quot;Journal of the International AIDS Society&quot;             
+## [20] &quot;AIDS and behavior&quot;                                     
+## [21] &quot;Journal of the International AIDS Society&quot;             
+## [22] &quot;AIDS and behavior&quot;                                     
+## [23] &quot;AIDS and behavior&quot;                                     
+## [24] &quot;Journal of the International AIDS Society&quot;             
+## [25] &quot;BJS open&quot;                                              
+## [26] &quot;The Lancet. Infectious diseases&quot;                       
+## [27] &quot;AIDS and behavior&quot;                                     
+## [28] &quot;The Lancet. Neurology&quot;                                 
+## [29] &quot;AIDS (London, England)&quot;                                
+## [30] &quot;AIDS (London, England)&quot;                                
+## [31] &quot;AIDS (London, England)&quot;                                
+## [32] &quot;The British journal of surgery&quot;                        
+## [33] &quot;The Lancet. Child &amp; adolescent health&quot;                 
+## [34] &quot;The Lancet. Oncology&quot;                                  
+## [35] &quot;The Lancet. Planetary health&quot;                          
+## [36] &quot;AIDS research and human retroviruses&quot;                  
+## [37] &quot;Journal of acquired immune deficiency syndromes (1999)&quot;
+## [38] &quot;AIDS research and human retroviruses&quot;                  
+## [39] &quot;AIDS research and human retroviruses&quot;                  
+## [40] &quot;The Lancet. Haematology&quot;                               
+## [41] &quot;AIDS research and therapy&quot;                             
+## [42] &quot;AIDS research and therapy&quot;</code></pre>
+<p>Interestingly the HIV group has more similar journals than the Diabetes group. This could be mostly because I excluded “AIDS” in the RegEx pattern to select the group.</p>
 <p></br></br></p>
 </div>
-<div id="pairwise-cosine-similarity" class="section level2">
-<h2>Pairwise Cosine Similarity</h2>
-<p><img src="/static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/cosinesimilarity.jpg" /></p>
-<p>Subgroups of journal titles were selected based three health terms: Diabetes, HIV, and
-Asthma. This was done in order to gather three groups for cosine similarity analysis.
-The subgroups were selected using RegEx pattern matching. Each group was passed to
-the pairwise cosine similarity user-defined-function to be compared against the
-whole set. Each cosine similarity DataFrame was written to csv files for further
-analysis in R.</p>
-<p><a href="">Top rows of the Spark DataFrame containing part</a></p>
-<p></br></br></p>
-</div>
-<div id="quantile-comparisons" class="section level2">
-<h2>Quantile Comparisons</h2>
-<p>The final analysis and visualization steps were completed in R. Each 10th quantile
-was calculated for each set using stats::quantile(). The distributions of
-each set is concentrated towards 0 with long tails trailing towards 1. This is
-due to the fact that the cosine similarity of most JournalTitle feature vectors
-are not similar. A thin distribution tail contains the relatively few feature
-vectors that are similar. Quantiles were also calculated for isolated subgroups
-to determine if the pattern matching technique yielded groups that were internally
-more similar than the whole corpus. Internally, the groups had less spread than the
-whole corpus according to quantile calculations.</p>
+<div id="quantile-comparisons" class="section level3">
+<h3>Quantile Comparisons</h3>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   X1 = col_character(),
+##   X2 = col_character(),
+##   X3 = col_double()
+## )
+## 
+## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   X1 = col_character(),
+##   X2 = col_character(),
+##   X3 = col_double()
+## )
+## 
+## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   X1 = col_character(),
+##   X2 = col_character(),
+##   X3 = col_double()
+## )</code></pre>
+<p>The final analysis and visualization steps were completed in R. Each 10th quantile of cosine similarities were calculated for each group using <code>stats::quantile</code>. The distribution of cosine similarities in each set is concentrated towards 0 with long tails trailing towards 1. It is to be expected that most cosine similarities will be closer to 0 since most journals will be dissimilar to each group. A thin distribution tail contains the relatively few journals that are similar. Within group quantiles were also calculated to determine if the pattern matching technique yielded groups that were internally more similar than the whole corpus.</p>
+<pre class="r"><code>hist(diabetes$X3, breaks = 100, main = &quot;Similarity To &#39;Diabetes&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>hist(asthma$X3, breaks = 100, main = &quot;Similarity To &#39;HIV&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
+<pre class="r"><code>hist(hiv$X3, breaks = 100, main = &quot;Similarity To &#39;Asthma&#39; Subset&quot;, xlab = &quot;Cosine Similarity&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-12-3.png" width="672" /></p>
 <p></br></br></p>
 <div id="within-group-similarity-quantiles" class="section level4">
 <h4>Within Group Similarity Quantiles</h4>
+<pre class="r"><code># get list of diabetes articles
+diabetesArticleNames &lt;- unique(diabetes$X2)
+asthmaArticleNames &lt;- unique(asthma$X2)
+hivArticleNames &lt;- unique(hiv$X2)
+
+# compare cosine similarity values in quantiles of each group
+diabetes[(diabetes$X1 %in% diabetesArticleNames),]$X3 %&gt;% quantile(probs = seq(0, 1, 0.1))
+asthma[(asthma$X1 %in% asthmaArticleNames),]$X3 %&gt;% quantile(probs = seq(0, 1, 0.1))
+hiv[(hiv$X1 %in% hivArticleNames),]$X3 %&gt;% quantile(probs = seq(0, 1, 0.1))</code></pre>
+<p></br></p>
+<p>This code chunk produces the table:</p>
 <table>
 <thead>
 <tr class="header">
@@ -185,29 +446,91 @@ whole corpus according to quantile calculations.</p>
 </tr>
 </tbody>
 </table>
-<p>Quantiles of cosine similarity calculations for journals within the three subgroups.</p>
-<p>Now, the similarities of the groups Diabetes, HIV, and Asthma versus the whole set
-can be compared to one another. The tail of each distribution yields information
-about how much the corpus is similar to a group, while the bulk of the distribution
-yields information about how much the corpus is not similar to the group.</p>
-<p><a href="QuantDiffDiabetesAsthma.png"></a>
-<a href="QuantDiffDiabetesHIV.png"></a>
-<a href="quantDiffAsthmaHIV.png"></a></p>
-<p>Estimated difference of quantiles. Calculated with WRS2 in R.</p>
-<p>The R package WRS2 was used to calculate quantile differences between each group.
-The function qcomb() was run on each of the following
-pairs: diabetes-asthma, diabetes-hiv, asthma-hiv. The output values include estimated difference
-for each quantile, a standard p-value, and a p.crit value. Asside from the 0 percentile estimate,
-all standard p-values and p.crit values were below 0.05, while most were below 0.01.
-All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.
-The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are
-the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
+<ul>
+<li>all groups seem to be similar from 40% to 70%</li>
+<li>asthma journals are more similar to eachother as a whole (down to lowest quantiles)</li>
+<li>diabetes and hiv have similar low quantile patterns, a few outliers made longer tails</li>
+<li>the highest top similarities are in diabetes, appearing at the 90% quantile</li>
+<li>the lowest top similarities are in hiv with no big spike, rather a slow decline</li>
+</ul>
+<p></br></br></p>
+</div>
+</div>
+<div id="estimated-difference-of-quantiles" class="section level3">
+<h3>Estimated difference of quantiles</h3>
+<p>The R package <a href="https://cran.r-project.org/web/packages/WRS2/WRS2.pdf">WRS2</a> was used to calculate quantile differences between each group. The function <code>qcomb</code> was run on each of the following pairs: Diabetes-Asthma, Diabetes-HIV, Asthma-HIV. The output values include estimated difference for each quantile, a standard p-value, and a p.crit value.</p>
+<p>This final step uses the Harrell-Davis quantile estimator to get better info on tails. This estimator is a weighted average of all order statistics. The shift fx is then used to compare HD estimates to find confidence interval differences between quantiles.</p>
+<pre class="r"><code># Average cosSim for all unique journal titles
+# an equivalent chunk computes asthaAve and hivAve
+diabetesAve &lt;- diabetes %&gt;%
+  group_by(X1) %&gt;%
+  summarise(journalTitle = X1[[1]], cosSim = mean(X3)) %&gt;%
+  ungroup() %&gt;% 
+  select(journalTitle, diabetesCosSim = cosSim)</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code>joinedTable &lt;- full_join(full_join(hivAve, diabetesAve, by = &quot;journalTitle&quot;) , asthmaAve, by = &quot;journalTitle&quot;)
+
+joinedTableLong &lt;- joinedTable %&gt;% pivot_longer(cols = c(&quot;hivCosSim&quot;, &quot;diabetesCosSim&quot;, &quot;asthmaCosSim&quot;),
+                             names_to = &quot;JournalGroup&quot;,
+                             values_to = &quot;CosineSimilarity&quot;
+                             )
+
+diabetes_asthma &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != &quot;hivCosSim&quot;), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+
+diabetes_hiv &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != &quot;asthmaCosSim&quot;), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+
+asthma_hiv &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup, data = filter(joinedTableLong, JournalGroup != &quot;diabetesCosSim&quot;), q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
+
+
+diabetes_asthma_diff &lt;- tibble(quantile = diabetes_asthma$partable$q,
+                               estimatedDiff = diabetes_asthma$partable$`est1-est.2`,
+                               criticalPVal = diabetes_asthma$partable$p.crit)
+
+diabetes_hiv_diff &lt;- tibble(quantile = diabetes_hiv$partable$q,
+                            estimatedDiff = diabetes_hiv$partable$`est1-est.2`,
+                            criticalPVal = diabetes_hiv$partable$p.crit)
+
+asthma_hiv_diff &lt;- tibble(quantile = asthma_hiv$partable$q,
+                          estimatedDiff = asthma_hiv$partable$`est1-est.2`,
+                          criticalPVal = asthma_hiv$partable$p.crit)</code></pre>
+<p>Plotting the results</p>
+<pre class="r"><code>plot(diabetes_asthma_diff$quantile, diabetes_asthma_diff$estimatedDiff,
+     type = &quot;b&quot;,
+     main = &quot;Quantile Difference: Diabetes &amp; Asthma&quot;,
+     xlab = &quot;Quantile&quot;,
+     ylab = &quot;Estimated Difference&quot;,
+     ylim = c(0.02, -0.02)
+     )
+plot(diabetes_hiv_diff$quantile, diabetes_hiv_diff$estimatedDiff,
+     type = &quot;b&quot;,
+     main = &quot;Quantile Difference: Diabetes &amp; HIV&quot;,
+     xlab = &quot;Quantile&quot;,
+     ylab = &quot;Estimated Difference&quot;,
+     ylim = c(0.02, -0.02)
+     )
+plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
+     type = &quot;b&quot;,
+     main = &quot;Quantile Difference: Asthma &amp; HIV&quot;,
+     xlab = &quot;Quantile&quot;,
+     ylab = &quot;Estimated Difference&quot;,
+     ylim = c(0.02, -0.02)
+     )</code></pre>
+<p></br></p>
+<div id="plots-of-group-pairwise-quantile-differences" class="section level4">
+<h4>Plots of group pairwise quantile differences</h4>
+<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesAsthma.jpg" /></p>
+<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/QuantDiffDiabetesHIV.jpg" /></p>
+<p><img src="static/images/post/2021-03-07-exploring-pubmed-abstracts-with-spark/quantDiffAsthmaHIV.jpg" /></p>
+<p></br></p>
+<p>Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range.</p>
+<p>The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
 than the groups HIV and Asthma.</p>
 <p></br></br></p>
 </div>
 </div>
-<div id="conclusion" class="section level2">
-<h2>Conclusion</h2>
+</div>
+<div id="conclusion-mistakes-next-steps.." class="section level2">
+<h2>Conclusion, Mistakes, Next Steps..</h2>
 <p>The workflow described in this paper can be customized to group vectors for any of the metadata
 fields in PubMed. For example, grant agency, author affiliation, year, and MESH terms are all loaded
 in the beginning of the workflow. They could easily be incorporated into an analysis.</p>
@@ -215,7 +538,12 @@ in the beginning of the workflow. They could easily be incorporated into an anal
 area of a distribution. In the case of cosine similarity in a large corpus, the distribution tail will
 contain the most useful information. This workflow, and other similar workflows, allow researchers
 to gather information that might not be readily apparent with a standard statistical approach.</p>
+<div id="next-steps" class="section level4">
+<h4>Next Steps</h4>
+<p>Theoretically a clever individual could take this similarity information and explore related connections to join silos of related academic information.</p>
+<p>It should also be possible to make larger inferences about the industry which the journal covers. To do this one could extract terms that are highly correlated with specific journals or combinations of journals. For example, Radiology journals have recently included the term “deep learning” in many top articles. The crossover of terms from ML to Radiology indicates the adoption of new technology. This has healthcare and business implications. It would be possible to extract these emerging terms over all of PubMed to discover changes and partnerships among industries. With the additional metadata it would also be possible to determine where these changes are occurring (by city, hospital, or university) and who is funding this research.</p>
 <p></br></br></p>
+</div>
 </div>
 <div id="thebibliography" class="section level2">
 <h2>thebibliography</h2>
@@ -244,237 +572,5 @@ to gather information that might not be readily apparent with a standard statist
 \bibitem{b23} Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
 \bibitem{b23} Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
 \bibitem{b24} Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664</code></pre>
-<p></br></br></p>
-</div>
-<div id="similar-journals" class="section level2">
-<h2>Similar journals</h2>
-<pre class="r"><code>ingroup_asthma_cossim &lt;- asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
-asthma$journal_x[asthma$cosine_similarity &gt; quantile(ingroup_asthma_cossim, probs = 0.75) &amp; !(asthma$journal_x %in% asthma$journal_asthma)]</code></pre>
-<pre><code>## [1] &quot;The European respiratory journal&quot;                           
-## [2] &quot;Pediatric pulmonology&quot;                                      
-## [3] &quot;Canadian respiratory journal&quot;                               
-## [4] &quot;Expert review of respiratory medicine&quot;                      
-## [5] &quot;Lung India : official organ of Indian Chest Society&quot;        
-## [6] &quot;Zhonghua nei ke za zhi&quot;                                     
-## [7] &quot;Pediatric clinics of North America&quot;                         
-## [8] &quot;The journal of allergy and clinical immunology. In practice&quot;
-## [9] &quot;Allergy&quot;</code></pre>
-<pre class="r"><code>ingroup_diabetes_cossim &lt;- diabetes$cosine_similarity[diabetes$journal_x %in% diabetes$journal_diabetes]
-diabetes$journal_x[diabetes$cosine_similarity &gt; quantile(ingroup_diabetes_cossim, probs = 0.95) &amp; !(diabetes$journal_x %in% diabetes$journal_diabetes)]</code></pre>
-<pre><code>##  [1] &quot;The British journal of dermatology&quot;                                                                                                      
-##  [2] &quot;The Lancet. Respiratory medicine&quot;                                                                                                        
-##  [3] &quot;Journal of nutritional science&quot;                                                                                                          
-##  [4] &quot;Vox sanguinis&quot;                                                                                                                           
-##  [5] &quot;Lancet (London, England)&quot;                                                                                                                
-##  [6] &quot;Public health nutrition&quot;                                                                                                                 
-##  [7] &quot;Medicina (Kaunas, Lithuania)&quot;                                                                                                            
-##  [8] &quot;PloS one&quot;                                                                                                                                
-##  [9] &quot;Medicine&quot;                                                                                                                                
-## [10] &quot;Therapeutic advances in endocrinology and metabolism&quot;                                                                                    
-## [11] &quot;International journal of environmental research and public health&quot;                                                                       
-## [12] &quot;Clinical nutrition (Edinburgh, Scotland)&quot;                                                                                                
-## [13] &quot;Clinical nutrition ESPEN&quot;                                                                                                                
-## [14] &quot;Journal of the American Heart Association&quot;                                                                                               
-## [15] &quot;The lancet. Psychiatry&quot;                                                                                                                  
-## [16] &quot;The Lancet. Global health&quot;                                                                                                               
-## [17] &quot;British journal of haematology&quot;                                                                                                          
-## [18] &quot;Clinical physiology and functional imaging&quot;                                                                                              
-## [19] &quot;Journal of family medicine and primary care&quot;                                                                                             
-## [20] &quot;BMC public health&quot;                                                                                                                       
-## [21] &quot;Journal of clinical medicine&quot;                                                                                                            
-## [22] &quot;Nutrients&quot;                                                                                                                               
-## [23] &quot;Progress in cardiovascular diseases&quot;                                                                                                     
-## [24] &quot;BJS open&quot;                                                                                                                                
-## [25] &quot;The Lancet. Infectious diseases&quot;                                                                                                         
-## [26] &quot;The Lancet. Neurology&quot;                                                                                                                   
-## [27] &quot;Journal of Taibah University Medical Sciences&quot;                                                                                           
-## [28] &quot;The British journal of surgery&quot;                                                                                                          
-## [29] &quot;The Lancet. Child &amp; adolescent health&quot;                                                                                                   
-## [30] &quot;Endocrine practice : official journal of the American College of Endocrinology and the American Association of Clinical Endocrinologists&quot;
-## [31] &quot;BMJ open&quot;                                                                                                                                
-## [32] &quot;The Lancet. Oncology&quot;                                                                                                                    
-## [33] &quot;The Lancet. Planetary health&quot;                                                                                                            
-## [34] &quot;Frontiers in endocrinology&quot;                                                                                                              
-## [35] &quot;The Lancet. Haematology&quot;                                                                                                                 
-## [36] &quot;BMC endocrine disorders&quot;                                                                                                                 
-## [37] &quot;Asia Pacific journal of clinical nutrition&quot;                                                                                              
-## [38] &quot;The lancet. HIV&quot;                                                                                                                         
-## [39] &quot;Endocrine&quot;</code></pre>
-<pre class="r"><code>ingroup_hiv_cossim &lt;- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
-hiv$journal_x[hiv$cosine_similarity &gt; quantile(ingroup_hiv_cossim, probs = 0.85) &amp; !(hiv$journal_x %in% hiv$journal_hiv)]</code></pre>
-<pre><code>##  [1] &quot;Virologie (Montrouge, France)&quot;                                                                                                  
-##  [2] &quot;Vaccine: X&quot;                                                                                                                     
-##  [3] &quot;Current immunology reviews&quot;                                                                                                     
-##  [4] &quot;AIDS care&quot;                                                                                                                      
-##  [5] &quot;African journal of AIDS research : AJAR&quot;                                                                                        
-##  [6] &quot;Virologie (Montrouge, France)&quot;                                                                                                  
-##  [7] &quot;The Journal of the Association of Nurses in AIDS Care : JANAC&quot;                                                                  
-##  [8] &quot;AIDS care&quot;                                                                                                                      
-##  [9] &quot;The Journal of the Association of Nurses in AIDS Care : JANAC&quot;                                                                  
-## [10] &quot;AIDS care&quot;                                                                                                                      
-## [11] &quot;AIDS care&quot;                                                                                                                      
-## [12] &quot;The British journal of dermatology&quot;                                                                                             
-## [13] &quot;The Lancet. Respiratory medicine&quot;                                                                                               
-## [14] &quot;The Lancet. Public health&quot;                                                                                                      
-## [15] &quot;Journal of nutritional science&quot;                                                                                                 
-## [16] &quot;Virologie (Montrouge, France)&quot;                                                                                                  
-## [17] &quot;Vox sanguinis&quot;                                                                                                                  
-## [18] &quot;Lancet (London, England)&quot;                                                                                                       
-## [19] &quot;Public health nutrition&quot;                                                                                                        
-## [20] &quot;AIDS care&quot;                                                                                                                      
-## [21] &quot;AIDS care&quot;                                                                                                                      
-## [22] &quot;Letters in applied microbiology&quot;                                                                                                
-## [23] &quot;Vaccine&quot;                                                                                                                        
-## [24] &quot;Culture, health &amp; sexuality&quot;                                                                                                    
-## [25] &quot;The lancet. Psychiatry&quot;                                                                                                         
-## [26] &quot;The Lancet. Global health&quot;                                                                                                      
-## [27] &quot;The lancet. Diabetes &amp; endocrinology&quot;                                                                                           
-## [28] &quot;Journal of the International Association of Providers of AIDS Care&quot;                                                             
-## [29] &quot;British journal of haematology&quot;                                                                                                 
-## [30] &quot;Clinical physiology and functional imaging&quot;                                                                                     
-## [31] &quot;Journal of the International AIDS Society&quot;                                                                                      
-## [32] &quot;Journal of life sciences (Westlake Village, Calif.)&quot;                                                                            
-## [33] &quot;AIDS and behavior&quot;                                                                                                              
-## [34] &quot;Journal of the International AIDS Society&quot;                                                                                      
-## [35] &quot;AIDS and behavior&quot;                                                                                                              
-## [36] &quot;Infectious disease clinics of North America&quot;                                                                                    
-## [37] &quot;Journal of the International AIDS Society&quot;                                                                                      
-## [38] &quot;AIDS and behavior&quot;                                                                                                              
-## [39] &quot;AIDS and behavior&quot;                                                                                                              
-## [40] &quot;Journal of the International AIDS Society&quot;                                                                                      
-## [41] &quot;BJS open&quot;                                                                                                                       
-## [42] &quot;The Lancet. Infectious diseases&quot;                                                                                                
-## [43] &quot;Journal of applied microbiology&quot;                                                                                                
-## [44] &quot;AIDS and behavior&quot;                                                                                                              
-## [45] &quot;The Lancet. Neurology&quot;                                                                                                          
-## [46] &quot;AIDS (London, England)&quot;                                                                                                         
-## [47] &quot;International journal of infectious diseases : IJID : official publication of the International Society for Infectious Diseases&quot;
-## [48] &quot;Wiener medizinische Wochenschrift (1946)&quot;                                                                                       
-## [49] &quot;AIDS (London, England)&quot;                                                                                                         
-## [50] &quot;Wiener medizinische Wochenschrift (1946)&quot;                                                                                       
-## [51] &quot;AIDS (London, England)&quot;                                                                                                         
-## [52] &quot;AIDS (London, England)&quot;                                                                                                         
-## [53] &quot;AIDS (London, England)&quot;                                                                                                         
-## [54] &quot;The British journal of surgery&quot;                                                                                                 
-## [55] &quot;The Lancet. Child &amp; adolescent health&quot;                                                                                          
-## [56] &quot;Human vaccines &amp; immunotherapeutics&quot;                                                                                            
-## [57] &quot;The Lancet. Oncology&quot;                                                                                                           
-## [58] &quot;The Lancet. Planetary health&quot;                                                                                                   
-## [59] &quot;Journal of acquired immune deficiency syndromes (1999)&quot;                                                                         
-## [60] &quot;AIDS research and human retroviruses&quot;                                                                                           
-## [61] &quot;Journal of acquired immune deficiency syndromes (1999)&quot;                                                                         
-## [62] &quot;AIDS research and human retroviruses&quot;                                                                                           
-## [63] &quot;The British journal of nutrition&quot;                                                                                               
-## [64] &quot;Journal of acquired immune deficiency syndromes (1999)&quot;                                                                         
-## [65] &quot;AIDS research and human retroviruses&quot;                                                                                           
-## [66] &quot;The Lancet. Haematology&quot;                                                                                                        
-## [67] &quot;AIDS research and therapy&quot;                                                                                                      
-## [68] &quot;Pathogens and disease&quot;                                                                                                          
-## [69] &quot;Vaccines&quot;                                                                                                                       
-## [70] &quot;AIDS research and therapy&quot;                                                                                                      
-## [71] &quot;Pathogens and disease&quot;                                                                                                          
-## [72] &quot;AIDS research and therapy&quot;</code></pre>
-<p></br></br></p>
-</div>
-<div id="cosine-similarity" class="section level2">
-<h2>Cosine similarity</h2>
-<pre class="r"><code>asthma_top_sim &lt;- unique(asthma$journal_asthma[!(asthma$journal_x %in% asthma$journal_asthma)]) %&gt;% 
-  purrr::map_dfr(
-    ~ asthma[!(asthma$journal_x %in% asthma$journal_asthma),] %&gt;% 
-    dplyr::filter(journal_asthma == .x ) %&gt;%
-    dplyr::arrange(desc(cosine_similarity)) %&gt;%
-    head(2)
-  )
-asthma_top_sim</code></pre>
-<pre><code>## # A tibble: 10 x 3
-##    journal_x                 journal_asthma                     cosine_similari~
-##    &lt;chr&gt;                     &lt;chr&gt;                                         &lt;dbl&gt;
-##  1 Allergy                   Journal of asthma and allergy                 0.213
-##  2 NPJ primary care respira~ Journal of asthma and allergy                 0.175
-##  3 Allergy                   The Journal of asthma : official ~            0.337
-##  4 The journal of allergy a~ The Journal of asthma : official ~            0.287
-##  5 Pediatric clinics of Nor~ Annals of allergy, asthma &amp; immun~            0.208
-##  6 International archives o~ Annals of allergy, asthma &amp; immun~            0.208
-##  7 The European respiratory~ Allergy, asthma, and clinical imm~            0.202
-##  8 Respiratory research      Allergy, asthma, and clinical imm~            0.198
-##  9 Allergy                   Asthma research and practice                  0.207
-## 10 The journal of allergy a~ Asthma research and practice                  0.188</code></pre>
-<pre class="r"><code>diabetes_top_sim &lt;- unique(diabetes$journal_diabetes[!(diabetes$journal_x %in% diabetes$journal_diabetes)]) %&gt;% 
-  purrr::map_dfr(
-    ~ diabetes[!(diabetes$journal_x %in% diabetes$journal_diabetes),] %&gt;% 
-    dplyr::filter(journal_diabetes == .x ) %&gt;%
-    dplyr::arrange(desc(cosine_similarity)) %&gt;%
-    head(2)
-  )
-diabetes_top_sim</code></pre>
-<pre><code>## # A tibble: 80 x 3
-##    journal_x                 journal_diabetes                   cosine_similari~
-##    &lt;chr&gt;                     &lt;chr&gt;                                         &lt;dbl&gt;
-##  1 Nutrients                 Diabetology &amp; metabolic syndrome              0.270
-##  2 PloS one                  Diabetology &amp; metabolic syndrome              0.268
-##  3 Pediatric dimensions      Journal of diabetes research                  0.229
-##  4 Nature metabolism         Journal of diabetes research                  0.219
-##  5 Monographs of the Societ~ JMIR diabetes                                 0.237
-##  6 JMIR mHealth and uHealth  JMIR diabetes                                 0.236
-##  7 Progress in cardiovascul~ Diabetes therapy : research, trea~            0.347
-##  8 BMJ (Clinical research e~ Diabetes therapy : research, trea~            0.220
-##  9 The Journal of endocrino~ Diabetes                                      0.226
-## 10 Frontiers in endocrinolo~ Diabetes                                      0.209
-## # ... with 70 more rows</code></pre>
-<pre class="r"><code>hiv_top_sim &lt;- unique(hiv$journal_hiv[!(hiv$journal_x %in% hiv$journal_hiv)]) %&gt;% 
-  purrr::map_dfr(
-    ~ hiv[!(hiv$journal_x %in% hiv$journal_hiv),] %&gt;% 
-    dplyr::filter(journal_hiv == .x ) %&gt;%
-    dplyr::arrange(desc(cosine_similarity)) %&gt;%
-    head(2)
-  )
-hiv_top_sim</code></pre>
-<pre><code>## # A tibble: 16 x 3
-##    journal_x                        journal_hiv                 cosine_similari~
-##    &lt;chr&gt;                            &lt;chr&gt;                                  &lt;dbl&gt;
-##  1 AIDS research and therapy        Southern African journal o~            0.210
-##  2 Journal of the International AI~ Southern African journal o~            0.205
-##  3 Natural product communications   Current HIV research                   0.172
-##  4 Journal of life sciences (Westl~ Current HIV research                   0.142
-##  5 AIDS care                        Current HIV/AIDS reports               0.360
-##  6 AIDS and behavior                Current HIV/AIDS reports               0.358
-##  7 AIDS and behavior                Current opinion in HIV and~            0.437
-##  8 AIDS care                        Current opinion in HIV and~            0.412
-##  9 AIDS and behavior                Journal of HIV/AIDS &amp; soci~            0.288
-## 10 AIDS care                        Journal of HIV/AIDS &amp; soci~            0.277
-## 11 AIDS care                        HIV/AIDS (Auckland, N.Z.)              0.267
-## 12 AIDS and behavior                HIV/AIDS (Auckland, N.Z.)              0.266
-## 13 AIDS and behavior                HIV medicine                           0.380
-## 14 Journal of the International AI~ HIV medicine                           0.377
-## 15 The lancet. Diabetes &amp; endocrin~ The lancet. HIV                        0.726
-## 16 BJS open                         The lancet. HIV                        0.675</code></pre>
-<p></br></br></p>
-</div>
-<div id="heatmap-of-top-2-unique-pairs-vs-the-disease-group" class="section level2">
-<h2>Heatmap of top 2 unique pairs vs the disease group</h2>
-<pre class="r"><code>asthma_long &lt;- asthma[asthma$journal_x %in% unique(asthma_top_sim$journal_x),] %&gt;% 
-  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
-
-asthma_sim_matrix &lt;- as.matrix(asthma_long[-1])
-rownames(asthma_sim_matrix) &lt;- asthma_long[[1]]
-
-heatmap(asthma_sim_matrix)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
-<pre class="r"><code>diabetes_long &lt;- diabetes[diabetes$journal_x %in% unique(diabetes_top_sim$journal_x),] %&gt;% 
-  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
-
-diabetes_sim_matrix &lt;- as.matrix(diabetes_long[-1])
-rownames(diabetes_sim_matrix) &lt;- diabetes_long[[1]]
-
-heatmap(diabetes_sim_matrix)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<pre class="r"><code>hiv_long &lt;- hiv[hiv$journal_x %in% unique(hiv_top_sim$journal_x),] %&gt;% 
-  pivot_wider(names_from = journal_x, values_from = cosine_similarity)
-
-hiv_sim_matrix &lt;- as.matrix(hiv_long[-1])
-rownames(hiv_sim_matrix) &lt;- hiv_long[[1]]
-
-heatmap(hiv_sim_matrix)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 </div>
 </div>

@@ -24,13 +24,13 @@ The primary characteristics that make static websites convenient.
 
 ### Other Similar Options & Variations
 
-https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/ `# GitLab website/portfolio`
+[GitLab website/portfolio](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/)
 
-https://pages.github.com/
+[GitHug Pages](https://pages.github.com/)
 
-https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/ `# Jekyll, similar to Hugo`
+[Jekyll, similar to Hugo](https://www.freecodecamp.org/news/hugo-vs-jekyll-battle-of-static-site-generator-themes/)
 
-https://hexo.io/ `# Hexo, similar to Hugo`
+[Hexo, similar to Hugo](https://hexo.io/)
 
 </br>
 
@@ -42,19 +42,19 @@ https://hexo.io/ `# Hexo, similar to Hugo`
 
 [Download R Markdown](https://cran.r-project.org/web/packages/rmarkdown/rmarkdown.pdf)
 
-https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1 `# User guide R Markdown`
+[User guide R Markdown](https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#user-guide-1)
 
-https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1 `# Cheatsheet R Markdown`
+[Cheatsheet R Markdown](https://pkgs.rstudio.com/rmarkdown/articles/rmarkdown.html#cheatsheets-1)
 
-https://rmarkdown.rstudio.com/lesson-1.html `# More R Markdown resources`
+[More R Markdown resources](https://rmarkdown.rstudio.com/lesson-1.html)
 
-https://bookdown.org/yihui/blogdown/workflow.html `# Recommended website build workflow`
+[Recommended website build workflow](https://bookdown.org/yihui/blogdown/workflow.html)
 
-https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control#ch01-getting-started `# Git basics`
+[Git basics](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control#ch01-getting-started)
 
-https://yihui.org/  `# The primary blogdown & knitr author`
+[The primary blogdown & knitr author](https://yihui.org/)
 
-https://drive.google.com/drive/folders/1Or_AFogbpRCHf3eSlvMd2SAVy1dXTFEz?usp=sharing `# Drive folder with this tutorial as .pdf and .Rmd`
+[Drive folder with this tutorial as .pdf and .Rmd](https://drive.google.com/drive/folders/1Or_AFogbpRCHf3eSlvMd2SAVy1dXTFEz?usp=sharing)
 
 
 </br></br>
