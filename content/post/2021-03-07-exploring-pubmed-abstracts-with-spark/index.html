@@ -13,10 +13,6 @@ slug: exploring-pubmed-abstracts-with-spark
 
 
 
-<hr />
-<div id="under-development" class="section level1">
-<h1><em>UNDER DEVELOPMENT</em></h1>
-<hr />
 <p></br></p>
 <div id="motivation" class="section level2">
 <h2>Motivation:</h2>
@@ -176,12 +172,12 @@ val hiv_journalDense =
 <pre class="r"><code>diabetes$journal_diabetes %&gt;% unique() %&gt;% head(3)</code></pre>
 <pre><code>## [1] &quot;Diabetology &amp; metabolic syndrome&quot; &quot;Journal of diabetes research&quot;    
 ## [3] &quot;JMIR diabetes&quot;</code></pre>
-<p></br></br></p>
+<p></br></p>
 <pre class="r"><code>asthma$journal_asthma %&gt;% unique() %&gt;% head(3)</code></pre>
 <pre><code>## [1] &quot;Journal of asthma and allergy&quot;                                                                                         
 ## [2] &quot;The Journal of asthma : official journal of the Association for the Care of Asthma&quot;                                    
 ## [3] &quot;Annals of allergy, asthma &amp; immunology : official publication of the American College of Allergy, Asthma, &amp; Immunology&quot;</code></pre>
-<p></br></br></p>
+<p></br></p>
 <pre class="r"><code>hiv$journal_hiv %&gt;% unique() %&gt;% head(3)</code></pre>
 <pre><code>## [1] &quot;Southern African journal of HIV medicine&quot;
 ## [2] &quot;Current HIV research&quot;                    
@@ -231,9 +227,8 @@ val cosSimDf =
     dplyr::arrange(desc(cosine_similarity)) %&gt;%
     head(2)
   )</code></pre>
-<p></br></p>
+<p></br></br></p>
 <p>These are the two highest cosine similarity pairs for each journal in each group:</p>
-<p></br></p>
 <pre class="r"><code>asthma_top_sim</code></pre>
 <pre><code>## # A tibble: 10 x 3
 ##    journal_x                 journal_asthma                     cosine_similari~
@@ -292,7 +287,7 @@ val cosSimDf =
 </div>
 <div id="similar-journals-by-group" class="section level3">
 <h3>Similar journals by group</h3>
-<p>These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes, 75% for Asthma, and 98% for HIV to get a similar length outputs.</p>
+<p>These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes, 75% for Asthma, and 98.5% for HIV to get a similar length outputs.</p>
 <pre class="r"><code>ingroup_asthma_cossim &lt;-
   asthma$cosine_similarity[asthma$journal_x %in% asthma$journal_asthma]
 
@@ -341,7 +336,7 @@ diabetes$journal_x[diabetes$cosine_similarity &gt;
 <p></br></p>
 <pre class="r"><code>ingroup_hiv_cossim &lt;- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
 hiv$journal_x[hiv$cosine_similarity &gt; 
-                quantile(ingroup_hiv_cossim, probs = 0.98) &amp;
+                quantile(ingroup_hiv_cossim, probs = 0.985) &amp;
               !(hiv$journal_x %in% hiv$journal_hiv)]</code></pre>
 <pre><code>##  [1] &quot;Virologie (Montrouge, France)&quot;                         
 ##  [2] &quot;Current immunology reviews&quot;                            
@@ -518,9 +513,8 @@ joinedTableLong &lt;- joinedTable %&gt;%
                              names_to = &quot;JournalGroup&quot;,
                              values_to = &quot;CosineSimilarity&quot;
                              )</code></pre>
-<p></br></p>
+<p></br></br></p>
 <p>Now <code>qcomhd</code> finds the differences between deciles and the output is plotted..</p>
-<p></br></p>
 <pre class="r"><code>diabetes_asthma &lt;- WRS2::qcomhd(CosineSimilarity ~ JournalGroup,
                                 data = filter(joinedTableLong, JournalGroup != &quot;hivCosSim&quot;),
                                 q = seq(from = 0, to = 1, by = 0.1), nboot = 100)
@@ -568,21 +562,87 @@ plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
      ylab = &quot;Estimated Difference&quot;,
      ylim = c(0.02, -0.02)
      )</code></pre>
+<p></br></p>
 <p><img src="index_files/figure-html/unnamed-chunk-21-1.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-21-2.png" width="672" /><img src="index_files/figure-html/unnamed-chunk-21-3.png" width="672" /></p>
 <p></br></p>
 <p>Associated p values</p>
-<pre class="r"><code>pvals &lt;- rbind(rbind(diabetes_asthma_diff$criticalPVal, diabetes_hiv_diff$criticalPVal),
-      asthma_hiv_diff$criticalPVal)
-colnames(pvals) &lt;- diabetes_asthma_diff$quantile
-pvals</code></pre>
-<pre><code>##         0        0.1        0.2    0.3         0.4         0.5         0.6
-## [1,] 0.05 0.01666667 0.01250000 0.0100 0.008333333 0.007142857 0.006250000
-## [2,] 0.05 0.01666667 0.01250000 0.0100 0.008333333 0.007142857 0.006250000
-## [3,] 0.05 0.02500000 0.01666667 0.0125 0.010000000 0.008333333 0.007142857
-##              0.7         0.8         0.9           1
-## [1,] 0.005555556 0.005000000 0.004545455 0.025000000
-## [2,] 0.005555556 0.005000000 0.004545455 0.025000000
-## [3,] 0.006250000 0.005555556 0.005000000 0.004545455</code></pre>
+<p></br></p>
+<table>
+<colgroup>
+<col width="6%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Group</th>
+<th align="right">0</th>
+<th align="right">10</th>
+<th align="right">20</th>
+<th align="right">30</th>
+<th align="right">40</th>
+<th align="right">50</th>
+<th align="right">60</th>
+<th align="right">70</th>
+<th align="right">80</th>
+<th align="right">90</th>
+<th align="right">100</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Diabetes-Asthma</td>
+<td align="right">0.05</td>
+<td align="right">0.0167</td>
+<td align="right">0.0125</td>
+<td align="right">0.0100</td>
+<td align="right">0.0083</td>
+<td align="right">0.0071</td>
+<td align="right">0.0063</td>
+<td align="right">0.0056</td>
+<td align="right">0.0050</td>
+<td align="right">0.0045</td>
+<td align="right">0.0250</td>
+</tr>
+<tr class="even">
+<td>Diabetes-HIV</td>
+<td align="right">0.05</td>
+<td align="right">0.0167</td>
+<td align="right">0.0125</td>
+<td align="right">0.0100</td>
+<td align="right">0.0083</td>
+<td align="right">0.0071</td>
+<td align="right">0.0063</td>
+<td align="right">0.0056</td>
+<td align="right">0.0050</td>
+<td align="right">0.0045</td>
+<td align="right">0.0250</td>
+</tr>
+<tr class="odd">
+<td>Asthma-HIV</td>
+<td align="right">0.05</td>
+<td align="right">0.0250</td>
+<td align="right">0.0167</td>
+<td align="right">0.0125</td>
+<td align="right">0.0100</td>
+<td align="right">0.0083</td>
+<td align="right">0.0071</td>
+<td align="right">0.0062</td>
+<td align="right">0.00556</td>
+<td align="right">0.0050</td>
+<td align="right">0.0045</td>
+</tr>
+</tbody>
+</table>
 <p></br></p>
 <p>Aside from the 0 percentile estimate, all standard p-values and p.crit values were below 0.05, while most were below 0.01. Therefore the null hypothesis (H0: no difference) can be rejected for all quantiles. All pairwise comparisons show a high degree of similarity in the 40th and 60th percentile range, similar to what was observed earlier.</p>
 <p>The most stark difference is in the 80th quantile and above. Diabetes-Asthma and Diabetes-HIV are the most dissimilar in the upper quantiles. This indicates that the group Diabetes is more distinct
@@ -631,6 +691,5 @@ Wilcox, R. R. (2001). Modern Insights About Pearson’s Correlation and Least Sq
 Wu, H. C., Luk, R. W. P., Wong, K. F.,  Kwok, K. L. (2008). Interpreting TF-IDF term weights as making relevance decisions. ACM Transactions on Information Systems, 26(3), 1–37. https://doi.org/10.1145/1361684.1361686
 Yekutieli, D.,  Benjamini, Y. (1999). Resampling-based false discovery rate controlling multiple test procedures for correlated test statistics. Journal of Statistical Planning and Inference, 82(1–2), 171–196. https://doi.org/10.1016/s0378-3758(99)00041-5
 Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., Meng, X., Rosen, J., Venkataraman, S., Franklin, M. J., Ghodsi, A., Gonzalez, J., Shenker, S.,  Stoica, I. (2016). Apache Spark. Communications of the ACM, 59(11), 56–65. https://doi.org/10.1145/2934664</code></pre>
-</div>
 </div>
 </div>

@@ -11,9 +11,6 @@ DisableComments: no
 slug: exploring-pubmed-abstracts-with-spark
 ---
 
-***
-# _UNDER DEVELOPMENT_
-***
 
 </br>
 
@@ -247,13 +244,13 @@ list(
 diabetes$journal_diabetes %>% unique() %>% head(3)
 ```
 
-</br></br>
+</br>
 
 ```{r}
 asthma$journal_asthma %>% unique() %>% head(3)
 ```
 
-</br></br>
+</br>
 
 ```{r}
 hiv$journal_hiv %>% unique() %>% head(3)
@@ -336,11 +333,10 @@ hiv_top_sim <- unique(hiv$journal_hiv[!(hiv$journal_x %in% hiv$journal_hiv)]) %>
   )
 ```
 
-</br>
+</br></br>
 
 These are the two highest cosine similarity pairs for each journal in each group:
 
-</br>
 
 ```{r}
 asthma_top_sim
@@ -366,7 +362,7 @@ Note how most top cosine similarities are in the range of 0.1 to 0.3. These are 
 
 ### Similar journals by group
 
-These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes, 75% for Asthma, and 98% for HIV to get a similar length outputs.
+These are the top percentiles of cosines for each group. I selected the top 97.5%-ile for Diabetes, 75% for Asthma, and 98.5% for HIV to get a similar length outputs.
 
 ```{r}
 ingroup_asthma_cossim <-
@@ -393,7 +389,7 @@ diabetes$journal_x[diabetes$cosine_similarity >
 ```{r}
 ingroup_hiv_cossim <- hiv$cosine_similarity[hiv$journal_x %in% hiv$journal_hiv]
 hiv$journal_x[hiv$cosine_similarity > 
-                quantile(ingroup_hiv_cossim, probs = 0.98) &
+                quantile(ingroup_hiv_cossim, probs = 0.985) &
               !(hiv$journal_x %in% hiv$journal_hiv)]
 ```
 
@@ -526,11 +522,10 @@ joinedTableLong <- joinedTable %>%
                              )
 ```
 
-</br>
+</br></br>
 
 Now `qcomhd` finds the differences between deciles and the output is plotted..
 
-</br>
 
 ```{r eval=FALSE, fig.show='hold'}
 
@@ -583,6 +578,8 @@ plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
      )
 ```
 
+</br>
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.show='hold'}
 diabetes_asthma_diff <- read_csv("C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/diabetes_asthma_diff.csv")
 diabetes_hiv_diff <- read_csv("C:/Users/seand/OneDrive/Documents/Class_Docs/RBDA_project_data/diabetes_asthma_hiv/diabetes_hiv_diff.csv")
@@ -616,13 +613,18 @@ plot(asthma_hiv_diff$quantile, asthma_hiv_diff$estimatedDiff,
 
 Associated p values
 
-```{r warning=FALSE, message=FALSE}
-pvals <- rbind(rbind(diabetes_asthma_diff$criticalPVal, diabetes_hiv_diff$criticalPVal),
-      asthma_hiv_diff$criticalPVal)
-colnames(pvals) <- diabetes_asthma_diff$quantile
-pvals
-```
+</br>
 
+```{r table2, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+tabl_p = "
+| Group | 0 | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 100 |
+| ---- |  ----: | ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: |  ----: | ----: |
+| Diabetes-Asthma | 0.05 | 0.0167 | 0.0125 | 0.0100 | 0.0083 | 0.0071 | 0.0063 | 0.0056 | 0.0050 | 0.0045 | 0.0250 |
+| Diabetes-HIV | 0.05 | 0.0167 | 0.0125 | 0.0100 | 0.0083 | 0.0071 | 0.0063 | 0.0056 | 0.0050 | 0.0045 | 0.0250 |
+| Asthma-HIV | 0.05 | 0.0250 | 0.0167 | 0.0125 | 0.0100 | 0.0083 | 0.0071 | 0.0062 | 0.00556 | 0.0050 | 0.0045 |
+"
+cat(tabl_p)
+```
 
 </br>
 
